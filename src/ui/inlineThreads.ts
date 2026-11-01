@@ -7,6 +7,7 @@ import { canContinue, type StepView, type WalkthroughView } from '../state/types
 import { safeMarkdown } from './safeMarkdown';
 
 export const CONTROLLER_ID = 'logiclens';
+export const ASK_CONCEPT_COMMAND = 'logiclens.askConcept';
 /** About ten body updates per second while streaming (arch §6). */
 const DELTA_FLUSH_MS = 100;
 
@@ -37,14 +38,16 @@ interface DocThreads {
 }
 
 export class InlineThreads implements vscode.Disposable {
-  private readonly controller = vscode.comments.createCommentController(CONTROLLER_ID, 'LogicLens');
   private readonly docs = new Map<string, DocThreads>();
   private readonly dirty = new Set<string>();
   private flushTimer: ReturnType<typeof setTimeout> | undefined;
   private readonly subscriptions: vscode.Disposable[];
 
-  constructor(private readonly session: SessionStore) {
-    // No commenting ranges yet: questions at any line arrive in S4 (ADR-0008).
+  /** The controller is shared with question threads (S4), which own its commenting ranges. */
+  constructor(
+    private readonly session: SessionStore,
+    private readonly controller: vscode.CommentController,
+  ) {
     this.subscriptions = [
       session.onDidChange((key) => this.render(key)),
       session.onDelta(({ key }) => this.queue(key)),
@@ -67,6 +70,18 @@ export class InlineThreads implements vscode.Disposable {
         const s = snap(r.thread);
         return s ? [{ ...s, index }] : [];
       });
+  }
+
+  /** The step a step thread belongs to, for its title actions. */
+  stepIndexOf(thread: vscode.CommentThread): number | undefined {
+    for (const doc of this.docs.values()) {
+      for (const [index, r] of doc.steps) {
+        if (r.thread === thread) {
+          return index;
+        }
+      }
+    }
+    return undefined;
   }
 
   private queue(key: string): void {
@@ -103,7 +118,7 @@ export class InlineThreads implements vscode.Disposable {
     update(doc.overview, {
       label: overviewLabel(view),
       contextValue: overviewContext(view),
-      comments: overviewComments(view),
+      comments: overviewComments(view, key),
       expanded: undefined,
     });
 
@@ -130,7 +145,7 @@ export class InlineThreads implements vscode.Disposable {
       update(rendered, {
         label: `${step.index + 1} · ${step.title}`,
         contextValue: 'step',
-        comments: [stepComment(step)],
+        comments: [stepComment(step, key)],
         expanded: entry.showAll || entry.opened === step.index,
       });
     }
@@ -170,7 +185,9 @@ export class InlineThreads implements vscode.Disposable {
     for (const s of this.subscriptions) {
       s.dispose();
     }
-    this.controller.dispose();
+    for (const doc of this.docs.values()) {
+      disposeDoc(doc);
+    }
     this.docs.clear();
   }
 }
@@ -238,12 +255,12 @@ function overviewContext(view: WalkthroughView): string {
   return canContinue(view) && !view.stale ? 'continuable' : 'finished';
 }
 
-function overviewComments(view: WalkthroughView): vscode.Comment[] {
+function overviewComments(view: WalkthroughView, key: string): vscode.Comment[] {
   const comments: vscode.Comment[] = [
     comment(
       `LogicLens · ${view.providerLabel} · ${view.model}`,
       duration(view),
-      overviewBody(view),
+      overviewBody(view, key),
     ),
   ];
   const summary = summaryBody(view);
@@ -253,7 +270,7 @@ function overviewComments(view: WalkthroughView): vscode.Comment[] {
   return comments;
 }
 
-function overviewBody(view: WalkthroughView): string {
+function overviewBody(view: WalkthroughView, key: string): string {
   const parts: string[] = [];
   if (view.withheld.length > 0) {
     const n = view.withheld.length;
@@ -277,7 +294,7 @@ function overviewBody(view: WalkthroughView): string {
     }
     for (const step of view.steps.filter((s) => !s.anchored)) {
       parts.push(`**${step.index + 1} · ${safeMarkdown(step.title)}** (not linked to lines)`);
-      parts.push(stepBody(step));
+      parts.push(stepBody(step, key));
     }
   }
   if (parts.every((p) => !p.trim()) && view.status === 'streaming') {
@@ -307,14 +324,23 @@ function summaryBody(view: WalkthroughView): string {
   return parts.join('\n\n');
 }
 
-function stepComment(step: StepView): vscode.Comment {
-  return comment('LogicLens', rangesLabel(step), stepBody(step) || '*…*');
+function stepComment(step: StepView, key: string): vscode.Comment {
+  return comment('LogicLens', rangesLabel(step), stepBody(step, key) || '*…*');
 }
 
-function stepBody(step: StepView): string {
+/** Concept tags link to Ask with the question pre-filled (S4); the link carries indexes only. */
+function stepBody(step: StepView, key: string): string {
   const parts = [safeMarkdown(step.text.trim())];
   if (step.concepts.length > 0) {
-    parts.push(step.concepts.map((c) => `\`${c.replace(/`/g, '')}\``).join(' · '));
+    parts.push(
+      step.concepts
+        .map((c, i) => {
+          const args = encodeURIComponent(JSON.stringify([key, step.index, i]));
+          const text = c.replace(/[`[\]()\\]/g, '');
+          return `[\`${text}\`](command:${ASK_CONCEPT_COMMAND}?${args} "Ask about ${text.replace(/"/g, '')}")`;
+        })
+        .join(' · '),
+    );
   }
   return parts.filter(Boolean).join('\n\n');
 }
@@ -326,9 +352,10 @@ export function rangesLabel(step: StepView): string {
 }
 
 function comment(author: string, label: string, markdown: string): vscode.Comment {
-  // Untrusted model output: no command links, no HTML, no theme icons (arch §8).
+  // Untrusted model output: no HTML, no theme icons, and no command links except the concept
+  // tags' own Ask command; safeMarkdown already removed every non-http link (arch §8).
   const body = new vscode.MarkdownString(markdown);
-  body.isTrusted = false;
+  body.isTrusted = { enabledCommands: [ASK_CONCEPT_COMMAND] };
   body.supportHtml = false;
   body.supportThemeIcons = false;
   return { author: { name: author }, label, body, mode: vscode.CommentMode.Preview };

@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import type { ExplainOptions, ExplainResult, ExplainService } from '../explain/walkthrough';
 import { SessionStore } from '../state/session';
 import type { ActiveEditor } from '../ui/activeEditor';
+import { reportRefusal as reportRefusalMessage } from './refusals';
 import { threadUri } from './steps';
 
 export function registerExplainCommands(
@@ -38,42 +39,8 @@ export function registerExplainCommands(
     return result;
   }
 
-  // Messages are not awaited, so the command's result never waits on a toast.
   function reportRefusal(result: Extract<ExplainResult, { kind: 'refused' }>): void {
-    switch (result.reason) {
-      case 'terms':
-      case 'cancelled':
-        // The terms prompt already said what happened; a cancel needs no message.
-        return;
-      case 'excluded': {
-        const open = 'Open Settings';
-        void vscode.window.showWarningMessage(result.message, open).then((choice) => {
-          if (choice === open) {
-            void vscode.commands.executeCommand(
-              'workbench.action.openSettings',
-              'logiclens.exclude',
-            );
-          }
-        });
-        return;
-      }
-      case 'secrets': {
-        if (!result.lines?.length) {
-          void vscode.window.showWarningMessage(result.message);
-          return;
-        }
-        const skip = 'Skip those lines instead';
-        void vscode.window.showWarningMessage(result.message, skip).then((choice) => {
-          if (choice === skip) {
-            void explainFile({ secretsAction: 'skip-lines' });
-          }
-        });
-        return;
-      }
-      default:
-        void vscode.window.showWarningMessage(result.message);
-        return;
-    }
+    reportRefusalMessage(result, () => void explainFile({ secretsAction: 'skip-lines' }));
   }
 
   return [

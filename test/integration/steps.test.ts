@@ -70,7 +70,8 @@ suite('Step walkthrough', () => {
         [1, 0, '2 · Load the config', 'L1–3', false],
       ],
     );
-    assert.strictEqual(s[0]?.body, 'Returns the configured port, or 8080.\n\n`type coercion`');
+    assert.ok(s[0]?.body.startsWith('Returns the configured port, or 8080.\n\n[`type coercion`]('));
+    assert.ok(s[0]?.body.includes('command:logiclens.askConcept?'));
     assert.strictEqual(s[0]?.contextValue, 'step');
   });
 

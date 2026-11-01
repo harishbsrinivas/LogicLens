@@ -68,3 +68,4 @@ What follows, good and bad.
 | [0026](0026-mvp-targets-vscode-on-linux.md) | MVP targets VS Code on Linux only; Marketplace only | Accepted | scope, release |
 | [0028](0028-inline-explanations-in-the-editor.md) | Explanations inline in the editor; no side panel | Accepted (step placement amended by ADR-0029) | ui, comments, product |
 | [0029](0029-step-threads-above-their-code.md) | Step threads sit just above their code | Accepted | ui, comments |
+| [0030](0030-lazy-activation-for-the-gutter-plus.md) | Keep lazy activation; the gutter "+" appears after first use | Accepted | ui, comments, stack |

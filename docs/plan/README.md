@@ -15,7 +15,7 @@ Each slice is a small, demoable increment: a user can do something new, end to e
 | S1 | [01-explain-file-tracer.md](01-explain-file-tracer.md) | run "Explain File" and read a streamed explanation from Copilot Free models inline over the code | S0 | In progress |
 | S2 | [02-step-walkthrough.md](02-step-walkthrough.md) | step through the explanation with editor highlighting and keys | S1 | In progress |
 | S3 | [03-more-targets-and-controls.md](03-more-targets-and-controls.md) | explain a selection, a symbol, or a file from the Explorer; change depth, audience (including ELI5), and jargon | S2 | Not started |
-| S4 | [04-ask-at-any-line.md](04-ask-at-any-line.md) | ask a question at any line and get an inline answer with follow-ups | S2 | Not started |
+| S4 | [04-ask-at-any-line.md](04-ask-at-any-line.md) | ask a question at any line and get an inline answer with follow-ups | S2 | In progress |
 | S5 | [05-provider-choice.md](05-provider-choice.md) | see and switch provider and model from the status bar; get a setup view when nothing is ready | S1 | Not started |
 | S6 | [06-claude-code.md](06-claude-code.md) | use Claude Code as the provider | S5 | Not started |
 | S7 | [07-more-providers.md](07-more-providers.md) | use Codex CLI, Gemini CLI, Kiro, an Anthropic or OpenAI key, or local Ollama; run in VS Code forks (after release) | S6, S12 | Not started |

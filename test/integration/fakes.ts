@@ -62,6 +62,27 @@ export interface TestApi {
     stepSnapshots(uri: vscode.Uri): (ThreadSnapshot & { index: number })[];
   };
   decorations: { appliedTo(uri: vscode.Uri): AppliedDecorations | undefined };
+  setInput(input: (prompt: string, value: string) => Thenable<string | undefined>): void;
+  questions: {
+    snapshots(uri: vscode.Uri): QuestionSnapshot[];
+    comments(threadId: string): readonly (vscode.Comment & { part?: string })[];
+    pendingThreads(uri: vscode.Uri): vscode.CommentThread[];
+  };
+}
+
+export interface QuestionSnapshot {
+  id: string;
+  line: number;
+  label: string;
+  contextValue: string;
+  collapsed: boolean;
+  comments: { author: string; body: string; contextValue: string }[];
+}
+
+export interface AskResult {
+  kind: 'done' | 'stopped' | 'failed' | 'refused';
+  reason?: string;
+  threadId?: string;
 }
 
 export interface ExplainResult {

@@ -19,12 +19,14 @@ export interface GateTarget extends PathInfo {
   languageId: string;
   lines: readonly string[];
   byteLength: number;
+  /** 1-based number of `lines[0]` in the document, when the target is a window (questions). */
+  firstLine?: number;
 }
 
 export interface PreparedTarget {
   /** Target lines with flagged ones replaced by the withheld marker. */
   lines: string[];
-  /** 1-based line numbers withheld. */
+  /** 1-based document line numbers withheld. */
   withheld: number[];
 }
 
@@ -117,7 +119,8 @@ export class RequestGate {
     }
 
     // Secret scan (ADR-0020): withhold or refuse; there is no send-anyway.
-    const { flagged } = scan(target.lines);
+    const firstLine = target.firstLine ?? 1;
+    const { flagged } = scan(target.lines, firstLine);
     const withheld = [...new Set(flagged.map((f) => f.line))];
     if (withheld.length > 0) {
       deps.log.info(
@@ -141,7 +144,7 @@ export class RequestGate {
     }
     const withheldSet = new Set(withheld);
     const prepared: PreparedTarget = {
-      lines: target.lines.map((l, i) => (withheldSet.has(i + 1) ? WITHHELD_MARKER : l)),
+      lines: target.lines.map((l, i) => (withheldSet.has(i + firstLine) ? WITHHELD_MARKER : l)),
       withheld,
     };
 
