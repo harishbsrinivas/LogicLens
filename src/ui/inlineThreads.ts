@@ -145,7 +145,7 @@ export class InlineThreads implements vscode.Disposable {
         doc.steps.set(step.index, rendered);
       }
       update(rendered, {
-        label: `${step.index + 1} · ${step.title}`,
+        label: `${step.index + 1} · ${step.title}${step.changed ? ' (code changed)' : ''}`,
         contextValue: 'step',
         comments: [stepComment(step, key)],
         expanded: entry.showAll || entry.opened === step.index,
@@ -257,7 +257,11 @@ function overviewContext(view: WalkthroughView): string {
   if (view.status === 'streaming') {
     return 'streaming';
   }
-  return canContinue(view) && !view.stale ? 'continuable' : 'finished';
+  if (view.stale) {
+    // Refresh, and Refresh changed steps when some steps are marked (S8).
+    return view.steps.some((s) => s.changed) ? 'stale-steps' : 'stale';
+  }
+  return canContinue(view) ? 'continuable' : 'finished';
 }
 
 function overviewComments(view: WalkthroughView, key: string): vscode.Comment[] {
@@ -366,9 +370,14 @@ function comment(author: string, label: string, markdown: string): vscode.Commen
   return { author: { name: author }, label, body, mode: vscode.CommentMode.Preview };
 }
 
-/** Duration and, when reported, token counts (spec §6). Never a price. */
+/** Age when restored, duration, and token counts when reported (spec §6, §10). Never a price. */
 function duration(view: WalkthroughView): string {
-  const parts = view.durationMs === null ? [] : [`${(view.durationMs / 1000).toFixed(1)}s`];
+  const parts =
+    view.restored && view.createdAt
+      ? [`Generated ${ago(Date.now() - view.createdAt)}`]
+      : view.durationMs === null
+        ? []
+        : [`${(view.durationMs / 1000).toFixed(1)}s`];
   const { inputTokens, outputTokens } = view.usage ?? {};
   if (inputTokens !== undefined && outputTokens !== undefined) {
     const n = (x: number): string => x.toLocaleString('en-US');
@@ -399,4 +408,16 @@ function disposeDoc(doc: DocThreads): void {
   for (const r of doc.steps.values()) {
     r.thread.dispose();
   }
+}
+
+function ago(ms: number): string {
+  const minutes = Math.round(ms / 60_000);
+  if (minutes < 1) {
+    return 'just now';
+  }
+  if (minutes < 60) {
+    return `${minutes} min ago`;
+  }
+  const hours = Math.round(minutes / 60);
+  return hours < 48 ? `${hours} h ago` : `${Math.round(hours / 24)} days ago`;
 }

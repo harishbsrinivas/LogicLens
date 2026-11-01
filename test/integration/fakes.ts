@@ -64,6 +64,11 @@ export interface TestApi {
   setProvider(provider: FakeProvider): void;
   setProviders(providers: FakeProvider[]): void;
   resetProviders(): void;
+  cache: {
+    flush(): Promise<void>;
+    restore(doc: vscode.TextDocument): Promise<boolean>;
+  };
+  dropState(uri: vscode.Uri): void;
   setPick(pick: (entries: PickerEntry[], title: string) => Thenable<string | undefined>): void;
   statusText(): string;
   refreshStatus(): Promise<void>;

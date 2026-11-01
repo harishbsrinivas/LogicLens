@@ -24,7 +24,8 @@ Names here are the contract for `package.json`. Add new ones here first.
 | `logiclens.showAllSteps` | LogicLens: Show All Steps | Explanation thread title, palette |
 | `logiclens.continue` | LogicLens: Continue Explanation | Explanation thread title when the walkthrough ended early |
 | `logiclens.focusStep` | LogicLens: Show Step | Step title CodeLens only (hidden from the palette) |
-| `logiclens.refresh` | LogicLens: Refresh Explanation | Explanation thread title, palette |
+| `logiclens.refresh` | LogicLens: Refresh Explanation | Explanation thread title when stale, palette |
+| `logiclens.refreshChanged` | LogicLens: Refresh Changed Steps | Explanation thread title when steps changed (hidden from the palette) |
 | `logiclens.stop` | LogicLens: Stop | Explanation thread title and status bar while busy, palette |
 | `logiclens.closeExplanation` | LogicLens: Close Explanation | Explanation thread title, palette |
 | `logiclens.selectProvider` | LogicLens: Select AI Provider | Status bar, palette |

@@ -1,6 +1,7 @@
 // In-memory session state (arch §7): the latest walkthrough per document and its focus.
 // Nothing persisted before S8.
 import * as vscode from 'vscode';
+import { applyEdits, type LineEdit } from './rangeTracker';
 import type { WalkthroughView } from './types';
 
 export interface SessionEntry {
@@ -86,12 +87,34 @@ export class SessionStore implements vscode.Disposable {
     }
   }
 
-  markStale(key: string): void {
+  /**
+   * Moves the walkthrough's ranges through an edit (arch §7): steps whose lines were edited or
+   * deleted are marked changed, and the walkthrough is marked stale.
+   */
+  applyEdits(key: string, edits: readonly LineEdit[]): void {
     const entry = this.entries.get(key);
-    if (entry && !entry.view.stale) {
-      entry.view.stale = true;
-      this.changed.fire(key);
+    if (!entry || edits.length === 0) {
+      return;
     }
+    const { view } = entry;
+    for (const step of view.steps) {
+      let touched = false;
+      step.ranges = step.ranges.map((r) => {
+        const moved = applyEdits(r, edits);
+        touched ||= moved.touched || moved.deleted;
+        return moved.range;
+      });
+      step.changed ||= touched;
+    }
+    if (view.target) {
+      view.target = applyEdits(view.target, edits).range;
+    }
+    view.withheld = view.withheld.flatMap((line) => {
+      const moved = applyEdits({ start: line, end: line }, edits);
+      return moved.deleted ? [] : [moved.range.start];
+    });
+    view.stale = true;
+    this.changed.fire(key);
   }
 
   stop(key: string): void {

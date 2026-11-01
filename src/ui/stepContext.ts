@@ -2,6 +2,7 @@
 // keybindings, follow-cursor focus, and marking a walkthrough stale when its document is edited
 // (per-step tracking comes in S8).
 import * as vscode from 'vscode';
+import { toLineEdits } from '../state/rangeTracker';
 import { SessionStore } from '../state/session';
 import type { ActiveEditor } from './activeEditor';
 
@@ -20,9 +21,7 @@ export class StepContext implements vscode.Disposable {
       session.onDidChange(() => this.updateKeys()),
       vscode.window.onDidChangeTextEditorSelection((e) => this.onSelection(e)),
       vscode.workspace.onDidChangeTextDocument((e) => {
-        if (e.contentChanges.length > 0) {
-          session.markStale(SessionStore.key(e.document.uri));
-        }
+        session.applyEdits(SessionStore.key(e.document.uri), toLineEdits(e.contentChanges));
       }),
     ];
     this.updateKeys();

@@ -192,6 +192,23 @@
         "title": "Adjust Explanation…",
         "category": "LogicLens",
         "icon": "$(settings)"
+      },
+      {
+        "command": "logiclens.refresh",
+        "title": "Refresh Explanation",
+        "category": "LogicLens",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "logiclens.refreshChanged",
+        "title": "Refresh Changed Steps",
+        "category": "LogicLens",
+        "icon": "$(diff)"
+      },
+      {
+        "command": "logiclens.clearCache",
+        "title": "Clear Cache",
+        "category": "LogicLens"
       }
     ],
     "menus": {
@@ -274,6 +291,10 @@
         {
           "command": "logiclens.adjustExplanation",
           "when": "false"
+        },
+        {
+          "command": "logiclens.refreshChanged",
+          "when": "false"
         }
       ],
       "comments/commentThread/title": [
@@ -294,12 +315,12 @@
         },
         {
           "command": "logiclens.showAllSteps",
-          "when": "commentController == logiclens && commentThread =~ /^(streaming|finished|continuable)$/",
+          "when": "commentController == logiclens && commentThread =~ /^(streaming|finished|continuable|stale|stale-steps)$/",
           "group": "inline@3"
         },
         {
           "command": "logiclens.closeExplanation",
-          "when": "commentController == logiclens && commentThread =~ /^(streaming|finished|continuable)$/",
+          "when": "commentController == logiclens && commentThread =~ /^(streaming|finished|continuable|stale|stale-steps)$/",
           "group": "inline@4"
         },
         {
@@ -314,13 +335,23 @@
         },
         {
           "command": "logiclens.regenerateWith",
-          "when": "commentController == logiclens && commentThread =~ /^(finished|continuable)$/",
+          "when": "commentController == logiclens && commentThread =~ /^(finished|continuable|stale|stale-steps)$/",
           "group": "inline@2"
         },
         {
           "command": "logiclens.adjustExplanation",
-          "when": "commentController == logiclens && commentThread =~ /^(finished|continuable)$/",
+          "when": "commentController == logiclens && commentThread =~ /^(finished|continuable|stale|stale-steps)$/",
           "group": "inline@3"
+        },
+        {
+          "command": "logiclens.refresh",
+          "when": "commentController == logiclens && commentThread =~ /^(stale|stale-steps)$/",
+          "group": "inline@1"
+        },
+        {
+          "command": "logiclens.refreshChanged",
+          "when": "commentController == logiclens && commentThread == stale-steps",
+          "group": "inline@1"
         }
       ],
       "editor/context": [
@@ -528,6 +559,12 @@
           "default": false,
           "scope": "application",
           "description": "Show \"Explain\" above functions and classes."
+        },
+        "logiclens.cache.enabled": {
+          "type": "boolean",
+          "default": true,
+          "scope": "application",
+          "markdownDescription": "Keep walkthroughs and question threads in VS Code's extension storage (never in your workspace) so they come back when you reopen a file. **LogicLens: Clear Cache** deletes them."
         }
       }
     },

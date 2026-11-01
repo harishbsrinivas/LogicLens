@@ -8,7 +8,7 @@ import {
   WHOLE_FILE_BUDGET_CHARS,
 } from '../../src/explain/questionWindow';
 import { DROPPED_NOTE, questionMessages, questionSystem } from '../../src/prompts/question';
-import { shiftRange, type LineEdit } from '../../src/state/rangeShift';
+import { shiftRange, type LineEdit } from '../../src/state/rangeTracker';
 import { linkifyLines, revealLink } from '../../src/ui/lineLinks';
 
 describe('question validation', () => {
@@ -129,6 +129,7 @@ describe('range shift', () => {
     expect(shiftRange({ start: 10, end: 12 }, edit(2, 0, 2, 0, 'a\nb\nc\n'))).toEqual({
       range: { start: 13, end: 15 },
       deleted: false,
+      touched: false,
     });
   });
 

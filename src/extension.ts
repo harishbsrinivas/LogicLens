@@ -1,4 +1,6 @@
 import * as vscode from 'vscode';
+import { CacheStore } from './cache/store';
+import { CacheSync } from './cache/sync';
 import { registerExplainCommands } from './commands/explain';
 import { registerStyleCommands } from './commands/style';
 import {
@@ -10,6 +12,7 @@ import {
 import { registerQuestionCommands, type InputFn } from './commands/questions';
 import { registerStepCommands } from './commands/steps';
 import { registerTermsCommand } from './commands/terms';
+import { rangeText } from './explain/context';
 import { QuestionService } from './explain/question';
 import { documentSymbols, enclosingSymbol } from './explain/symbols';
 import { ExplainService } from './explain/walkthrough';
@@ -28,6 +31,7 @@ import { createVscodePrompter } from './guard/vscodePrompter';
 import { createClaudeCodeProvider } from './providers/cli/claudeCode';
 import { minimalEnv } from './providers/cli/spawn';
 import { workDirFactory } from './providers/cli/workDir';
+import { WALKTHROUGH_VERSION } from './prompts/walkthrough';
 import { ProviderRegistry } from './providers/registry';
 import type { ProviderChoice, Provider } from './providers/types';
 import { createVscodeLmProvider } from './providers/vscodeLm';
@@ -57,6 +61,9 @@ export interface TestApi {
   setPrompter(prompter: Prompter): void;
   setTrusted(trusted: boolean | undefined): void;
   setInput(input: InputFn): void;
+  cache: CacheSync;
+  /** Forgets a document's walkthrough and threads in memory only, as a window reload would. */
+  dropState(uri: vscode.Uri): void;
   globalState: vscode.Memento;
   threads: InlineThreads;
   questions: QuestionThreads;
@@ -140,7 +147,38 @@ export function activate(context: vscode.ExtensionContext): TestApi | undefined 
     enclosingSymbol,
   });
 
+  // Per-workspace extension storage, or global storage without a workspace; never the
+  // workspace folder itself (arch §7).
+  const cacheStore = new CacheStore(
+    vscode.Uri.joinPath(context.storageUri ?? context.globalStorageUri, 'logiclens-cache').fsPath,
+  );
+  const cache = new CacheSync({
+    store: cacheStore,
+    session,
+    questions: questionStore,
+    log,
+    enabled: () =>
+      vscode.workspace.getConfiguration('logiclens').get<boolean>('cache.enabled', true),
+    keyOf: (uri, view) => ({
+      uri,
+      provider: view?.providerLabel ?? '',
+      model: view?.model ?? '',
+      depth: view?.style.depth ?? '',
+      audience: view?.style.audience ?? '',
+      jargon: view?.style.jargon ?? '',
+      language: view?.style.language ?? '',
+      personality: '',
+      promptVersion: WALKTHROUGH_VERSION,
+      target: view?.target ? rangeText(view.target) : '',
+    }),
+  });
+
   context.subscriptions.push(
+    cache,
+    vscode.commands.registerCommand('logiclens.clearCache', async () => {
+      await cacheStore.clear();
+      void vscode.window.showInformationMessage('LogicLens cache cleared.');
+    }),
     channel,
     session,
     active,
@@ -215,6 +253,13 @@ export function activate(context: vscode.ExtensionContext): TestApi | undefined 
     setPrompter: (p) => (prompter = p),
     setTrusted: (t) => (trustOverride = t),
     setInput: (i) => (input = i),
+    cache,
+    dropState: (uri) => {
+      const key = SessionStore.key(uri);
+      session.delete(key);
+      questionStore.deleteDocument(key);
+      cache.cancel(key);
+    },
     globalState: context.globalState,
     threads,
     questions: questionThreads,

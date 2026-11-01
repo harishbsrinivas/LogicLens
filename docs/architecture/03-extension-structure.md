@@ -33,8 +33,9 @@ logiclens/
 │  │                       #   style.ts (depth, audience, jargon, language rules; S3)
 │  │  └─ personalities/    # one fragment per voice pack (S12, ADR-0023)
 │  ├─ state/               # in-memory session: walkthroughs, focus (session.ts), question threads
-│  │                       #   (questions.ts), rangeShift.ts (S4); rangeTracker, reanchor (S8)
-│  ├─ cache/               # persisted walkthroughs and threads
+│  │                       #   (questions.ts), rangeTracker.ts and reanchor.ts (pure; S8)
+│  ├─ cache/               # store.ts (files, index, LRU), restore.ts (pure: build and re-anchor),
+│  │                       #   sync.ts (save after changes, restore on open) (S8)
 │  ├─ nav/                 # trail model and follow-definition service (S10, ADR-0021)
 │  ├─ bookmarks/           # bookmark store and service (S11, ADR-0022)
 │  ├─ ui/
