@@ -1,6 +1,6 @@
 # S1. Explain File (Tracer Bullet)
 
-**Status:** Not started
+**Status:** In progress. Provider types, `vscode-lm` adapter, and `RequestGate` with terms, trust, exclusions, size, notice, and secret scan written; untested. Panel, context builder, prompt, commands, and tests not started.
 **User value:** with GitHub Copilot (or any extension that contributes language models) installed, a user runs "LogicLens: Explain File" and reads a streamed explanation of the active file in a side panel.
 **Spec:** §3 (file target only), §6 (`vscode-lm` only), §7 (panel basics), §8 (terms of use, notice, trust, exclusions, secret scan)
 
