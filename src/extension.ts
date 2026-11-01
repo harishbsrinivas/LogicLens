@@ -1,5 +1,8 @@
 import * as vscode from 'vscode';
+import { BookmarkService } from './bookmarks/service';
+import { BookmarkStore } from './bookmarks/store';
 import { CacheStore } from './cache/store';
+import { registerBookmarkCommands } from './commands/bookmarks';
 import { CacheSync } from './cache/sync';
 import { registerExplainCommands } from './commands/explain';
 import { registerStyleCommands } from './commands/style';
@@ -43,6 +46,7 @@ import { SessionStore } from './state/session';
 import { ActiveEditor } from './ui/activeEditor';
 import { ExplainCodeLens, StepCodeLens } from './ui/codeLens';
 import { TrailCodeLens } from './ui/trailLens';
+import { BookmarkDecorations, BookmarksTree, BookmarkThreads } from './ui/bookmarksView';
 import { trackFileExcluded } from './ui/contextKeys';
 import { Decorations } from './ui/decorations';
 import { CONTROLLER_ID, InlineThreads } from './ui/inlineThreads';
@@ -68,6 +72,7 @@ export interface TestApi {
   /** Forgets a document's walkthrough and threads in memory only, as a window reload would. */
   dropState(uri: vscode.Uri): void;
   follow: FollowService;
+  bookmarks: BookmarkStore;
   globalState: vscode.Memento;
   threads: InlineThreads;
   questions: QuestionThreads;
@@ -137,7 +142,15 @@ export function activate(context: vscode.ExtensionContext): TestApi | undefined 
     questionStore.all().some((t) => questions.isBusy(t.id)),
   );
   const decorations = new Decorations(session);
-  const codeLens = new StepCodeLens(session);
+  // Bookmarks sit beside the cache in extension storage, never in the workspace (ADR-0022).
+  const storageDir = (context.storageUri ?? context.globalStorageUri).fsPath;
+  const bookmarkStore = new BookmarkStore(storageDir);
+  const codeLens = new StepCodeLens(
+    session,
+    (key, start) =>
+      bookmarkStore.inDocument(key).find((b) => b.kind === 'step' && b.ranges[0]?.start === start)
+        ?.id,
+  );
   const explainLens = new ExplainCodeLens(documentSymbols, isExcluded);
   const service = new ExplainService({
     gate,
@@ -177,6 +190,16 @@ export function activate(context: vscode.ExtensionContext): TestApi | undefined 
     }),
   });
 
+  const bookmarks = new BookmarkService(bookmarkStore);
+  const bookmarkThreads = new BookmarkThreads(controller);
+  const bookmarkDecorations = new BookmarkDecorations(bookmarkStore, (uri) => {
+    const applied = decorations.appliedTo(uri);
+    const numberLine = applied?.number !== null ? applied?.focus[0]?.start : undefined;
+    return [...(applied?.withheld ?? []), ...(numberLine ? [numberLine] : [])];
+  });
+  const bookmarksTree = new BookmarksTree(bookmarkStore);
+  void bookmarks.start();
+
   const follow = new FollowService({
     session,
     state: context.workspaceState,
@@ -186,6 +209,27 @@ export function activate(context: vscode.ExtensionContext): TestApi | undefined 
   const trailLens = new TrailCodeLens(follow, session, documentSymbols, isExcluded);
 
   context.subscriptions.push(
+    bookmarks,
+    bookmarkThreads,
+    bookmarkDecorations,
+    bookmarksTree,
+    vscode.window.createTreeView('logiclens.bookmarks', {
+      treeDataProvider: bookmarksTree,
+      showCollapseAll: true,
+    }),
+    bookmarkStore.onDidChange(() => codeLens.refresh()),
+    session.onDidChange(() => bookmarkDecorations.apply()),
+    ...registerBookmarkCommands({
+      store: bookmarkStore,
+      session,
+      questions: questionStore,
+      inline: threads,
+      threads: bookmarkThreads,
+      decorations: bookmarkDecorations,
+      active,
+      input: () => input,
+      confirm: (message, action) => prompter.confirm(message, action),
+    }),
     cache,
     follow,
     trailLens,
@@ -274,6 +318,7 @@ export function activate(context: vscode.ExtensionContext): TestApi | undefined 
     setInput: (i) => (input = i),
     cache,
     follow,
+    bookmarks: bookmarkStore,
     dropState: (uri) => {
       const key = SessionStore.key(uri);
       session.delete(key);

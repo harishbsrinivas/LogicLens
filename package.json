@@ -248,6 +248,65 @@
         "command": "logiclens.clearTrail",
         "title": "Clear Trail",
         "category": "LogicLens"
+      },
+      {
+        "command": "logiclens.addBookmark",
+        "title": "Add Bookmark",
+        "category": "LogicLens",
+        "icon": "$(bookmark)"
+      },
+      {
+        "command": "logiclens.bookmarkStep",
+        "title": "Bookmark Step",
+        "category": "LogicLens",
+        "icon": "$(bookmark)"
+      },
+      {
+        "command": "logiclens.bookmarkAnswer",
+        "title": "Bookmark Answer",
+        "category": "LogicLens",
+        "icon": "$(bookmark)"
+      },
+      {
+        "command": "logiclens.showBookmark",
+        "title": "Show Bookmark",
+        "category": "LogicLens"
+      },
+      {
+        "command": "logiclens.editBookmarkNote",
+        "title": "Edit Bookmark Note",
+        "category": "LogicLens",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "logiclens.copyBookmarkMarkdown",
+        "title": "Copy as Markdown",
+        "category": "LogicLens",
+        "icon": "$(copy)"
+      },
+      {
+        "command": "logiclens.removeBookmark",
+        "title": "Remove Bookmark",
+        "category": "LogicLens",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "logiclens.clearAllBookmarks",
+        "title": "Clear All Bookmarks",
+        "category": "LogicLens",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "logiclens.explainBookmark",
+        "title": "Explain Again",
+        "category": "LogicLens",
+        "icon": "$(sparkle)"
+      },
+      {
+        "command": "logiclens.closeBookmarkThread",
+        "title": "Close",
+        "category": "LogicLens",
+        "icon": "$(close)"
       }
     ],
     "menus": {
@@ -350,6 +409,42 @@
         {
           "command": "logiclens.trailForward",
           "when": "logiclens.trailCanGoForward"
+        },
+        {
+          "command": "logiclens.bookmarkStep",
+          "when": "false"
+        },
+        {
+          "command": "logiclens.bookmarkAnswer",
+          "when": "false"
+        },
+        {
+          "command": "logiclens.showBookmark",
+          "when": "false"
+        },
+        {
+          "command": "logiclens.editBookmarkNote",
+          "when": "false"
+        },
+        {
+          "command": "logiclens.copyBookmarkMarkdown",
+          "when": "false"
+        },
+        {
+          "command": "logiclens.removeBookmark",
+          "when": "false"
+        },
+        {
+          "command": "logiclens.explainBookmark",
+          "when": "false"
+        },
+        {
+          "command": "logiclens.closeBookmarkThread",
+          "when": "false"
+        },
+        {
+          "command": "logiclens.clearAllBookmarks",
+          "when": "logiclens.hasBookmarks"
         }
       ],
       "comments/commentThread/title": [
@@ -412,6 +507,21 @@
           "command": "logiclens.followFromStep",
           "when": "commentController == logiclens && commentThread == step",
           "group": "inline@2"
+        },
+        {
+          "command": "logiclens.bookmarkStep",
+          "when": "commentController == logiclens && commentThread == step",
+          "group": "inline@3"
+        },
+        {
+          "command": "logiclens.explainBookmark",
+          "when": "commentController == logiclens && commentThread == bookmark",
+          "group": "inline@1"
+        },
+        {
+          "command": "logiclens.closeBookmarkThread",
+          "when": "commentController == logiclens && commentThread == bookmark",
+          "group": "inline@2"
         }
       ],
       "editor/context": [
@@ -434,6 +544,11 @@
           "command": "logiclens.followDefinition",
           "when": "editorTextFocus",
           "group": "logiclens@3"
+        },
+        {
+          "command": "logiclens.addBookmark",
+          "when": "(resourceScheme == file || resourceScheme == untitled) && !logiclens.fileExcluded",
+          "group": "logiclens@4"
         }
       ],
       "comments/commentThread/context": [
@@ -458,6 +573,11 @@
           "command": "logiclens.deleteQuestionComment",
           "when": "commentController == logiclens && comment =~ /^(question|answer)$/",
           "group": "inline@3"
+        },
+        {
+          "command": "logiclens.bookmarkAnswer",
+          "when": "commentController == logiclens && comment == answer",
+          "group": "inline@3"
         }
       ],
       "explorer/context": [
@@ -465,6 +585,30 @@
           "command": "logiclens.explainFile",
           "when": "resourceScheme == file && !explorerResourceIsFolder && !listMultiSelection",
           "group": "logiclens@1"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "logiclens.clearAllBookmarks",
+          "when": "view == logiclens.bookmarks && logiclens.hasBookmarks",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "logiclens.editBookmarkNote",
+          "when": "view == logiclens.bookmarks && viewItem == bookmark",
+          "group": "inline@1"
+        },
+        {
+          "command": "logiclens.copyBookmarkMarkdown",
+          "when": "view == logiclens.bookmarks && viewItem == bookmark",
+          "group": "inline@2"
+        },
+        {
+          "command": "logiclens.removeBookmark",
+          "when": "view == logiclens.bookmarks && viewItem == bookmark",
+          "group": "inline@3"
         }
       ]
     },
@@ -687,6 +831,35 @@
         "key": "ctrl+alt+e ]",
         "mac": "cmd+alt+e ]",
         "when": "logiclens.trailCanGoForward"
+      },
+      {
+        "command": "logiclens.addBookmark",
+        "key": "ctrl+alt+e m",
+        "mac": "cmd+alt+e m",
+        "when": "editorTextFocus"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "logiclens",
+          "title": "LogicLens",
+          "icon": "media/logiclens.svg"
+        }
+      ]
+    },
+    "views": {
+      "logiclens": [
+        {
+          "id": "logiclens.bookmarks",
+          "name": "Bookmarks"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "logiclens.bookmarks",
+        "contents": "No bookmarks yet. Bookmark a walkthrough step from its title row, an answer from its menu, or select code and run:\n[Add Bookmark](command:logiclens.addBookmark)"
       }
     ]
   },

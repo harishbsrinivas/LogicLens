@@ -1,6 +1,6 @@
 # S11. Bookmarks
 
-**Status:** Not started
+**Status:** In progress: implemented on `s11-bookmarks` (stacked on `s10-follow-across-files`); unit and integration tests pass. Exit check open: the demo script needs a person (window reload).
 **User value:** save a step, an answer, or a code range with a note, and come back to it later with its explanation, even after the walkthrough changed.
 **Spec:** §14, §2 J8, §8 (local storage), §9
 
@@ -20,12 +20,12 @@ Out: export (post-MVP), sync across machines, sharing.
 
 ## Tasks
 
-- [ ] Store unit tests: add, edit, remove, cap, corrupt file recovery, atomic write.
-- [ ] Re-anchoring tests reused from S8 against bookmark fixtures, plus withheld-line hash matching.
-- [ ] Tree data provider with unit tests for grouping and labels.
-- [ ] Message bridge additions (arch §6): `bookmarkStep`, `showBookmark`, `explainAgain`.
-- [ ] Integration tests: bookmark survives Clear Cache and `logiclens.cache.enabled = false`; Clear All Bookmarks removes the file; excluded file refused; no provider request on any bookmark action except **Explain again**.
-- [ ] Update arch §3, §6, §7 with anything that changed.
+- [x] Store unit tests: add, edit, remove, cap, corrupt file recovery, atomic write.
+- [x] Re-anchoring tests reused from S8 (`state/reanchor.ts`, including withheld-line hash matching); integration test for live tracking and deleted lines.
+- [x] Tree data provider; labels and Markdown copy unit tested, grouping covered by the integration tests.
+- [x] ~~Message bridge additions~~ (no webview since ADR-0028): commands `bookmarkStep`, `showBookmark`, `explainBookmark`.
+- [x] Integration tests: bookmark survives Clear Cache and `logiclens.cache.enabled = false`; Clear All Bookmarks removes the file; excluded file refused; no provider request on any bookmark action except **Explain again**.
+- [x] Update arch §3, §6, §7 with anything that changed.
 
 ## Demo script
 
@@ -36,8 +36,13 @@ Out: export (post-MVP), sync across machines, sharing.
 5. Run Clear Cache, reload the window, select "retry rule": lines highlighted, saved explanation shown.
 6. Delete the bookmarked lines in the editor, reload: the bookmark shows "code changed" and keeps its text.
 
+## Progress notes
+
+- 2026-11-01: codicons have no filled bookmark, so a bookmarked step's row reads "Bookmarked" (spec §14 updated).
+- Code bookmarks run the secret scan on their lines when created, so a possible secret is stored as a hash even without a walkthrough.
+
 ## Exit check
 
 - [ ] Demo script passes.
 - [ ] Bookmarks file appears only under VS Code's extension storage, never in the workspace.
-- [ ] All tests green.
+- [x] All tests green (local: unit and integration, VS Code 1.90.0, Linux).

@@ -43,6 +43,12 @@ Names here are the contract for `package.json`. Add new ones here first.
 | `logiclens.trailForward` | LogicLens: Trail Forward | Palette, trail CodeLens, keybinding |
 | `logiclens.clearTrail` | LogicLens: Clear Trail | Palette, trail list |
 | `logiclens.addBookmark` | LogicLens: Add Bookmark | Palette, editor context, step and comment menus, keybinding |
+| `logiclens.bookmarkStep` | LogicLens: Bookmark Step | Step title CodeLens, step thread title (hidden from the palette) |
+| `logiclens.bookmarkAnswer` | LogicLens: Bookmark Answer | Answer comment title (hidden from the palette) |
+| `logiclens.showBookmark` | LogicLens: Show Bookmark | Bookmarks view items (hidden from the palette) |
+| `logiclens.copyBookmarkMarkdown` | LogicLens: Copy as Markdown | Bookmarks view |
+| `logiclens.explainBookmark` | LogicLens: Explain Again | Bookmarked explanation thread title (hidden from the palette) |
+| `logiclens.closeBookmarkThread` | LogicLens: Close | Bookmarked explanation thread title (hidden from the palette) |
 | `logiclens.editBookmarkNote` | LogicLens: Edit Bookmark Note | Bookmarks view |
 | `logiclens.removeBookmark` | LogicLens: Remove Bookmark | Bookmarks view |
 | `logiclens.clearAllBookmarks` | LogicLens: Clear All Bookmarks | Bookmarks view toolbar, palette |

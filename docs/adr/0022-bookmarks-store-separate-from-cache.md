@@ -1,6 +1,6 @@
 # ADR-0022: Bookmarks in extension storage, separate from the cache
 
-- **Status:** Proposed (S11)
+- **Status:** Accepted (implemented in S11)
 - **Date:** 2026-11-01
 - **Deciders:** Project owner
 - **Source:** spec §14; arch §7

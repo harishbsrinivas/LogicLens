@@ -69,6 +69,20 @@ export interface TestApi {
     restore(doc: vscode.TextDocument): Promise<boolean>;
   };
   dropState(uri: vscode.Uri): void;
+  bookmarks: {
+    list(): readonly {
+      id: string;
+      kind: string;
+      uri: string;
+      ranges: { start: number; end: number }[];
+      lines: string[][];
+      title: string;
+      markdown: string;
+      note: string;
+      changed: boolean;
+    }[];
+    clear(): Promise<void>;
+  };
   follow: {
     trail: {
       size: number;

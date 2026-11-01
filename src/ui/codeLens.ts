@@ -11,9 +11,19 @@ export class StepCodeLens implements vscode.CodeLensProvider, vscode.Disposable 
 
   readonly onDidChangeCodeLenses = this.changed.event;
 
-  constructor(private readonly session: SessionStore) {
+  constructor(
+    private readonly session: SessionStore,
+    /** The bookmark id of a step, if it is bookmarked (S11). */
+    private readonly bookmarkOf: (key: string, start: number) => string | undefined = () =>
+      undefined,
+  ) {
     // Structural changes only (new step, focus, status); streamed text does not move lenses.
     this.subscription = session.onDidChange(() => this.changed.fire());
+  }
+
+  /** Bookmarks changed: the bookmark lens on step rows changes with them. */
+  refresh(): void {
+    this.changed.fire();
   }
 
   provideCodeLenses(document: vscode.TextDocument): vscode.CodeLens[] {
@@ -38,6 +48,25 @@ export class StepCodeLens implements vscode.CodeLensProvider, vscode.Disposable 
           command: 'logiclens.focusStep',
           arguments: [key, step.index],
         }),
+      );
+      const bookmark = this.bookmarkOf(key, first.start);
+      lenses.push(
+        new vscode.CodeLens(
+          range,
+          bookmark
+            ? {
+                title: '$(bookmark) Bookmarked',
+                tooltip: 'Show the bookmark',
+                command: 'logiclens.showBookmark',
+                arguments: [bookmark],
+              }
+            : {
+                title: '$(bookmark) Bookmark',
+                tooltip: 'Bookmark this step',
+                command: 'logiclens.bookmarkStep',
+                arguments: [key, step.index],
+              },
+        ),
       );
       const prev = steps[i - 1];
       if (prev) {

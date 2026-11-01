@@ -37,7 +37,7 @@ logiclens/
 │  ├─ cache/               # store.ts (files, index, LRU), restore.ts (pure: build and re-anchor),
 │  │                       #   sync.ts (save after changes, restore on open) (S8)
 │  ├─ nav/                 # trail.ts (pure model), follow.ts (follow and trail navigation) (S10, ADR-0021)
-│  ├─ bookmarks/           # bookmark store and service (S11, ADR-0022)
+│  ├─ bookmarks/           # store.ts (bookmarks.json), service.ts (tracking, re-anchoring) (S11, ADR-0022)
 │  ├─ ui/
 │  │  ├─ inlineThreads.ts  # inline explanation threads (ADR-0028) on the shared CommentController
 │  │  ├─ questionThreads.ts# question threads, commenting ranges, edit tracking (S4)
@@ -49,10 +49,10 @@ logiclens/
 │  │  ├─ decorations.ts    # step highlight, dimming, gutter numbers
 │  │  ├─ codeLens.ts       # step title rows, trail breadcrumbs, opt-in "Explain"
 │  │  ├─ stepContext.ts    # context keys, follow-cursor focus, stale marking
-│  │  ├─ bookmarksView.ts  # TreeDataProvider for logiclens.bookmarks
+│  │  ├─ bookmarksView.ts  # Bookmarks tree, gutter icons, bookmarked explanation threads (S11)
 │  │  ├─ providerPicker.ts # pure: provider and model picker entries (S5)
 │  │  └─ statusBar.ts      # provider and model, busy, no-provider warning (S5)
-│  └─ util/                # logging (redacting), cancellation, ranges, hashing
+│  └─ util/                # log.ts (redacting logger), id.ts
 ├─ test/
 │  ├─ unit/                # vitest: protocol, anchor, context, guard, prompts
 │  ├─ integration/         # @vscode/test-electron: commands, UI, fake provider
