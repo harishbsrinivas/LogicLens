@@ -16,4 +16,4 @@ Provide `anthropic`, `openai`, and `ollama` adapters using streaming HTTP. Keys 
 - Vendor SDK packages: larger bundle; plain `fetch` with an SSE reader is enough.
 
 ## Consequences
-- Clarity holds credentials for these two providers and must never log or expose them (SECURITY.md §2).
+- LogicLens holds credentials for these two providers and must never log or expose them (SECURITY.md §2).

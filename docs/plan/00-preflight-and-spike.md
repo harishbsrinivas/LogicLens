@@ -7,7 +7,7 @@
 
 ### Repository skeleton
 - [x] `git init`; `.gitignore` (node_modules, dist, `*.vsix`, `.vscode-test`, `.env*`), `.gitleaks.toml`, `.npmrc`, `pnpm-workspace.yaml`.
-- [x] `package.json` manifest with name, publisher placeholder, engine placeholder, one command `clarity.hello` that shows a notification.
+- [x] `package.json` manifest with name, publisher placeholder, engine placeholder, one command `logiclens.hello` that shows a notification.
 - [x] esbuild bundle for the host; Vite for an empty webview; `shared/` types folder.
 - [x] TypeScript strict configs for host, webview, shared; ESLint and Prettier.
 - [x] vitest with one test; `@vscode/test-cli` with one integration test that runs the hello command.
@@ -19,7 +19,7 @@
 - [ ] Work through the S0 checklist in arch §4: `vscode.lm` in VS Code and forks; Claude Code, Codex, Gemini, Kiro CLI headless flags, tools-off mode, auth errors, Windows behavior.
 - [ ] Ask one model for the line-tagged protocol (arch §5) on three sample files; check that every provider follows it closely enough to parse. Note failure modes for the parser tests.
 - [ ] Measure time to first token per provider on a 300-line file.
-- [ ] Check Marketplace and Open VSX for the name "Clarity" and pick a publisher ID.
+- [ ] Check Marketplace and Open VSX for the name "LogicLens" and pick a publisher ID.
 
 ### Decisions to close
 - [ ] ADR-0016 (Kiro path), ADR-0017 (engine version): move to Accepted or record why still open.

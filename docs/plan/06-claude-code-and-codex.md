@@ -1,7 +1,7 @@
 # S6. Claude Code and Codex
 
 **Status:** Not started
-**User value:** users who have Claude Code or the Codex CLI signed in can use them for walkthroughs and questions without Copilot and without giving Clarity an API key.
+**User value:** users who have Claude Code or the Codex CLI signed in can use them for walkthroughs and questions without Copilot and without giving LogicLens an API key.
 **Spec:** §6 (Claude Code, Codex rows)
 
 ## Scope
@@ -10,7 +10,7 @@ In:
 - `cli/spawn.ts` shared helper: argument arrays, `shell: false`, isolated cwd under global storage, minimal env, stdin prompt, line reader, stderr cap, timeout, output cap, kill tree on cancel, Windows `.cmd` shim handling.
 - `claude-code` adapter: invocation verified in S0; parse the stream format into text chunks and usage; map errors.
 - `codex` adapter: same.
-- Path settings `clarity.cli.claudePath`, `clarity.cli.codexPath` (machine scope) and `clarity.cli.timeoutSeconds`.
+- Path settings `logiclens.cli.claudePath`, `logiclens.cli.codexPath` (machine scope) and `logiclens.cli.timeoutSeconds`.
 - Detection via `--version`; "Needs sign-in" detection from the first failure if the CLI has no status command.
 - Setup view and picker entries with install links.
 - If a CLI cannot run with tools disabled, mark it "agentic", exclude from `auto`, and add to its data notice (ADR-0005).

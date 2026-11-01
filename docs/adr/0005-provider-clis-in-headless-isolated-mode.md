@@ -6,7 +6,7 @@
 - **Source:** spec §6; arch §4, §8
 
 ## Context
-Claude Code, Codex, Gemini CLI, and possibly Kiro offer non-interactive modes that use the user's existing sign-in. They are agents: by default they can read files, edit files, and run commands. Clarity needs only text generation.
+Claude Code, Codex, Gemini CLI, and possibly Kiro offer non-interactive modes that use the user's existing sign-in. They are agents: by default they can read files, edit files, and run commands. LogicLens needs only text generation.
 
 ## Decision
 Spawn each CLI with an argument array and `shell: false`; send the prompt on stdin; request a streaming machine-readable output format; disable tools or use the most restrictive permission and sandbox mode; run in an empty directory under the extension's global storage with a minimal environment; enforce timeout, output cap, and kill on cancel. A CLI that cannot be restricted is labeled "agentic", excluded from `auto`, and disclosed in its data notice.
@@ -17,6 +17,6 @@ Spawn each CLI with an argument array and `shell: false`; send the prompt on std
 - Use vendor SDKs directly: requires API keys, losing the subscription sign-in users already have.
 
 ## Consequences
-- Answers use only the context Clarity sends.
+- Answers use only the context LogicLens sends.
 - Each CLI's flags are verified in S0 and pinned in arch §4; adapter tests use recorded output to catch format changes.
 - S0 evidence so far: Claude Code (2.1.312) runs headless with all tools and MCP servers off in an empty directory, confirmed by its init line (`tools: []`, `mcp_servers: []`); invocation in arch §4. Codex, Gemini CLI, and Kiro are still unverified, so this stays Proposed.

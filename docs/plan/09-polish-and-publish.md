@@ -1,7 +1,7 @@
 # S9. Polish and Publish
 
 **Status:** Not started
-**User value:** anyone can install Clarity from the VS Code Marketplace or Open VSX, get oriented in a minute, and trust what it does with their code.
+**User value:** anyone can install LogicLens from the VS Code Marketplace or Open VSX, get oriented in a minute, and trust what it does with their code.
 **Spec:** §7 (full visual and accessibility pass), §12 (quality checks and MVP exit criteria), §11
 
 ## Scope
@@ -16,7 +16,8 @@ In:
 - Performance: activation time, VSIX size, time to first overview.
 - README with screenshots and GIF, privacy section (what is sent, where), provider setup guide, troubleshooting (including the multiple-commenting-provider picker).
 - `CHANGELOG.md`, `LICENSE`, `SECURITY.md` contact set, Marketplace icon and gallery banner.
-- Resolve name and publisher (ADR-0018).
+- Register the publisher ID and run the formal trademark search (ADR-0018).
+- Legal review of `TERMS.md`; link it from the README and Marketplace listing (ADR-0024).
 - CI publish job to Marketplace and Open VSX on tag, using environment-protected secrets.
 - Manual matrix: VS Code stable and Insiders on Windows, macOS, Linux; Cursor and Kiro smoke tests.
 
@@ -25,7 +26,7 @@ In:
 - [ ] Accessibility audit with NVDA or VoiceOver; fix findings.
 - [ ] Theme screenshots for light, dark, high contrast; fix findings.
 - [ ] Eval: all 30–40 files, default provider; human review of 20.
-- [ ] Publish dry run: `vsce package`, install the VSIX on a clean profile, run the full demo of S1 to S8.
+- [ ] Publish dry run: `vsce package`, install the VSIX on a clean profile, run the full demo of S1 to S8, S10, and S11.
 - [ ] Tag `v0.1.0` (pre-release channel), then `v1.0.0` when exit criteria hold.
 
 ## Exit check

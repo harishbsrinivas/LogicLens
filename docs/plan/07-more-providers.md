@@ -13,7 +13,7 @@ In:
 - `anthropic` adapter: key in `SecretStorage`, optional base URL (machine scope), model list, streaming, usage, error mapping.
 - `openai` adapter: same; API flavor decided here (arch §10, open decision 6).
 - `ollama` adapter: `/api/tags` detection, `/api/chat` streaming; notice skipped for localhost.
-- `clarity.setApiKey` command with validation call; delete key action.
+- `logiclens.setApiKey` command with validation call; delete key action.
 - `gemini-cli` adapter on the S6 spawn helper.
 - `kiro` adapter per ADR-0016 outcome: either confirm that the `vscode-lm` adapter covers Kiro inside the Kiro IDE (then this is a compatibility test only) or add a CLI adapter. If neither works, record that and drop Kiro from MVP scope in spec §6 and §11.
 

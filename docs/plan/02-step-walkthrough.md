@@ -12,7 +12,7 @@ In:
 - State store for walkthroughs per document, focus state.
 - Panel: overview, step list with expand/collapse and "Show all", concepts chips (display only; click wired in S4), summary and things to watch, streaming progress line.
 - Decorations: focus highlight, dimming, gutter step numbers; reveal on focus.
-- Commands `clarity.nextStep`, `clarity.previousStep`, `clarity.clearFocus`; context keys; default keybindings.
+- Commands `logiclens.nextStep`, `logiclens.previousStep`, `logiclens.clearFocus`; context keys; default keybindings.
 - Follow-cursor mode.
 - Panel follows the active editor (shows that document's walkthrough or the empty state).
 - Partial-failure handling: keep finished steps, **Continue** for truncated output, plain-Markdown fallback when not parseable.

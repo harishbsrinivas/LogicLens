@@ -1,8 +1,12 @@
-# Clarity
+# LogicLens
 
 A VS Code extension that walks you through code step by step and answers questions about any line. It uses the AI assistant you already have, such as GitHub Copilot (including the Claude and GPT models it offers), Claude Code, Codex, Gemini CLI, Kiro, or your own API key, instead of shipping its own model.
 
 **Status:** S0 skeleton: builds, tests, and packages; one placeholder command. No user features yet.
+
+## Terms of use
+
+Using LogicLens means accepting [TERMS.md](TERMS.md): it is provided as is and its developers are not liable for damage arising from its use; you are bound by your organization's IT and usage policies; and you must not use it with internal, confidential, highly confidential, eyes-only, or similarly classified code or documents. LogicLens asks you to accept these terms before it sends anything.
 
 ## Docs
 

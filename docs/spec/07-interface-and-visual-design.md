@@ -6,8 +6,9 @@ The interface should feel like part of VS Code: calm, legible, and fast. Eleganc
 
 | Surface | Used for | Why this surface |
 |---|---|---|
-| **Clarity panel** (webview view in the secondary side bar by default; movable) | Overview, steps, summary, provider menu, depth and audience controls | Sits beside the code so both are visible |
-| **Editor decorations** | Step highlight, dimming, step number in gutter | Keeps the eye on the code |
+| **LogicLens panel** (webview view in the secondary side bar by default; movable) | Overview, steps, summary, trail breadcrumbs, provider menu, depth, audience, and jargon controls | Sits beside the code so both are visible |
+| **Bookmarks view** (tree view in the LogicLens container) | Saved steps, answers, and code ranges (spec §14) | Native tree: keyboard, search, and screen reader support for free |
+| **Editor decorations** | Step highlight, dimming, step number, bookmark and withheld-line icons in gutter | Keeps the eye on the code |
 | **Comment threads** (Comments API) | Line questions and answers | Native inline UI users know from code review |
 | **Status bar item** | Current provider and model, busy indicator | Always visible, one click to switch |
 | **Quick picks** | Provider and model choice, depth and audience | Native, keyboard first |
@@ -20,6 +21,7 @@ No custom editors and no modal dialogs except the one-time data notice.
 ```
 ┌──────────────────────────────────────┐
 │ auth.ts                     ⟳  ⋯    │  header: file, refresh, menu
+│ ‹ › app.ts › handleRequest › auth.ts │  trail breadcrumbs (spec §13)
 │ Standard ▾  Practitioner ▾  Copilot ▾│  controls (compact chips)
 ├──────────────────────────────────────┤
 │ Handles sign-in and session refresh  │  overview
@@ -38,6 +40,7 @@ No custom editors and no modal dialogs except the one-time data notice.
 └──────────────────────────────────────┘
 ```
 
+- The breadcrumb row appears only when the trail has more than one entry. Jargon and, from S12, personality are in the `⋯` menu and as chips only when not at their defaults, to keep the header short.
 - One focused step is expanded; others show title and line range only. A "Show all" toggle expands every step for skimming.
 - A thin progress line under the header shows streaming progress; there is no spinner over content.
 - Empty state: file name, one line of copy, an **Explain this file** button, and the current provider.

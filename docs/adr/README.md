@@ -1,6 +1,6 @@
 # Decision Log
 
-Architecture Decision Records (ADRs) for Clarity. One file per record: the context that forced it, what was chosen, what was rejected, and what follows from it.
+Architecture Decision Records (ADRs) for LogicLens. One file per record: the context that forced it, what was chosen, what was rejected, and what follows from it.
 
 Related: [../spec/README.md](../spec/README.md) (what the product does), [../architecture/README.md](../architecture/README.md) (how it is built), [../plan/README.md](../plan/README.md) (order of work), [../../SECURITY.md](../../SECURITY.md) (security rules).
 
@@ -42,7 +42,7 @@ What follows, good and bad.
 |---|---|---|---|
 | [0001](0001-record-architecture-decisions.md) | Record architecture decisions | Accepted | process, docs |
 | [0002](0002-explain-only-product-boundary.md) | Explain only; never edit or run code | Accepted | product, scope, security |
-| [0003](0003-bring-your-own-ai-no-backend.md) | Bring your own AI; no Clarity backend | Accepted | product, providers, privacy |
+| [0003](0003-bring-your-own-ai-no-backend.md) | Bring your own AI; no LogicLens backend | Accepted | product, providers, privacy |
 | [0004](0004-vscode-language-model-api-as-primary-provider.md) | VS Code Language Model API as the primary provider | Accepted | providers |
 | [0005](0005-provider-clis-in-headless-isolated-mode.md) | Provider CLIs headless, tools disabled, isolated directory | Proposed (S0; Claude Code verified) | providers, cli, security |
 | [0006](0006-direct-http-adapters-with-secret-storage.md) | Direct HTTP adapters with keys in SecretStorage | Accepted | providers, http, security |
@@ -57,5 +57,10 @@ What follows, good and bad.
 | [0015](0015-thin-vertical-slices.md) | Deliver in thin vertical slices | Accepted | process |
 | [0016](0016-kiro-integration-path.md) | Kiro integration path | Open (S0) | providers |
 | [0017](0017-minimum-vscode-engine-version.md) | Minimum VS Code engine version | Proposed (S0, `^1.90.0`) | stack, release |
-| [0018](0018-product-name-and-publisher.md) | Product name and publisher ID | Open (before S9) | product, release |
+| [0018](0018-product-name-and-publisher.md) | Product name and publisher ID: LogicLens | Accepted (name); publisher ID before S9 | product, release |
 | [0019](0019-local-cache-with-text-reanchoring.md) | Local cache with text-based re-anchoring | Accepted | cache, state, privacy |
+| [0020](0020-deterministic-secret-scan-withhold-or-refuse.md) | Deterministic local secret scan; withhold lines or refuse, never send | Accepted | security, privacy |
+| [0021](0021-navigation-trail-via-explicit-follow.md) | Navigation trail built from an explicit Follow command | Proposed (S10) | ui, state |
+| [0022](0022-bookmarks-store-separate-from-cache.md) | Bookmarks in extension storage, separate from the cache | Proposed (S11) | state, ui, privacy |
+| [0023](0023-bundled-tone-only-personality-packs.md) | Bundled, tone-only personality packs | Proposed (S12) | prompts, product |
+| [0024](0024-terms-of-use-acceptance-gate.md) | Terms of use accepted before the first request | Accepted | product, privacy, security |

@@ -13,12 +13,12 @@ These rules are encoded in the prompt templates (arch §5) and checked by the ev
 
 ## Output contract
 
-The model is asked for a structured walkthrough (arch §5 defines the schema). Clarity validates each piece as it arrives:
+The model is asked for a structured walkthrough (arch §5 defines the schema). LogicLens validates each piece as it arrives:
 
 - Line ranges must fall inside the target; out-of-range values are clamped if close (within 2 lines) and otherwise marked unanchored.
 - Steps with an empty title or empty explanation are dropped.
 - Unknown fields are ignored.
-- If the response is not parseable as structured output at all, Clarity shows it as Markdown with a notice ("Shown as plain text: the model did not return steps") and offers **Retry**.
+- If the response is not parseable as structured output at all, LogicLens shows it as Markdown with a notice ("Shown as plain text: the model did not return steps") and offers **Retry**.
 
 ## Evaluation set
 
@@ -31,13 +31,13 @@ Targets for MVP exit are in spec §12.
 
 ## Caching and staleness
 
-- A walkthrough is cached by document URI with a hash of the target text, provider, model, depth, audience, and explanation language.
+- A walkthrough is cached by document URI with a hash of the target text, provider, model, depth, audience, jargon, personality, and explanation language.
 - Reopening an unchanged file shows the cached walkthrough instantly, labeled with when and by which model it was made.
 - **When the file changes:**
   - Step ranges move with edits while the walkthrough is open (tracked like decorations).
   - A step whose lines were edited is marked **changed**; its text is kept but dimmed with a "code changed since this was written" note.
   - The walkthrough header shows **Stale** if any step changed, with **Refresh** (full) and **Refresh changed steps** (sends the changed steps' current code plus the overview).
-- On reopen after outside changes (git pull, another editor), Clarity re-anchors steps by matching their original text; steps that cannot be found are marked changed.
+- On reopen after outside changes (git pull, another editor), LogicLens re-anchors steps by matching their original text; steps that cannot be found are marked changed.
 - The cache holds the last walkthrough per document per settings combination and is capped at 50 MB per workspace, evicting least recently used.
 
 ## Failure handling
@@ -52,3 +52,4 @@ Targets for MVP exit are in spec §12.
 | Response not structured | Plain Markdown fallback with notice |
 | File too large | Offer selection, visible range, or symbol (spec §3) |
 | Excluded or secret file | Refuse with link to settings (spec §8) |
+| Possible secrets in content | Withhold flagged lines, or refuse under `refuse-file` or above 25% withheld (spec §8) |

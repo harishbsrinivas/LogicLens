@@ -13,7 +13,8 @@
 
 ## MVP exit criteria
 
-- J1 to J6 (spec §2) work with VS Code Language Models, Claude Code, and Codex at minimum; other providers work for J1 and J3.
+- J1 to J8 (spec §2) work with VS Code Language Models, Claude Code, and Codex at minimum; other providers work for J1 and J3.
+- Secret scan fixtures: every known-format fixture is withheld, and the false-positive fixture set of normal code flags no more than 1 line in 1,000.
 - Structural targets on the evaluation set with the default provider: parse rate ≥ 95%, anchor rate ≥ 90%, coverage ≥ 80% at `standard` depth.
 - Human review average ≥ 4.0 for correctness and ≥ 4.0 for clarity on a 20-file sample.
 - First overview text visible within 5 seconds median on the smoke set with the default provider (excludes provider cold start for CLIs, reported separately).

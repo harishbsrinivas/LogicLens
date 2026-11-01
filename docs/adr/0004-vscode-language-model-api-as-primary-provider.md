@@ -16,6 +16,6 @@ Build the first slice on `vscode.lm` and make it the first choice for `auto`. Fe
 - Start with an HTTP adapter: needs the user to paste a key, worse first-run experience.
 
 ## Consequences
-- No credentials held by Clarity for the most common path.
+- No credentials held by LogicLens for the most common path.
 - Behavior in forks (Cursor, Kiro, Windsurf) is unknown until the S0 spike.
-- Consent prompts come from VS Code; Clarity shows its own data notice first.
+- Consent prompts come from VS Code; LogicLens shows its own data notice first.

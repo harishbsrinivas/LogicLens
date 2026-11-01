@@ -13,7 +13,7 @@ Store walkthroughs and threads as JSON in VS Code's per-workspace extension stor
 
 ## Alternatives considered
 - No cache: simplest, but slow and wasteful.
-- Store in the workspace (for example `.clarity/`): risks committing code excerpts and model output to git.
+- Store in the workspace (for example `.logiclens/`): risks committing code excerpts and model output to git.
 - Re-anchor with git diffs: needs git and fails for untracked files.
 
 ## Consequences

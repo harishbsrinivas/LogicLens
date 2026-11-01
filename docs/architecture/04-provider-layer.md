@@ -5,7 +5,7 @@
 Described in prose; signatures are fixed in `src/providers/types.ts` during S1.
 
 - **`Provider`**
-  - `id` (matches `clarity.provider` enum), `label`, `kind` (`vscode-lm`, `cli`, `http`)
+  - `id` (matches `logiclens.provider` enum), `label`, `kind` (`vscode-lm`, `cli`, `http`)
   - `detect()`: returns `ProviderState` (`ready`, `needs-sign-in`, `not-installed`, `unavailable` with reason) and the list of models if cheap to get. Must not send user code.
   - `listModels()`: model IDs and display names.
   - `stream(request, token)`: async iterable of chunks: `{ type: 'text', text }`, then a final `{ type: 'done', usage? }`, or throws a `ProviderError` with a category (`auth`, `quota`, `rate-limit`, `timeout`, `not-found`, `cancelled`, `bad-response`, `unknown`) and a user-facing message.
@@ -38,7 +38,7 @@ Shared helper `cli/spawn.ts`:
 - `isolatedDir` is an empty folder under the extension's global storage, so the CLI does not load project instruction files or index the repo, and has nothing to modify (ADR-0005).
 - Prompt written to stdin, then stdin closed.
 - stdout parsed line by line by the adapter (most CLIs offer a JSON-lines stream mode; text deltas are extracted from it). stderr collected, capped at 64 KB, used for error messages.
-- Timeout from `clarity.cli.timeoutSeconds`; cancel kills the process tree.
+- Timeout from `logiclens.cli.timeoutSeconds`; cancel kills the process tree.
 - Output cap of 1 MB per request.
 - `detect()` runs `<binary> --version` only.
 
@@ -57,15 +57,15 @@ If a CLI cannot be run with tools disabled, its adapter is marked "agentic" in t
 
 Shared helper `http/sse.ts` reads server-sent events from `fetch` (Node 20+ global fetch in the extension host).
 
-- `anthropic`: Messages API, streaming. Key from `SecretStorage` key `clarity.anthropic.apiKey`. Base URL override from `clarity.anthropic.baseUrl` (machine scope). Model list from the Models API, with the user able to type an ID.
-- `openai`: Responses or Chat Completions API, streaming (pick one in S7; both are widely supported by compatible gateways, Chat Completions more so). Key `clarity.openai.apiKey`.
+- `anthropic`: Messages API, streaming. Key from `SecretStorage` key `logiclens.anthropic.apiKey`. Base URL override from `logiclens.anthropic.baseUrl` (machine scope). Model list from the Models API, with the user able to type an ID.
+- `openai`: Responses or Chat Completions API, streaming (pick one in S7; both are widely supported by compatible gateways, Chat Completions more so). Key `logiclens.openai.apiKey`.
 - `ollama`: `/api/chat` streaming NDJSON; `/api/tags` for models and detection.
 - Never log request bodies or headers outside debug mode; always redact keys.
 
 ## Adding a provider
 
 1. Add the adapter under `providers/`, implement the interface, add unit tests with recorded fixture streams.
-2. Add the enum value to `clarity.provider` in spec §9 and `package.json`.
+2. Add the enum value to `logiclens.provider` in spec §9 and `package.json`.
 3. Add a row to spec §6 and to the table above.
 4. Add an ADR if the provider changes where code goes in a new way (for example a new cloud).
 

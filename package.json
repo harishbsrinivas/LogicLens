@@ -1,9 +1,9 @@
 {
-  "name": "clarity",
-  "displayName": "Clarity",
+  "name": "logiclens",
+  "displayName": "LogicLens",
   "description": "Step-by-step code walkthroughs and line questions using the AI you already have.",
   "version": "0.0.1",
-  "publisher": "clarity-dev",
+  "publisher": "logiclens-dev",
   "private": true,
   "license": "UNLICENSED",
   "engines": {
@@ -18,9 +18,9 @@
   "contributes": {
     "commands": [
       {
-        "command": "clarity.hello",
+        "command": "logiclens.hello",
         "title": "Hello",
-        "category": "Clarity"
+        "category": "LogicLens"
       }
     ]
   },

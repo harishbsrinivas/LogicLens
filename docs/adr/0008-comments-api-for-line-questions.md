@@ -19,4 +19,4 @@ Register a `CommentController` with commenting ranges covering every line of eli
 ## Consequences
 - Native look, keyboard support, and collapse behavior come for free.
 - If another extension provides commenting ranges, VS Code shows a picker when clicking "+". Documented.
-- The "+" appears only after Clarity activates (arch §10, decision 4).
+- The "+" appears only after LogicLens activates (arch §10, decision 4).

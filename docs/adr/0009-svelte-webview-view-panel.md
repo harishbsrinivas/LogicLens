@@ -9,7 +9,7 @@
 The walkthrough needs a rich, streaming, accessible list beside the editor. Tree views cannot render Markdown bodies. The Microsoft Webview UI Toolkit is deprecated. The project owner already uses Svelte.
 
 ## Decision
-One `WebviewView` in a Clarity view container, preferring the secondary side bar. UI written in Svelte 5, built by Vite into one JS and one CSS file. Styling only from `--vscode-*` variables and codicons. Markdown rendered with HTML disabled, then sanitized.
+One `WebviewView` in a LogicLens view container, preferring the secondary side bar. UI written in Svelte 5, built by Vite into one JS and one CSS file. Styling only from `--vscode-*` variables and codicons. Markdown rendered with HTML disabled, then sanitized.
 
 ## Alternatives considered
 - Plain DOM code: no dependency, but streaming list updates and keyboard handling get messy.

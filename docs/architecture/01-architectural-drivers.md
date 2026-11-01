@@ -2,7 +2,7 @@
 
 | Driver (source) | Consequence |
 |---|---|
-| No backend, no model, bring your own AI (spec §1, §6; ADR-0003) | All logic runs in the VS Code extension host. A provider abstraction hides how each AI tool is reached. No Clarity-owned network endpoints. |
+| No backend, no model, bring your own AI (spec §1, §6; ADR-0003) | All logic runs in the VS Code extension host. A provider abstraction hides how each AI tool is reached. No LogicLens-owned network endpoints. |
 | Many heterogeneous providers: in-editor API, CLIs, HTTP (spec §6) | One small `Provider` interface that takes a prompt and yields text chunks. Anything provider-specific (flags, auth, JSON envelopes) stays inside its adapter (arch §4). |
 | Providers differ in structured-output support (spec §10) | The walkthrough format must work with plain streamed text from any model. Use a line-tagged text protocol, not JSON mode or tool calls (ADR-0007). |
 | Steps must stream and anchor to lines (spec §4) | Prompts number every line with its absolute file line number (ADR-0010). An incremental parser emits overview, step headers, and text deltas as they arrive. |

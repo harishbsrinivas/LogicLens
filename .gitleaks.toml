@@ -1,4 +1,4 @@
-title = "clarity gitleaks config"
+title = "logiclens gitleaks config"
 
 [extend]
 useDefault = true

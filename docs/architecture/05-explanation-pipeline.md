@@ -3,7 +3,7 @@
 ```
 command ─► resolve target ─► RequestGate ─► build context ─► render prompt ─► provider.stream
                                  │                                                   │
-                     trust · exclude · notice                         text chunks    ▼
+              terms · trust · exclude · notice                         text chunks    ▼
                      secret scan · size                       protocol parser (incremental)
                                                                         │ events
                                                                         ▼
@@ -16,20 +16,22 @@ From the command arguments: document URI plus optional range (selection, symbol,
 
 ## 2. RequestGate
 
-Single entry point for any provider call (arch §8). In order: workspace trusted, file not excluded, size within limits (spec §3), data notice acknowledged for this provider, secret scan passed or the user chose mask or send. Fails closed with a user-facing reason.
+Single entry point for any provider call (arch §8). In order: current terms of use accepted (ADR-0024), workspace trusted, file not excluded, size within limits (spec §3), data notice acknowledged for this provider, secret scan (ADR-0020). The scan runs on the built context (step 3) before it leaves the gate: it either returns the text with flagged lines withheld, or refuses. Fails closed with a user-facing reason.
 
 ## 3. Build context
 
 - Every line is prefixed with its absolute 1-based line number and a separator, for example `  42│ const x = 1;` (ADR-0010). Numbers are padded to equal width.
 - For a selection, symbol, or line target, the target lines are wrapped in `<<<TARGET` / `TARGET>>>` marker lines, and surrounding file context is included with its own numbers.
 - **Budget:** context is sized to the model's input limit when known (`countTokens` for `vscode-lm`, provider docs otherwise), capped at 24k input tokens by default. When over budget: keep the target whole, then the enclosing symbol, then nearest lines outward, with `… lines 120–380 omitted …` markers.
-- Header block: workspace-relative path, language ID, depth, audience, explanation language.
+- Withheld lines (secret scan) keep their number: `  42│ «line withheld by LogicLens: possible secret»`. The header lists withheld line numbers.
+- Header block: workspace-relative path, language ID, depth, audience, jargon, explanation language, withheld lines.
 
 ## 4. Prompt templates
 
 Kept in `src/prompts/` as functions returning strings, each with a version constant included in the cache key.
 
-- `walkthrough.system`: role, the quality rules from spec §10, the output protocol below with a short example, depth and audience instructions, "explain, do not rewrite".
+- `walkthrough.system`: role, the quality rules from spec §10, the output protocol below with a short example, depth, audience, and jargon instructions, "explain, do not rewrite", "do not guess the content of withheld lines".
+- Personality fragment (S12, ADR-0023): appended last, after a fixed precedence line stating that protocol, ranges, facts, audience, and jargon override voice. `none` adds nothing.
 - `question.system`: same rules, answer about the anchored lines, use `L<n>` for line references, may answer in free Markdown.
 - `refreshSteps.system`: given the overview and changed steps' current code, rewrite only those steps.
 

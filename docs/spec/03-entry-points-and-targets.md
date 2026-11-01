@@ -16,18 +16,18 @@ Any text document VS Code can open is a valid target, including unsaved and unti
 ## Entry points
 
 ### From the editor
-- **Editor title bar button** (Clarity icon): explains the file, or the selection if one exists.
+- **Editor title bar button** (LogicLens icon): explains the file, or the selection if one exists.
 - **Editor context menu:** "Explain File", "Explain Selection" (when a selection exists), "Ask About This Line".
 - **Command palette:** every command in spec §9.
 - **Keybindings:** defaults in spec §9.
-- **CodeLens** above functions and classes: "Explain". Off by default; enabled by `clarity.codeLens.enabled`. Uses the language's document symbol provider, so it works for any language with one.
+- **CodeLens** above functions and classes: "Explain". Off by default; enabled by `logiclens.codeLens.enabled`. Uses the language's document symbol provider, so it works for any language with one.
 - **Gutter "+"** on hover: opens a question thread at that line (Comments API, spec §5).
 
 ### From the Explorer
-- **Explorer context menu** on a file: "Clarity: Explain File". Opens the file in an editor (preview tab) and starts the walkthrough.
+- **Explorer context menu** on a file: "LogicLens: Explain File". Opens the file in an editor (preview tab) and starts the walkthrough.
 - Multi-select or folders: the menu item is hidden in the MVP. Folder overviews are a post-MVP candidate (spec §11).
 
-### From the Clarity panel
+### From the LogicLens panel
 - **Explain current file** button in the empty state.
 - **Ask** on any step (spec §5, J4).
 - **Refresh** on a stale or failed walkthrough.
@@ -40,6 +40,6 @@ Any text document VS Code can open is a valid target, including unsaved and unti
 
 ## Limits
 
-- Files over `clarity.maxLines` (default 2,000) or 200 KB are not sent whole. Clarity offers to explain the visible range, the selection, or a chosen symbol instead.
+- Files over `logiclens.maxLines` (default 2,000) or 200 KB are not sent whole. LogicLens offers to explain the visible range, the selection, or a chosen symbol instead.
 - Minified or generated files (one line over 1,000 characters, or a header such as `@generated`) get a warning before sending.
 - Notebooks (`.ipynb`) are out of scope for the MVP; the commands are disabled for notebook cells.

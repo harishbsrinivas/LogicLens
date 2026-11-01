@@ -8,11 +8,11 @@
 
 In:
 - Provider registry with parallel detection, states, caching, change events (arch §4).
-- `clarity.provider` and `clarity.model` settings with `auto` resolution.
+- `logiclens.provider` and `logiclens.model` settings with `auto` resolution.
 - Status bar item with provider and model; click opens the picker.
-- Provider and model quick picks (`clarity.selectProvider`, `clarity.selectModel`) grouped by state, with inline actions.
+- Provider and model quick picks (`logiclens.selectProvider`, `logiclens.selectModel`) grouped by state, with inline actions.
 - Panel setup view when no provider is ready.
-- Per-provider data notice and `clarity.resetDataNotices`.
+- Per-provider data notice and `logiclens.resetDataNotices`.
 - Panel header provider menu: regenerate the current walkthrough with another provider.
 - Errors with a single fix action; no silent provider switch.
 - Only the `vscode-lm` adapter exists so far, but `vscode-lm` exposes one entry per vendor/model family, so users can already switch between, for example, Copilot's Claude and GPT models.

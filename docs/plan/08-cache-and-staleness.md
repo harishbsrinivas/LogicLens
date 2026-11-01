@@ -1,7 +1,7 @@
 # S8. Cache and Staleness
 
 **Status:** Not started
-**User value:** reopening a file shows its walkthrough instantly, without a new request. When the code changes, Clarity keeps what still applies, marks what changed, and refreshes only the changed steps on request.
+**User value:** reopening a file shows its walkthrough instantly, without a new request. When the code changes, LogicLens keeps what still applies, marks what changed, and refreshes only the changed steps on request.
 **Spec:** §10 (caching and staleness), §5 (thread lifetime), §2 J6
 
 ## Scope
@@ -13,7 +13,7 @@ In:
 - Persisted cache in workspace storage: write on completion, debounced; atomic writes; LRU cap; index file.
 - Re-anchoring on reopen by original text match.
 - Threads persisted and restored with their documents.
-- `clarity.cache.enabled`, `clarity.clearCache`.
+- `logiclens.cache.enabled`, `logiclens.clearCache`.
 - "Generated <time> by <provider/model>" label in the panel header.
 
 ## Tasks
@@ -30,7 +30,7 @@ In:
 2. Edit inside step 3; step 3 shows "code changed"; header shows Stale.
 3. Click **Refresh changed steps**; only step 3 is regenerated.
 4. `git pull` a change that moves a function down 20 lines; reopen; the step follows the moved code.
-5. Turn off `clarity.cache.enabled`; reload; nothing is restored.
+5. Turn off `logiclens.cache.enabled`; reload; nothing is restored.
 
 ## Exit check
 

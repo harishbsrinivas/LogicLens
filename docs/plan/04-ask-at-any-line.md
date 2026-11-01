@@ -8,7 +8,7 @@
 
 In:
 - `CommentController` with commenting ranges on all lines of eligible documents (trusted, not excluded, `file` or `untitled`).
-- Thread creation from the gutter "+", from `clarity.askAtLine` (cursor or selection), from a step's **Ask**, and from a concept chip (pre-filled).
+- Thread creation from the gutter "+", from `logiclens.askAtLine` (cursor or selection), from a step's **Ask**, and from a concept chip (pre-filled).
 - Question pipeline (arch §5 step 8): context per spec §5, related step, thread history with budget.
 - Streaming answer into a Markdown comment, throttled; Stop; copy, regenerate, delete.
 - `L<n>` references rendered as links that move the cursor.
@@ -31,7 +31,7 @@ Out: persistence across reloads (S8).
 ## Demo script
 
 1. In a Go file, hover line 42 and click "+". Type "why is this goroutine not leaking?" and press Enter.
-2. Answer streams under the line with "Clarity · Copilot/<model>".
+2. Answer streams under the line with "LogicLens · Copilot/<model>".
 3. Ask "what happens if ctx is cancelled first?" in the same thread; the answer uses the earlier turn.
 4. In the walkthrough, click **Ask** on step 2; a thread opens at its first line.
 5. Click a concept chip; a thread opens with the question pre-filled.

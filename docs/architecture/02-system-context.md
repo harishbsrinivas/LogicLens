@@ -5,9 +5,9 @@
                      │                                                                        │
    developer ───────►│  VS Code (or compatible editor)                                        │
                      │  ┌──────────────────────────────────────────────────────────────────┐  │
-                     │  │ Clarity extension host code                                     │  │
-                     │  │  commands · RequestGate · explain pipeline · providers · state  │  │
-                     │  └──────┬──────────────┬───────────────┬──────────────┬────────────┘  │
+                     │  │ LogicLens extension host code                                      │  │
+                     │  │  commands · RequestGate · explain pipeline · providers · state   │  │
+                     │  └──────┬──────────────┬───────────────┬──────────────┬─────────_───┘  │
                      │         │ postMessage  │ Comments API  │ vscode.lm    │ spawn (stdin)  │
                      │  ┌──────▼─────┐  ┌─────▼──────┐  ┌─────▼────────┐  ┌──▼────────────┐   │
                      │  │ Panel      │  │ Editor     │  │ Other ext.   │  │ claude/codex/ │   │
@@ -22,13 +22,13 @@
                                                        ┌──────▼──────────────▼───────┐   ┌──────────────────┐
                                                        │ Model vendors (GitHub,      │   │ Anthropic API /  │
                                                        │ Anthropic, OpenAI, Google,  │   │ OpenAI API       │◄── direct HTTPS
-                                                       │ AWS) via the user's tools   │   │ (user's API key) │    from Clarity
+                                                       │ AWS) via the user's tools   │   │ (user's API key) │    from LogicLens
                                                        └─────────────────────────────┘   └──────────────────┘
 ```
 
 ## External systems
 
-| System | Interface | Owned by | Clarity holds credentials? |
+| System | Interface | Owned by | LogicLens holds credentials? |
 |---|---|---|---|
 | VS Code Language Model API | `vscode.lm.selectChatModels`, `LanguageModelChat.sendRequest` | VS Code plus contributing extensions (Copilot, others) | No. VS Code and the contributing extension handle auth and consent. |
 | Claude Code CLI | Child process, stdin/stdout | Anthropic, installed by user | No. The CLI uses its own sign-in. |
@@ -40,4 +40,4 @@
 | Ollama | HTTP to localhost (configurable) | User | No. |
 | VS Code Marketplace, Open VSX | Publishing only, from CI | Microsoft, Eclipse Foundation | Publish tokens in CI secrets only. |
 
-Clarity makes no other network calls. The webview loads nothing remote.
+LogicLens makes no other network calls. The webview loads nothing remote.

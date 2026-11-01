@@ -15,10 +15,11 @@ Scope: a VS Code extension written in TypeScript, bundled with esbuild, with a w
 This is the main risk in this product. User code is sent to a third-party model.
 
 - Code is sent only after an explicit user action (a command, a click, a question). Never in the background, never on file open, never speculatively.
+- Before the first request of any kind, the user must accept the current version of `TERMS.md` (no liability, bound by organizational policies, no internal or confidential code). No request is sent until they do (ADR-0024).
 - Before the first request to each provider, show a one-time notice naming the provider and what will be sent. Record the acknowledgement per provider in global state (spec §8).
 - Send only what the request needs: the target file or selection plus the context described in arch §5. Never send whole folders or the workspace by default.
-- Respect `clarity.exclude` globs and a `.clarityignore` file. Excluded files are never read for context and cannot be explained.
-- Refuse files that look like secrets (`.env*`, `*.pem`, `*.key`, `id_rsa*`, `credentials*`, `*.tfvars`, `*.kubeconfig`) unless the user overrides per file. Warn when a high-entropy token or known key pattern appears in the content about to be sent.
+- Respect `logiclens.exclude` globs and a `.logiclensignore` file. Excluded files are never read for context and cannot be explained.
+- Refuse files that look like secrets (`.env*`, `*.pem`, `*.key`, `id_rsa*`, `credentials*`, `*.tfvars`, `*.kubeconfig`) unless the user overrides per file. Scan content about to be sent with local, deterministic patterns (never an AI model); withhold flagged lines or refuse the file. There is no "send anyway" (ADR-0020).
 - In an untrusted workspace (Workspace Trust restricted mode), the extension does not send code anywhere.
 
 ## 2. Secrets and credentials
@@ -62,7 +63,7 @@ This is the main risk in this product. User code is sent to a third-party model.
 ## 7. Telemetry and logging
 
 - No telemetry in the MVP. If added later it must respect `vscode.env.isTelemetryEnabled`, need an ADR, and never include code, prompts, responses, file paths, or keys.
-- The output channel logs provider, model, timings, token counts, and errors. Code, prompts, and responses are logged only when `clarity.debug.logPrompts` is on, and that setting is off by default and `application` scope.
+- The output channel logs provider, model, timings, token counts, and errors. Code, prompts, and responses are logged only when `logiclens.debug.logPrompts` is on, and that setting is off by default and `application` scope.
 
 ## Pre-merge checklist
 

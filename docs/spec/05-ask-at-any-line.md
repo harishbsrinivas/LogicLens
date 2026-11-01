@@ -5,14 +5,14 @@ Users can ask a free-text question at any line of any document and get an answer
 ## Starting a question
 
 - **Gutter "+"**: hovering any line shows the native comment "+" in the gutter (VS Code Comments API). Clicking it opens a thread there.
-- **Command**: "Clarity: Ask About This Line" opens a thread at the cursor line. With a selection, the thread anchors to the selection's range.
+- **Command**: "LogicLens: Ask About This Line" opens a thread at the cursor line. With a selection, the thread anchors to the selection's range.
 - **From a step**: "Ask" on a walkthrough step opens a thread at the step's first line, scoped to the step's range.
 - **From a concept chip**: opens a thread with the question pre-filled (spec §4).
 
 ## The thread
 
 - Looks and behaves like a native code-review comment thread: inline under the line, collapsible, keyboard accessible.
-- The user's question shows with their name or "You". The answer shows as "Clarity · <provider>/<model>".
+- The user's question shows with their name or "You". The answer shows as "LogicLens · <provider>/<model>".
 - Answers stream in. A **Stop** action cancels the request.
 - Each answer can be **copied**, **regenerated**, or **deleted**. Deleting the first question deletes the thread.
 - **Follow-ups** in the same thread include prior turns in that thread as conversation context, up to a token budget (oldest turns dropped first, with a note).
@@ -34,10 +34,10 @@ The whole file is included only if it is under the context budget (arch §5). Pr
 
 - Threads live for the editor session and survive tab switches.
 - Threads follow edits: inserting lines above moves the thread down. If its line is deleted, the thread is marked "code changed" and collapsed, not removed.
-- Threads persist across window reloads with the walkthrough cache (spec §10) when `clarity.cache.enabled` is on. They are stored locally only.
-- "Clarity: Clear Threads in File" and "Clear All Threads" remove them.
+- Threads persist across window reloads with the walkthrough cache (spec §10) when `logiclens.cache.enabled` is on. They are stored locally only.
+- "LogicLens: Clear Threads in File" and "Clear All Threads" remove them.
 
 ## Guardrails
 
-- Questions are answered about the code. The system prompt tells the model to explain rather than rewrite, and Clarity never applies any code the model returns; code in answers renders as read-only snippets with a copy button.
+- Questions are answered about the code. The system prompt tells the model to explain rather than rewrite, and LogicLens never applies any code the model returns; code in answers renders as read-only snippets with a copy button.
 - Empty questions are not sent. Questions over 2,000 characters are refused with a message.
