@@ -9,6 +9,6 @@
 | Explain only; no edits (spec §1; ADR-0002) | No code path applies model output. CLIs run with tools disabled and in an isolated working directory (ADR-0005). |
 | Explicit action before code leaves the machine (spec §8; ADR-0014) | All sends go through one `RequestGate` that checks trust, exclusions, data notice, and secret scan. Nothing else may call a provider. |
 | Native, elegant UI (spec §7) | Use Comments API for threads (ADR-0008), decorations for highlights, a single webview view for the panel (ADR-0009). Theme variables only. |
-| Works in VS Code forks (Cursor, Kiro, Windsurf, VSCodium) where possible (spec §6) | Publish to Open VSX too (ADR-0012). Feature-detect `vscode.lm`; never assume Copilot. Keep the engine requirement as low as the APIs allow (ADR-0017). |
+| MVP: VS Code stable on Linux only (ADR-0026). Forks (S7) and Windows and macOS (S13) after release | Linux-only Marketplace builds; no Windows- or macOS-only code before S13. Still feature-detect `vscode.lm`, never assume Copilot, and keep the engine requirement as low as the APIs allow (ADR-0017), so forks stay cheap to add in S7 (Open VSX). |
 | Fast activation, small package (spec §12) | Lazy activation on commands and views only. esbuild bundle; webview built separately; few runtime dependencies. |
 | Staleness when code changes (spec §10) | Track step and thread ranges against document edits in memory; re-anchor by text match on reopen (ADR-0019). |

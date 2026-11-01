@@ -23,6 +23,7 @@ Project docs live under `docs/`, one file per section, each folder with a `READM
 - A slice is done only when its user-visible flow works end to end in a real VS Code Extension Development Host, its tests pass, and its exit check is ticked in the slice file.
 - Update the slice file's **Status** line and the status table in `docs/plan/README.md` in the same change that finishes or starts a slice.
 - Do not build ahead. Code for a later slice stays out until that slice starts, unless the plan explicitly pulls it forward.
+- Each slice lives on its own branch (`s<N>-<slug>`) and merges to `main` only when done. Follow `DEVELOPMENT.md` for branching, commits, pull requests, and coding practices.
 
 ## 3. Architecture documentation
 

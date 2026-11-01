@@ -1,10 +1,11 @@
-# S7. More Providers
+# S7. More Providers (post-release)
 
-**Status:** Not started
-**User value:** users can use Gemini CLI, Kiro, their own Anthropic or OpenAI API key (OpenAI covers "ChatGPT" models), or a local Ollama model that keeps code on the machine.
+**Status:** Not started. Deferred until after S12 (ADR-0025).
+**User value:** users can use Codex CLI, Gemini CLI, Kiro, their own Anthropic or OpenAI API key (OpenAI covers "ChatGPT" models), or a local Ollama model that keeps code on the machine.
 **Spec:** §6 (remaining rows), §8 (local Ollama notice), arch §7 (secrets)
+**Timing:** after S12, the last pre-planned slice. Ships as minor releases.
 
-This slice may be split into S7a (HTTP: Anthropic, OpenAI, Ollama) and S7b (CLIs: Gemini, Kiro) if it grows past about a week.
+This slice may be split into S7a (CLIs: Codex, Gemini, Kiro), S7b (HTTP: Anthropic, OpenAI, Ollama), and S7c (fork compatibility) if it grows past about a week.
 
 ## Scope
 
@@ -14,8 +15,12 @@ In:
 - `openai` adapter: same; API flavor decided here (arch §10, open decision 6).
 - `ollama` adapter: `/api/tags` detection, `/api/chat` streaming; notice skipped for localhost.
 - `logiclens.setApiKey` command with validation call; delete key action.
-- `gemini-cli` adapter on the S6 spawn helper.
-- `kiro` adapter per ADR-0016 outcome: either confirm that the `vscode-lm` adapter covers Kiro inside the Kiro IDE (then this is a compatibility test only) or add a CLI adapter. If neither works, record that and drop Kiro from MVP scope in spec §6 and §11.
+- Spike for these providers, as S0 did for the MVP pair: headless flags, tools-off mode, auth errors, Windows behavior, protocol adherence, 300-line time to first token; record in arch §4 and update ADR-0005.
+- `codex` adapter on the S6 spawn helper: `--sandbox read-only`, approvals never; `logiclens.cli.codexPath`.
+- `gemini-cli` adapter on the S6 spawn helper; `logiclens.cli.geminiPath`.
+- `kiro` adapter per ADR-0016 outcome: either confirm that the `vscode-lm` adapter covers Kiro inside the Kiro IDE (then this is a compatibility test only) or add a CLI adapter. If neither works, record that and drop Kiro from spec §6 and §11.
+- Fork compatibility: `vscode.lm` in Cursor, Kiro, Windsurf, VSCodium (exists? returns models?); smoke test LogicLens in Cursor and Kiro; record in arch §4.
+- Add the new enum values to `logiclens.provider` and the new settings in spec §9 and `package.json`.
 
 ## Tasks
 
@@ -30,7 +35,7 @@ In:
 1. Run "Set API Key…", choose Anthropic, paste a key; it validates and the provider becomes Ready.
 2. Explain a file with Anthropic; footer shows model and token usage.
 3. Start Ollama with a code model; pick Ollama; no data notice appears for localhost; explain a file.
-4. Pick Gemini CLI; explain a file.
+4. Pick Codex, then Gemini CLI; explain a file with each; press Stop during one request and confirm the process exits.
 5. In the Kiro IDE, install the VSIX from Open VSX or locally and explain a file through whatever path ADR-0016 chose.
 6. Run "Show Log"; confirm no key or code appears with debug logging off.
 

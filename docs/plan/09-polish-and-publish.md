@@ -1,7 +1,7 @@
 # S9. Polish and Publish
 
 **Status:** Not started
-**User value:** anyone can install LogicLens from the VS Code Marketplace or Open VSX, get oriented in a minute, and trust what it does with their code.
+**User value:** anyone using VS Code on Linux can install LogicLens from the VS Code Marketplace, get oriented in a minute, and trust what it does with their code.
 **Spec:** §7 (full visual and accessibility pass), §12 (quality checks and MVP exit criteria), §11
 
 ## Scope
@@ -14,23 +14,23 @@ In:
 - Keybinding review against VS Code defaults and popular keymaps; finalize spec §9.
 - Full evaluation run and human review to MVP targets (spec §12).
 - Performance: activation time, VSIX size, time to first overview.
-- README with screenshots and GIF, privacy section (what is sent, where), provider setup guide, troubleshooting (including the multiple-commenting-provider picker).
+- README with screenshots and GIF, privacy section (what is sent, where), provider setup guide (Copilot Free and Claude Code only), troubleshooting (including the multiple-commenting-provider picker).
 - `CHANGELOG.md`, `LICENSE`, `SECURITY.md` contact set, Marketplace icon and gallery banner.
 - Register the publisher ID and run the formal trademark search (ADR-0018).
 - Legal review of `TERMS.md`; link it from the README and Marketplace listing (ADR-0024).
-- CI publish job to Marketplace and Open VSX on tag, using environment-protected secrets.
-- Manual matrix: VS Code stable and Insiders on Windows, macOS, Linux; Cursor and Kiro smoke tests.
+- CI publish job to the Marketplace on tag, using environment-protected secrets: `linux-x64` and `linux-arm64` VSIXs (ADR-0026). Open VSX moves to S7.
+- Manual matrix: VS Code stable and Insiders on Linux, with Copilot Free and Claude Code (ADR-0026). Windows and macOS move to S13, fork smoke tests to S7.
 
 ## Tasks
 
-- [ ] Accessibility audit with NVDA or VoiceOver; fix findings.
+- [ ] Accessibility audit with Orca on Linux; fix findings.
 - [ ] Theme screenshots for light, dark, high contrast; fix findings.
 - [ ] Eval: all 30–40 files, default provider; human review of 20.
-- [ ] Publish dry run: `vsce package`, install the VSIX on a clean profile, run the full demo of S1 to S8, S10, and S11.
+- [ ] Publish dry run: `vsce package`, install the VSIX on a clean profile, run the full demo of S1 to S6, S8, S10, and S11.
 - [ ] Tag `v0.1.0` (pre-release channel), then `v1.0.0` when exit criteria hold.
 
 ## Exit check
 
 - [ ] Every MVP exit criterion in spec §12 met and recorded in this file with numbers.
-- [ ] Listed on the VS Code Marketplace and Open VSX.
+- [ ] Listed on the VS Code Marketplace, Linux builds only; installing on Windows or macOS is not offered.
 - [ ] All tests green on the release tag.

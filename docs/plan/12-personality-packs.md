@@ -3,7 +3,7 @@
 **Status:** Not started
 **User value:** choose the voice of the explainer: Patient Teacher, Skater Dude, Sarcastic Senior, Noir Detective, or Sports Commentator, without losing accuracy.
 **Spec:** §15, §4 (interaction with audience and jargon), §9
-**Timing:** after S9 (first release). Ships as a minor release.
+**Timing:** after S9 (first release). Ships as a minor release, before S7.
 
 ## Scope
 

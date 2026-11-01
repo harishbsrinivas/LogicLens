@@ -1,6 +1,6 @@
 # ADR-0012: Publish to the VS Code Marketplace and Open VSX
 
-- **Status:** Accepted
+- **Status:** Superseded by ADR-0026 (MVP publishes to the Marketplace only; Open VSX resumes in S7)
 - **Date:** 2026-11-01
 - **Deciders:** Project owner
 - **Source:** spec §11, §12; arch §9
