@@ -1,0 +1,4 @@
+title = "clarity gitleaks config"
+
+[extend]
+useDefault = true

@@ -1,0 +1,9 @@
+# Single package (arch §3). Only esbuild may run install scripts.
+# vsce-sign's script fetches a signing binary we do not use (no signed VSIX in the MVP).
+allowBuilds:
+  esbuild: true
+  '@vscode/vsce-sign': false
+
+# GHSA-5c6j-r48x-rmvq: mocha (via @vscode/test-cli) pins a vulnerable serialize-javascript. Dev only.
+overrides:
+  serialize-javascript: '>=7.0.3'
