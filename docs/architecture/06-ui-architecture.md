@@ -67,7 +67,12 @@ In test mode, `TestApi.decorations.appliedTo(uri)` returns the focus ranges, num
 
 ## Bookmarks view (S11, ADR-0022)
 
-`ui/bookmarksView.ts` is a `TreeDataProvider` over the bookmark store: file nodes, then bookmark nodes with `contextValue` driving Edit Note, Copy as Markdown, and Remove. Selecting a node runs an internal command that reveals the range, applies the focus decoration, and shows the saved explanation as a read-only inline thread at the range's first line.
+`ui/bookmarksView.ts` (S11):
+
+- `BookmarksTree`, a `TreeDataProvider` for `logiclens.bookmarks` in the `logiclens` activity bar container (`media/logiclens.svg`): file nodes (resource URIs, so they get file icons), then bookmark nodes sorted by line, labelled with the note or title, described with ranges and "code changed", with a kind codicon (or `warning` when changed). `contextValue` `bookmark` drives inline Edit Note, Copy as Markdown, and Remove; the view title has Clear All Bookmarks (`logiclens.hasBookmarks`) and collapse all; `viewsWelcome` gives the empty state.
+- Selecting a node runs `logiclens.showBookmark(id)`: opens the file, moves the cursor and reveals the range, highlights it (`BookmarkDecorations`, same style as a focused step), and shows `BookmarkThreads`' read-only thread at the range's first line: label "Bookmarked explanation" ("(code changed)" when lost), `contextValue` `bookmark` (Explain Again, Close), one comment with the provider and model, the date, the note, the question for answers, and the saved Markdown rendered with the same untrusted settings as live output.
+- `BookmarkDecorations` puts an SVG bookmark gutter icon (light and dark variants) on each bookmark's first line, skipping lines whose gutter already shows the step number or a lock.
+- `StepCodeLens` adds "$(bookmark) Bookmark" (`logiclens.bookmarkStep(key, index)`) or "$(bookmark) Bookmarked" (`logiclens.showBookmark(id)`) to each step row. Codicons have no filled bookmark, so the word changes instead of the icon.
 
 ## Quick picks
 

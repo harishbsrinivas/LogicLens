@@ -38,9 +38,9 @@ Re-anchoring lives in `state/reanchor.ts` so the cache and bookmarks share one t
 
 ## Bookmarks (`src/bookmarks/`, ADR-0022)
 
-- One file, `bookmarks.json`, beside the cache folder in the same storage location; atomic writes.
-- Per bookmark: id, kind (`step`, `answer`, `code`), document URI, ranges, original line text (hashes for withheld lines), explanation Markdown copy, question text for answers, note, provider, model, created and updated times, changed flag.
-- Ranges are tracked live by the range tracker and re-anchored on open.
+- `bookmarks/store.ts` (`BookmarkStore`, Node async fs only): one file, `bookmarks.json` (`{ version: 1, bookmarks }`), beside the cache folder in the same storage location; atomic writes (temp file, rename), serialized. A file that does not parse is renamed to `bookmarks.json.corrupt` and the store starts empty.
+- Per bookmark: id, kind (`step`, `answer`, `code`), document URI, ranges, original line text per range (`sha256:` hashes for lines the walkthrough withheld and for lines `commands/bookmarks.ts` finds with the secret scan when bookmarking), title (step title, question, or first non-withheld line of code), explanation Markdown copy, question text for answers, note, provider, model, created and updated times, changed flag.
+- `bookmarks/service.ts` moves ranges with `applyEdits` on every edit (deleted lines mark the bookmark changed; saved one second later) and re-anchors with `state/reanchor.ts` when a document opens; not found marks it changed and keeps the old lines.
 - Not touched by `logiclens.cache.enabled`, eviction, or Clear Cache. Cap 500.
 
 ## Workspace state (`context.workspaceState`)

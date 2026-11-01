@@ -1,5 +1,6 @@
 // In-memory question threads (arch §7, spec §5). Persisted with the cache in S8.
 import * as vscode from 'vscode';
+import { newId } from '../util/id';
 import type { LineRange } from './types';
 
 export type TurnStatus = 'queued' | 'streaming' | 'done' | 'stopped' | 'failed';
@@ -88,8 +89,4 @@ export class QuestionStore implements vscode.Disposable {
     this.changed.dispose();
     this.delta.dispose();
   }
-}
-
-export function newId(prefix: string): string {
-  return `${prefix}${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
 }

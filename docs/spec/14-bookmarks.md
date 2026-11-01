@@ -6,11 +6,11 @@ Users save code and its explanation to come back to later: a tricky step, a usef
 
 | Kind | Created from | Saved with it |
 |---|---|---|
-| **Step** | Bookmark icon on a walkthrough step | Step title, ranges, explanation, concepts |
-| **Answer** | "Bookmark" in a thread's comment menu | The question and the answer it belongs to |
+| **Step** | "Bookmark" on a walkthrough step's title row, or in the step thread's title | Step title, ranges, explanation, concepts |
+| **Answer** | "Bookmark Answer" in an answer's comment menu | The question and the answer it belongs to |
 | **Code** | **LogicLens: Add Bookmark** (`Ctrl+Alt+E M`) on a selection or the cursor line | Range only |
 
-Every bookmark has an optional note, asked for in an input box when it is created (Enter skips it), and records file, ranges, created time, and, for steps and answers, the provider and model that wrote the explanation.
+Every bookmark has an optional note, asked for in an input box when it is created (Enter with an empty box skips it; Escape cancels the bookmark), and records file, ranges, created time, and, for steps and answers, the provider and model that wrote the explanation.
 
 A bookmark saves a **copy** of the explanation. It stays readable after the walkthrough is refreshed, the cache is cleared, or the provider is changed.
 
@@ -25,7 +25,7 @@ A **Bookmarks** tree view in the LogicLens view container, grouped by file:
 - View toolbar: collapse all, **Clear All Bookmarks** (asks for confirmation).
 - Empty state: one line explaining how to add a bookmark.
 
-Bookmarked lines show a small bookmark icon in the editor gutter while the file is open. A step that is bookmarked shows a filled bookmark icon in its title CodeLens.
+Bookmarked lines show a small bookmark icon in the editor gutter while the file is open (unless a step number or lock icon already uses that line). A bookmarked step's title row shows "Bookmarked" instead of "Bookmark"; clicking it shows the bookmark. The bookmarked explanation thread has **Explain Again** and **Close** in its title.
 
 ## When code changes
 
@@ -38,5 +38,6 @@ Bookmark ranges move with edits while the file is open and are re-anchored on re
 - Files excluded by LogicLens settings (spec §8) cannot be bookmarked.
 - Lines withheld by the secret scan (spec §8) are never stored as text in a bookmark.
 - Up to 500 bookmarks per workspace; adding more asks the user to remove some first.
+- If the bookmarks file cannot be read, it is kept beside the store as `bookmarks.json.corrupt` and LogicLens starts with no bookmarks rather than overwrite it.
 
 Exporting bookmarks (for example as Markdown or a code tour) is a post-MVP candidate (spec §11).

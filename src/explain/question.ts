@@ -6,7 +6,7 @@ import { ProviderError } from '../providers/types';
 import { questionMessages, questionSystem, type PriorTurn } from '../prompts/question';
 import type { ExplanationStyle } from '../prompts/style';
 import type { QuestionStore, Turn } from '../state/questions';
-import { newId } from '../state/questions';
+import { newId } from '../util/id';
 import { SessionStore } from '../state/session';
 import type { LineRange } from '../state/types';
 import type { Logger } from '../util/log';

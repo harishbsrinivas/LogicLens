@@ -61,7 +61,7 @@ What follows, good and bad.
 | [0019](0019-local-cache-with-text-reanchoring.md) | Local cache with text-based re-anchoring | Accepted | cache, state, privacy |
 | [0020](0020-deterministic-secret-scan-withhold-or-refuse.md) | Deterministic local secret scan; withhold lines or refuse, never send | Accepted | security, privacy |
 | [0021](0021-navigation-trail-via-explicit-follow.md) | Navigation trail built from an explicit Follow command | Accepted | ui, state |
-| [0022](0022-bookmarks-store-separate-from-cache.md) | Bookmarks in extension storage, separate from the cache | Proposed (S11) | state, ui, privacy |
+| [0022](0022-bookmarks-store-separate-from-cache.md) | Bookmarks in extension storage, separate from the cache | Accepted | state, ui, privacy |
 | [0023](0023-bundled-tone-only-personality-packs.md) | Bundled, tone-only personality packs | Proposed (S12) | prompts, product |
 | [0024](0024-terms-of-use-acceptance-gate.md) | Terms of use accepted before the first request | Accepted | product, privacy, security |
 | [0025](0025-mvp-providers-copilot-free-and-claude-code.md) | MVP providers: Copilot Free through `vscode.lm`, and Claude Code | Accepted | providers, scope |
