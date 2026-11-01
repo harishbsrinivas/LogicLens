@@ -40,6 +40,8 @@ export interface WalkthroughView {
   withheld: number[];
   /** The document changed after this walkthrough was made (S2; per-step tracking in S8). */
   stale: boolean;
+  /** Token counts, when the provider reports them (spec §6 cost transparency). */
+  usage?: { inputTokens?: number; outputTokens?: number };
 }
 
 /** Continue can ask for the rest of a walkthrough that ended early with steps (spec §4). */

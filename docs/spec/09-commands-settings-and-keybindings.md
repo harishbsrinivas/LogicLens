@@ -89,7 +89,7 @@ Scope column: `res` = resource (workspace allowed), `mach` = machine, `app` = ap
 | `logiclens.followCursor` | boolean, true | app | Highlight the step containing the cursor |
 | `logiclens.codeLens.enabled` | boolean, false | app | Show "Explain" CodeLens on symbols |
 | `logiclens.cache.enabled` | boolean, true | app | Persist walkthroughs and threads locally |
-| `logiclens.cli.claudePath` | string, `""` | mach | Path to `claude`; empty means `PATH` |
+| `logiclens.cli.claudePath` | string, `""` | mach | Path to `claude`; empty means `PATH` (S6) |
 | `logiclens.cli.codexPath` | string, `""` | mach | Path to `codex` (S7) |
 | `logiclens.cli.geminiPath` | string, `""` | mach | Path to `gemini` (S7) |
 | `logiclens.cli.kiroPath` | string, `""` | mach | Path to the Kiro CLI (S7) |

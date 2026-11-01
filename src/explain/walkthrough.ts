@@ -176,7 +176,11 @@ export class ExplainService {
 
     try {
       for await (const chunk of outcome.stream) {
-        if (chunk.type !== 'text') {
+        if (chunk.type === 'done') {
+          const usage = chunk.usage;
+          if (usage) {
+            this.session.stream(key, wid, ({ view }) => (view.usage = usage));
+          }
           continue;
         }
         const wasStructured = parser.structured;
