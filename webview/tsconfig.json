@@ -4,5 +4,5 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "types": []
   },
-  "include": ["src", "../shared", "vite.config.mts"]
+  "include": ["src", "../shared", "vite.config.mts", "../test/unit/webview"]
 }
