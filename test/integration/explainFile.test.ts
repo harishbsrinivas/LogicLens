@@ -3,7 +3,7 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
-import { FakePrompter, FakeProvider, type ExplainResult, type TestApi } from './fakes';
+import { FakePrompter, FakeProvider, SAMPLE_FILE, type ExplainResult, type TestApi } from './fakes';
 
 const WITHHELD_MARKER = '«line withheld by LogicLens: possible secret»';
 // Assembled at runtime so the repository never holds a whole key-shaped string.
@@ -77,19 +77,23 @@ suite('Explain File', () => {
     assert.ok(!commands.includes('logiclens.panel.focus'));
   });
 
-  test('streams an explanation into an inline thread at the top of the file', async () => {
-    const doc = await openUntitled('export const add = (a: number, b: number) => a + b;\n');
+  test('streams the overview and summary into an inline thread at the top of the file', async () => {
+    const doc = await openUntitled(SAMPLE_FILE);
     const result = await explain();
     assert.strictEqual(result.kind, 'done');
     const t = thread(doc);
     assert.ok(t, 'no inline thread');
-    assert.strictEqual(t.body, '## Overview\nThis file adds numbers.');
-    assert.strictEqual(t.author, 'LogicLens · Fake Provider · Fake Model');
+    assert.strictEqual(t.line, 0);
+    assert.match(t.body, /^Reads a config file and exposes the port\./);
+    assert.match(t.body, /- Port comes from config\./);
+    assert.match(t.body, /\*\*Things to watch\*\*\n\n- Throws if the file is missing\./);
+    assert.deepStrictEqual(t.authors, ['LogicLens · Fake Provider · Fake Model', 'Summary']);
     assert.strictEqual(t.contextValue, 'finished');
     assert.ok(t.expanded);
     assert.match(t.commentLabel, /^\d+\.\ds$/);
+    assert.match(provider.requests[0]?.system ?? '', /@@step/);
     assert.strictEqual(provider.requests.length, 1);
-    assert.match(provider.requests[0]?.messages[0]?.text ?? '', /1│ export const add/);
+    assert.match(provider.requests[0]?.messages[0]?.text ?? '', /5│ export function port/);
     assert.deepStrictEqual(prompter.calls, ['notice']);
   });
 
@@ -124,7 +128,10 @@ suite('Explain File', () => {
     const t = thread(doc);
     assert.strictEqual(t?.contextValue, 'finished');
     assert.match(t?.label ?? '', /stopped/);
-    assert.strictEqual(t?.body, '## Overview\n\n\n*Stopped. The explanation above is partial.*');
+    assert.strictEqual(
+      t?.body,
+      'Reads a config file and exposes the port.\n\n*Stopped. The explanation above is partial.*',
+    );
   });
 
   test('Close Explanation removes the inline thread', async () => {
@@ -135,13 +142,18 @@ suite('Explain File', () => {
     assert.strictEqual(thread(doc), undefined);
   });
 
-  test('renders model output without unsafe links or images', async () => {
+  test('shows unstructured output as safe plain Markdown with a notice', async () => {
     const doc = await openUntitled('const a = 1;\n');
     provider.chunks = [
       '[run](command:workbench.action.terminal.new) ![x](https://example.com/a.png) <b>b</b>',
     ];
     assert.strictEqual((await explain()).kind, 'done');
-    assert.strictEqual(thread(doc)?.body, 'run [x](https://example.com/a.png) <b>b</b>');
+    assert.strictEqual(
+      thread(doc)?.body,
+      '> Shown as plain text: the model did not return steps.\n\n' +
+        'run [x](https://example.com/a.png) <b>b</b>',
+    );
+    assert.deepStrictEqual(api.threads.stepSnapshots(doc.uri), []);
   });
 
   test('refuses excluded files', async () => {

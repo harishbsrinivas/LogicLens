@@ -16,7 +16,8 @@ These rules are encoded in the prompt templates (arch §5) and checked by the ev
 The model is asked for a structured walkthrough (arch §5 defines the schema). LogicLens validates each piece as it arrives:
 
 - Line ranges must fall inside the target; out-of-range values are clamped if close (within 2 lines) and otherwise marked unanchored.
-- Steps with an empty title or empty explanation are dropped.
+- Steps with an empty title or empty explanation are dropped when the response ends.
+- If more than half of the steps cannot be tied to lines, the walkthrough is shown as Markdown in the overview block with the notice "Shown as plain text: most steps could not be tied to lines in this file."
 - Unknown fields are ignored.
 - If the response is not parseable as structured output at all, LogicLens shows it as Markdown with a notice ("Shown as plain text: the model did not return steps") and offers **Retry**.
 

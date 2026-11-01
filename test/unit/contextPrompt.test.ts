@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildFileContext, numberLines } from '../../src/explain/context';
-import { explainMarkdownSystem, explainMarkdownUser } from '../../src/prompts/explainMarkdown';
+import { ProtocolParser } from '../../src/explain/protocol';
+import { continueUser, walkthroughSystem, walkthroughUser } from '../../src/prompts/walkthrough';
 import { scan, WITHHELD_MARKER } from '../../src/guard/secretScan';
 
 describe('context builder', () => {
@@ -35,17 +36,29 @@ describe('context builder', () => {
   });
 });
 
-describe('explain markdown prompt', () => {
+describe('walkthrough prompt', () => {
   it('states the rules the spec requires', () => {
-    const system = explainMarkdownSystem();
+    const system = walkthroughSystem();
     expect(system).toMatch(/do not rewrite/i);
     expect(system).toContain(WITHHELD_MARKER);
     expect(system).toMatch(/Do not guess/);
     expect(system).toMatch(/No HTML/);
+    for (const tag of ['@@overview', '@@step', '@@concepts', '@@summary', '@@watch', '@@end']) {
+      expect(system).toContain(tag);
+    }
+  });
+
+  it('teaches a format the parser accepts', () => {
+    const system = walkthroughSystem();
+    const example = system.slice(system.indexOf('@@overview'), system.indexOf('@@end') + 5);
+    const p = new ProtocolParser();
+    const events = [...p.push(example), ...p.finish()];
+    expect(p.ended).toBe(true);
+    expect(events.filter((e) => e.type === 'stepStart')).toHaveLength(2);
   });
 
   it('does not itself trip the secret scan', () => {
-    const text = `${explainMarkdownSystem()}\n${explainMarkdownUser('x')}`;
+    const text = `${walkthroughSystem()}\n${walkthroughUser('x')}\n${continueUser()}`;
     expect(scan(text.split('\n')).flagged).toEqual([]);
   });
 });

@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import type { ExplainOptions, ExplainResult, ExplainService } from '../explain/walkthrough';
 import { SessionStore } from '../state/session';
 import type { ActiveEditor } from '../ui/activeEditor';
+import { threadUri } from './steps';
 
 export function registerExplainCommands(
   service: ExplainService,
@@ -87,6 +88,17 @@ export function registerExplainCommands(
       }
       session.stopAll();
     }),
+    vscode.commands.registerCommand('logiclens.continue', async (arg?: unknown) => {
+      const editor = targetEditor(arg);
+      if (!editor) {
+        return undefined;
+      }
+      const result = await service.continue(editor.document);
+      if (result.kind === 'refused' && result.reason !== 'cancelled') {
+        reportRefusal(result);
+      }
+      return result;
+    }),
     vscode.commands.registerCommand('logiclens.closeExplanation', (arg?: unknown) => {
       const uri = threadUri(arg) ?? active.editor?.document.uri;
       if (uri) {
@@ -94,11 +106,4 @@ export function registerExplainCommands(
       }
     }),
   ];
-}
-
-function threadUri(arg: unknown): vscode.Uri | undefined {
-  if (typeof arg === 'object' && arg !== null && 'uri' in arg && arg.uri instanceof vscode.Uri) {
-    return arg.uri;
-  }
-  return undefined;
 }

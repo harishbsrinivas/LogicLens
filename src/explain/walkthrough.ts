@@ -1,22 +1,29 @@
-// Orchestrates an explain-file request (arch §5). S1: plain Markdown, streamed into the session.
+// Orchestrates a walkthrough request (arch §5): gate, prompt, stream, parse, anchor, state.
 import * as vscode from 'vscode';
-import type { WalkthroughView } from '../state/types';
 import type { GateOutcome, RefusalReason, RequestGate, SecretsAction } from '../guard/gate';
 import { pathInfo } from '../guard/settings';
+import type { ChatMessage } from '../providers/types';
 import { ProviderError } from '../providers/types';
-import { buildFileContext } from './context';
-import { explainMarkdownSystem, explainMarkdownUser } from '../prompts/explainMarkdown';
+import { continueUser, walkthroughSystem, walkthroughUser } from '../prompts/walkthrough';
 import { SessionStore } from '../state/session';
+import { canContinue, type LineRange, type StepView, type WalkthroughView } from '../state/types';
 import type { Logger } from '../util/log';
+import { anchorRanges } from './anchor';
+import { buildFileContext } from './context';
+import { ProtocolParser, type ProtocolEvent } from './protocol';
 
 export type ExplainResult =
-  | { kind: 'done' | 'stopped'; wid: string }
+  | { kind: 'done' | 'stopped' | 'truncated'; wid: string }
   | { kind: 'failed'; wid: string; message: string }
   | { kind: 'refused'; reason: RefusalReason; message: string; lines?: number[] };
 
 export interface ExplainOptions {
   secretsAction?: SecretsAction;
 }
+
+export const NOT_STRUCTURED_NOTICE = 'Shown as plain text: the model did not return steps.';
+export const UNANCHORED_NOTICE =
+  'Shown as plain text: most steps could not be tied to lines in this file.';
 
 export class ExplainService {
   constructor(
@@ -40,7 +47,44 @@ export class ExplainService {
     ) {
       return { kind: 'refused', reason: 'cancelled', message: 'Cancelled.' };
     }
+    return this.run(document, options, (context) => [
+      { role: 'user', text: walkthroughUser(context) },
+    ]);
+  }
 
+  /** Asks for the remaining steps of a truncated or failed walkthrough (spec §4). */
+  async continue(document: vscode.TextDocument): Promise<ExplainResult> {
+    const key = SessionStore.key(document.uri);
+    const entry = this.session.get(key);
+    if (!entry || entry.cancel || !canContinue(entry.view)) {
+      return { kind: 'refused', reason: 'cancelled', message: 'Nothing to continue.' };
+    }
+    if (entry.view.stale) {
+      void vscode.window.showInformationMessage(
+        'The file changed since this explanation was made. Explain it again instead.',
+      );
+      return { kind: 'refused', reason: 'cancelled', message: 'File changed.' };
+    }
+    const raw = entry.raw;
+    return this.run(
+      document,
+      {},
+      (context) => [
+        { role: 'user', text: walkthroughUser(context) },
+        { role: 'assistant', text: raw },
+        { role: 'user', text: continueUser() },
+      ],
+      entry.view,
+    );
+  }
+
+  private async run(
+    document: vscode.TextDocument,
+    options: ExplainOptions,
+    messages: (context: string) => ChatMessage[],
+    previous?: WalkthroughView,
+  ): Promise<ExplainResult> {
+    const key = SessionStore.key(document.uri);
     // Snapshot the text now; later edits do not change what is sent.
     const text = document.getText();
     const lines = text.split(/\r?\n/);
@@ -61,20 +105,15 @@ export class ExplainService {
           },
           secretsAction: options.secretsAction,
           build: (prepared) => ({
-            system: explainMarkdownSystem(),
-            messages: [
-              {
-                role: 'user',
-                text: explainMarkdownUser(
-                  buildFileContext({
-                    path: displayPath,
-                    languageId: document.languageId,
-                    lines: prepared.lines,
-                    withheld: prepared.withheld,
-                  }),
-                ),
-              },
-            ],
+            system: walkthroughSystem(),
+            messages: messages(
+              buildFileContext({
+                path: displayPath,
+                languageId: document.languageId,
+                lines: prepared.lines,
+                withheld: prepared.withheld,
+              }),
+            ),
           }),
         },
         cancel.token,
@@ -88,50 +127,75 @@ export class ExplainService {
       return outcome;
     }
 
-    const view: WalkthroughView = {
-      id: newId(),
-      fileName: displayName(document),
-      providerLabel: outcome.providerLabel,
-      model: outcome.model,
-      status: 'streaming',
-      overview: '',
-      steps: [],
-      summary: '',
-      watch: '',
-      fallbackMarkdown: '',
-      notice: null,
-      error: null,
-      durationMs: null,
-      withheld: outcome.withheld,
-      stale: false,
+    const target: LineRange = { start: 1, end: lines.length };
+    const parser = new ProtocolParser(previous ? 'continuation' : 'response');
+    let wid: string;
+    if (previous) {
+      wid = previous.id;
+      this.session.update(key, wid, (entry) => {
+        entry.cancel = cancel;
+        entry.view.status = 'streaming';
+        entry.view.error = null;
+      });
+    } else {
+      const view = newView(document, outcome);
+      wid = view.id;
+      this.session.set(key, { view, cancel, raw: '', focus: null, opened: null, showAll: false });
+    }
+    // Continued steps are appended after the ones already shown.
+    const stepOffset = previous?.steps.length ?? 0;
+    const apply = (events: ProtocolEvent[]): void => {
+      for (const e of events) {
+        this.applyEvent(key, wid, e, target, stepOffset);
+      }
     };
-    const wid = view.id;
-    this.session.set(key, { view, cancel });
+
     const started = Date.now();
     const finish = (status: WalkthroughView['status'], error: string | null = null): void => {
       this.session.update(key, wid, (entry) => {
-        entry.view.status = status;
-        entry.view.error = error;
-        entry.view.durationMs = Date.now() - started;
+        const view = entry.view;
+        view.status = status;
+        view.error = error;
+        view.durationMs = Date.now() - started;
         entry.cancel = undefined;
+        settle(view, parser.structured || Boolean(previous), entry.raw);
+        if (entry.focus !== null && entry.focus >= view.steps.length) {
+          entry.focus = null;
+        }
+        if (entry.opened !== null && entry.opened >= view.steps.length) {
+          entry.opened = null;
+        }
       });
       cancel.dispose();
       this.log.info(`explain: ${status} after ${Date.now() - started} ms`);
+      this.log.debugContent('response', this.session.get(key)?.raw ?? '');
     };
 
     try {
       for await (const chunk of outcome.stream) {
-        if (chunk.type === 'text') {
-          this.session.appendMarkdown(key, wid, chunk.text);
+        if (chunk.type !== 'text') {
+          continue;
         }
+        const wasStructured = parser.structured;
+        this.session.stream(key, wid, (entry) => {
+          entry.raw += chunk.text;
+        });
+        apply(parser.push(chunk.text));
+        this.showUnstructured(key, wid, parser, wasStructured, Boolean(previous));
       }
+      apply(parser.finish());
       if (cancel.token.isCancellationRequested) {
         finish('stopped');
         return { kind: 'stopped', wid };
       }
+      if ((parser.structured || previous) && !parser.ended) {
+        finish('truncated');
+        return { kind: 'truncated', wid };
+      }
       finish('done');
       return { kind: 'done', wid };
     } catch (err) {
+      apply(parser.finish());
       if (cancel.token.isCancellationRequested || isCategory(err, 'cancelled')) {
         finish('stopped');
         return { kind: 'stopped', wid };
@@ -145,6 +209,134 @@ export class ExplainService {
       return { kind: 'failed', wid, message };
     }
   }
+
+  private applyEvent(
+    key: string,
+    wid: string,
+    e: ProtocolEvent,
+    target: LineRange,
+    offset: number,
+  ): void {
+    switch (e.type) {
+      case 'overviewDelta':
+        this.session.stream(key, wid, ({ view }) => {
+          view.overview += e.text;
+        });
+        return;
+      case 'stepStart':
+        this.session.update(key, wid, ({ view }) => {
+          const { ranges, anchored } = anchorRanges(e.ranges, target);
+          view.steps.push({
+            index: view.steps.length,
+            title: e.title,
+            ranges,
+            text: '',
+            concepts: [],
+            anchored,
+          });
+        });
+        return;
+      case 'stepDelta':
+        this.session.stream(key, wid, ({ view }) => {
+          const step = view.steps[e.index + offset];
+          if (step) {
+            step.text += e.text;
+          }
+        });
+        return;
+      case 'concepts':
+        this.session.stream(key, wid, ({ view }) => {
+          const step = view.steps[e.index + offset];
+          if (step) {
+            step.concepts = e.concepts;
+          }
+        });
+        return;
+      case 'summaryDelta':
+        this.session.stream(key, wid, ({ view }) => {
+          view.summary += e.text;
+        });
+        return;
+      case 'watchDelta':
+        this.session.stream(key, wid, ({ view }) => {
+          view.watch += e.text;
+        });
+        return;
+      case 'end':
+        return;
+    }
+  }
+
+  /** Until the first tag, the raw text streams as plain Markdown so the user sees progress. */
+  private showUnstructured(
+    key: string,
+    wid: string,
+    parser: ProtocolParser,
+    wasStructured: boolean,
+    continuing: boolean,
+  ): void {
+    if (continuing) {
+      return;
+    }
+    if (!parser.structured) {
+      this.session.stream(key, wid, (entry) => {
+        entry.view.fallbackMarkdown = entry.raw;
+      });
+    } else if (!wasStructured) {
+      this.session.update(key, wid, ({ view }) => {
+        view.fallbackMarkdown = null;
+      });
+    }
+  }
+}
+
+/** Final validation (spec §10): drop empty steps, fall back to Markdown when unusable. */
+function settle(view: WalkthroughView, structured: boolean, raw: string): void {
+  if (!structured) {
+    view.fallbackMarkdown = raw;
+    view.notice = raw.trim() ? NOT_STRUCTURED_NOTICE : null;
+    return;
+  }
+  view.fallbackMarkdown = null;
+  view.steps = view.steps
+    .filter((s) => s.title.trim() && s.text.trim())
+    .map((s, index): StepView => ({ ...s, index }));
+  const unanchored = view.steps.filter((s) => !s.anchored).length;
+  if (view.steps.length > 0 && unanchored * 2 > view.steps.length) {
+    view.fallbackMarkdown = asMarkdown(view);
+    view.notice = UNANCHORED_NOTICE;
+  }
+}
+
+function asMarkdown(view: WalkthroughView): string {
+  const parts = [view.overview.trim()];
+  for (const s of view.steps) {
+    parts.push(`#### ${s.index + 1}. ${s.title}`, s.text.trim());
+  }
+  return parts.filter(Boolean).join('\n\n');
+}
+
+function newView(
+  document: vscode.TextDocument,
+  outcome: Extract<GateOutcome, { kind: 'sent' }>,
+): WalkthroughView {
+  return {
+    id: newId(),
+    fileName: displayName(document),
+    providerLabel: outcome.providerLabel,
+    model: outcome.model,
+    status: 'streaming',
+    overview: '',
+    steps: [],
+    summary: '',
+    watch: '',
+    fallbackMarkdown: null,
+    notice: null,
+    error: null,
+    durationMs: null,
+    withheld: outcome.withheld,
+    stale: false,
+  };
 }
 
 function isCategory(err: unknown, category: ProviderError['category']): boolean {

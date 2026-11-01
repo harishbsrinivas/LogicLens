@@ -1,4 +1,5 @@
-// In-memory session state (arch §7): the latest walkthrough per document. Nothing persisted in S1.
+// In-memory session state (arch §7): the latest walkthrough per document and its focus.
+// Nothing persisted before S8.
 import * as vscode from 'vscode';
 import type { WalkthroughView } from './types';
 
@@ -6,16 +7,24 @@ export interface SessionEntry {
   view: WalkthroughView;
   /** Set while the request is streaming. */
   cancel?: vscode.CancellationTokenSource;
+  /** The model's raw response so far, sent back on Continue. Never shown or logged. */
+  raw: string;
+  /** Focused step index (highlighted; moves with the cursor in follow mode), or null. */
+  focus: number | null;
+  /** Step whose thread is expanded; changes only on an explicit focus, not on cursor moves. */
+  opened: number | null;
+  /** Expand every step thread instead of only the focused one. */
+  showAll: boolean;
 }
 
 export class SessionStore implements vscode.Disposable {
   private readonly entries = new Map<string, SessionEntry>();
   private readonly changed = new vscode.EventEmitter<string>();
-  private readonly delta = new vscode.EventEmitter<{ key: string; wid: string; text: string }>();
+  private readonly delta = new vscode.EventEmitter<{ key: string; wid: string }>();
 
-  /** Fires with the document key when a walkthrough starts, finishes, or is replaced. */
+  /** Fires with the document key on structural changes: start, new step, status, focus. */
   readonly onDidChange = this.changed.event;
-  /** Fires for each streamed text chunk. */
+  /** Fires when streamed text is appended; renderers may batch these. */
   readonly onDelta = this.delta.event;
 
   static key(uri: vscode.Uri): string {
@@ -40,7 +49,7 @@ export class SessionStore implements vscode.Disposable {
     this.changed.fire(key);
   }
 
-  /** Applies a change to the current walkthrough if it is still `wid`. */
+  /** Applies a structural change to the current walkthrough if it is still `wid`. */
   update(key: string, wid: string, change: (entry: SessionEntry) => void): void {
     const entry = this.entries.get(key);
     if (entry?.view.id === wid) {
@@ -49,11 +58,39 @@ export class SessionStore implements vscode.Disposable {
     }
   }
 
-  appendMarkdown(key: string, wid: string, text: string): void {
+  /** Applies a text-only change (streamed deltas) if the walkthrough is still `wid`. */
+  stream(key: string, wid: string, change: (entry: SessionEntry) => void): void {
     const entry = this.entries.get(key);
     if (entry?.view.id === wid) {
-      entry.view.fallbackMarkdown = (entry.view.fallbackMarkdown ?? '') + text;
-      this.delta.fire({ key, wid, text });
+      change(entry);
+      this.delta.fire({ key, wid });
+    }
+  }
+
+  /** `open` also expands that step's thread (explicit focus); follow mode passes false. */
+  setFocus(key: string, focus: number | null, open: boolean): void {
+    const entry = this.entries.get(key);
+    const opened = open ? focus : entry?.opened;
+    if (entry && (entry.focus !== focus || entry.opened !== opened)) {
+      entry.focus = focus;
+      entry.opened = opened ?? null;
+      this.changed.fire(key);
+    }
+  }
+
+  setShowAll(key: string, showAll: boolean): void {
+    const entry = this.entries.get(key);
+    if (entry && entry.showAll !== showAll) {
+      entry.showAll = showAll;
+      this.changed.fire(key);
+    }
+  }
+
+  markStale(key: string): void {
+    const entry = this.entries.get(key);
+    if (entry && !entry.view.stale) {
+      entry.view.stale = true;
+      this.changed.fire(key);
     }
   }
 

@@ -30,7 +30,8 @@ Single entry point for any provider call (arch §8). In order: current terms of 
 
 Kept in `src/prompts/` as functions returning strings, each with a version constant included in the cache key.
 
-- `walkthrough.system`: role, the quality rules from spec §10, the output protocol below with a short example, depth, audience, and jargon instructions, "explain, do not rewrite", "do not guess the content of withheld lines".
+- `walkthrough.system` (`prompts/walkthrough.ts`, v1 in S2): role, the quality rules from spec §10, the output protocol below with a short example, "explain, do not rewrite", "do not guess the content of withheld lines". Depth, audience, and jargon instructions arrive in S3. A unit test feeds the prompt's own example to the parser.
+- `continue.user`: sent after the user turn and the earlier raw response (as the assistant turn) when the user chooses Continue; asks for the next step onward without repeating the overview.
 - Personality fragment (S12, ADR-0023): appended last, after a fixed precedence line stating that protocol, ranges, facts, audience, and jargon override voice. `none` adds nothing.
 - `question.system`: same rules, answer about the anchored lines, use `L<n>` for line references, may answer in free Markdown.
 - `refreshSteps.system`: given the overview and changed steps' current code, rewrite only those steps.
@@ -76,11 +77,24 @@ Why not JSON: works identically across every provider, including CLIs that wrap 
 - `summaryDelta(text)`, `watchDelta(text)`
 - `end()`
 
-It is a pure function over strings with no VS Code imports, so it is fully unit tested.
+Text streams out as soon as a partial line cannot be a tag (it does not start with `@@`); a line that may be a tag is held until its newline. A trailing `\r` is held in case it is half of `\r\n`. Text before the first tag is held and becomes the overview only if the first tag is not `@@overview`. In `continuation` mode (Continue) text before the first tag is dropped and step indexes restart at 0; the service appends them after the existing steps. Step titles have `$(` neutralized, since they show in CodeLens.
+
+It is a pure class over strings with no VS Code imports, so it is fully unit tested, including every split point of a sample response.
 
 ## 7. Anchor and validate
 
-`explain/anchor.ts` checks each range against the document line count and the target range: clamp if within 2 lines of the target, otherwise mark unanchored (spec §4, §10). Overlaps are allowed but flagged for the eval metrics. Anchor, parse, and coverage rates are computed here for the evaluation runner.
+`explain/anchor.ts` checks each range against the document line count and the target range: clamp if within 2 lines of the target, otherwise mark unanchored (spec §4, §10). Kept ranges are sorted. Overlaps are allowed. Anchor, parse, and coverage rates are computed here (`measure`) for the evaluation runner (`pnpm eval`, arch §9).
+
+## 7a. Settling a walkthrough
+
+`explain/walkthrough.ts` applies parser events to the session as they arrive: new steps are anchored at once and are structural changes; text is a streamed change. While no tag has been seen, the raw text so far is shown as the Markdown fallback. When the stream ends:
+
+- no tag at all: the raw text is the Markdown fallback with the "did not return steps" notice;
+- steps with an empty title or text are dropped and the rest re-indexed;
+- more than half of the steps unanchored: the overview and steps are composed into Markdown and shown with the "could not be tied to lines" notice;
+- status is `stopped` (cancelled), `truncated` (structured but no `@@end`), `failed`, or `done`. `truncated` and `failed` walkthroughs with steps can be continued unless the file changed.
+
+The raw response is kept in the session entry for Continue and logged only through the debug channel.
 
 ## 8. Questions
 

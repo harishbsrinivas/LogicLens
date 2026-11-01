@@ -17,7 +17,7 @@ Each persona maps to an explanation **audience** setting (spec §4): newcomer an
 2. On first use, LogicLens asks the user to accept its terms of use (spec §8). If no provider is configured, it offers the detected ones (spec §6) and the one-time data notice (spec §8).
 3. The explanation opens inline at the top of the file, over the code. A one-paragraph overview streams in within a few seconds.
 4. Steps appear as they arrive, each above its own lines in the editor. Each step has a title, a line range, and an explanation.
-5. Clicking a step's title, or pressing the next-step key, scrolls the editor to its lines, opens its explanation under its first line, and highlights them. Other lines dim slightly.
+5. Clicking a step's title, or pressing the next-step key, scrolls the editor to its lines, opens its explanation just above them, and highlights them. Other lines dim slightly.
 6. User reaches the last step and sees a short summary with key takeaways.
 
 ### J2. Explain a selection

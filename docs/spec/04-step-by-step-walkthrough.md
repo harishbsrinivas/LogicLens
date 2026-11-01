@@ -23,20 +23,25 @@ Steps follow **reading order for understanding**, not necessarily top-to-bottom.
 Everything is inline in the editor (spec §7, ADR-0028):
 
 - The **overview** is an explanation block anchored at the top of the file. When the walkthrough finishes, the **summary** and things to watch are added to the same block.
-- Each **step** has a title row above its first line ("2 · Build the auth URL", with Previous and Next) and an explanation block under that line. Only the focused step's block is expanded; the others are collapsed to their title row.
+- Each **step** has a title row and an explanation block just above its first line, at the beginning of the code it explains (ADR-0029). The title row shows "2 · Build the auth URL  L16–31" with Previous and Next. Only the focused step's block is expanded; the others are collapsed to their title row. A step that starts at line 1 has its block below line 1.
+- Steps that are not linked to lines (see below) are listed in the overview block with their explanation.
 
 ## Navigation
 
 - Click a step's title row to focus it.
-- **Next / Previous step** commands with default keys (spec §9) work while the editor has focus.
+- **Next / Previous step** commands with default keys (spec §9) move through the steps that are linked to lines, in walkthrough order. With no step focused, Next starts at the first step and Previous at the last.
 - Focusing a step:
-  - expands its explanation block and collapses the previously focused one,
+  - expands its explanation block and collapses the previously opened one,
+  - moves the cursor to the start of the step's first line,
   - scrolls the editor so the range is visible, centered if it fits,
   - highlights the range with a subtle background and a left border in the theme's accent color,
   - dims lines outside the range a little (configurable with `logiclens.focusDimming`, default on),
-  - shows the step number in the gutter on the first line.
-- **Escape** in the editor clears the focus highlight but keeps the walkthrough.
-- Moving the cursor into a step's range marks that step as focused (follow mode) without scrolling the editor or expanding its block.
+  - shows the step number in the gutter on the first line,
+  - shows "Step 2 of 6, Build the auth URL, lines 16 to 31" in the status bar for screen readers.
+- **Escape** in the editor clears the focus highlight but keeps the walkthrough and any open block.
+- **Show all steps** (overview block title, palette) expands every step block for skimming; running it again collapses them.
+- While a step is focused, moving the cursor into another step's range moves the highlight there (follow mode, `logiclens.followCursor`, default on) without scrolling or opening its block. After Escape, follow mode waits for the next explicit focus.
+- Editing the document marks the walkthrough stale ("file changed since" in the overview title). Steps keep their original lines until range tracking arrives (S8).
 
 ## Depth and audience
 
@@ -66,7 +71,8 @@ Explanations are written in `logiclens.explanationLanguage`, default `auto`, whi
 
 - The overview appears first. Steps appear one at a time as the model produces them.
 - A step is shown only once its title and line range are known; its explanation text streams in place.
-- If the stream fails partway, finished steps stay, the overview block shows what failed, and **Continue** asks for the remaining steps.
+- Until the first tag arrives, the raw text streams into the overview block so the user sees progress.
+- If the stream ends without `@@end` or fails partway, finished steps stay, the overview block says so, and **Continue** in its title asks the model for the remaining steps. Continue is not offered once the file has changed.
 
 ## When anchoring fails
 
