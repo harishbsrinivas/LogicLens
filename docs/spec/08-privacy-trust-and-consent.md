@@ -28,7 +28,7 @@ Before LogicLens sends anything for the first time, the user must accept its ter
 >
 > [I Agree] [View Full Terms] [Cancel]
 
-- Only **I Agree** records acceptance. **View Full Terms** opens `TERMS.md` and sends nothing; Cancel sends nothing. Until the user agrees, every explain or question action shows the prompt again, and the panel shows "Accept the LogicLens terms of use to continue" with a **Review Terms** button.
+- Only **I Agree** records acceptance. **View Full Terms** opens `TERMS.md` and sends nothing; Cancel sends nothing. Until the user agrees, every explain or question action shows the prompt again. **LogicLens: View Terms of Use** opens the terms at any time.
 - Acceptance is stored once per user in global state with the terms version. When the terms change, the version changes and the user is asked again.
 - "LogicLens: Reset Data Notices" does not clear it. "LogicLens: View Terms of Use" opens the terms at any time.
 - LogicLens cannot tell whether code is confidential. Exclusions and the secret scan reduce risk but do not replace the user's own judgment or their organization's policies.
@@ -66,12 +66,12 @@ Well-known documentation placeholders (for example AWS's `AKIAIOSFODNN7EXAMPLE`)
 - `skip-lines` (default): each flagged line, or the whole block for a private key, is replaced in the outgoing text by `«line withheld by LogicLens: possible secret»`, keeping its line number so steps still anchor. The prompt tells the model that withheld lines exist and not to guess their content. The rest of the file is sent.
 - `refuse-file`: nothing is sent. LogicLens shows which lines matched and offers **Skip those lines instead** for this request.
 
-Either way, the panel shows a notice such as "2 lines withheld: possible secrets on L12, L40", with links to those lines, and the editor marks them with a lock icon in the gutter while the walkthrough is open.
+Either way, the explanation shows a notice such as "2 lines withheld: possible secrets on L12, L40", and the editor marks them with a lock icon in the gutter while the walkthrough is open.
 
 - If withheld lines make up more than 25% of the target's non-blank lines, the file is treated as a secrets file and refused even under `skip-lines`.
 - There is no "send anyway" and no setting that turns the scan off. A false positive costs one line of context; a false negative leaks a credential.
 - The same scan runs on question context and earlier thread turns. If the user's own typed question contains a match, the question is not sent and LogicLens asks them to remove the value.
-- Flagged values never reach logs (including the debug channel), the webview, the cache, or bookmarks. Logs record only the line number and pattern name.
+- Flagged values never reach logs (including the debug channel), the inline explanation, the cache, or bookmarks. Logs record only the line number and pattern name.
 
 ## Workspace trust
 

@@ -33,20 +33,15 @@ logiclens/
 │  ├─ nav/                 # trail model and follow-definition service (S10, ADR-0021)
 │  ├─ bookmarks/           # bookmark store and service (S11, ADR-0022)
 │  ├─ ui/
-│  │  ├─ panel.ts          # WebviewViewProvider, message bridge
-│  │  ├─ validate.ts       # pure validation of webview messages
-│  │  ├─ activeEditor.ts   # the editor commands act on (survives panel focus)
+│  │  ├─ inlineThreads.ts  # CommentController: inline explanation threads (ADR-0028)
+│  │  ├─ safeMarkdown.ts   # pure: images to links, non-http(s) links dropped
+│  │  ├─ activeEditor.ts   # the editor commands act on (survives focus in other views)
 │  │  ├─ contextKeys.ts    # menu context keys
 │  │  ├─ decorations.ts    # step highlight, dimming, gutter numbers
-│  │  ├─ comments.ts       # CommentController for threads
-│  │  ├─ codeLens.ts
+│  │  ├─ codeLens.ts       # step title rows, trail breadcrumbs, opt-in "Explain"
 │  │  ├─ bookmarksView.ts  # TreeDataProvider for logiclens.bookmarks
 │  │  └─ statusBar.ts
 │  └─ util/                # logging (redacting), cancellation, ranges, hashing
-├─ webview/                # panel UI source (Svelte 5, built by Vite) – ADR-0009
-│  ├─ src/
-│  └─ vite.config.mts
-├─ shared/                 # message types shared by src/ and webview/
 ├─ test/
 │  ├─ unit/                # vitest: protocol, anchor, context, guard, prompts
 │  ├─ integration/         # @vscode/test-electron: commands, UI, fake provider
@@ -55,7 +50,7 @@ logiclens/
 └─ docs/
 ```
 
-One pnpm package, not a multi-package workspace: `webview/` and `shared/` are folders built from the root `package.json`. Everything is bundled, so `vsce package --no-dependencies` never touches pnpm's symlinked `node_modules` (arch §9). Split into workspace packages only if a second consumer of `shared/` appears.
+One pnpm package. Everything is bundled into `dist/extension.js`, so `vsce package --no-dependencies` never touches pnpm's symlinked `node_modules` (arch §9). There is no webview bundle (ADR-0028).
 
 ## Module rules
 
@@ -63,12 +58,11 @@ One pnpm package, not a multi-package workspace: `webview/` and `shared/` are fo
 - Only `explain/` calls providers, and only through `guard/RequestGate.send()`. A lint rule (`no-restricted-imports` in `eslint.config.mjs`) blocks importing anything under `providers/` except `providers/types` from `src/`, other than `src/providers/` itself and `src/extension.ts`, which builds the adapters and hands them to the gate. S5 widens the exception to `registry.ts` consumers in `ui/statusBar.ts` and `commands/provider.ts` for listing and selection.
 - `providers/` knows nothing about walkthroughs, steps, or UI. Input is messages; output is a stream of text chunks plus usage.
 - `ui/` renders state from `state/` and sends user intents to `commands/` or services. It never calls providers.
-- `shared/` contains types only, so the webview bundle never pulls in Node code.
 - `nav/` and `bookmarks/` never import `providers/` or `guard/`. Navigating and bookmarking cannot send code; "Explain again" and "Explain <symbol>" go through `commands/` like any other explain action.
 
 ## Activation
 
-`activationEvents` are implicit from contributed commands and views (VS Code infers `onCommand` and `onView`). No `*` or `onStartupFinished`. CodeLens registration happens on first activation and only if `logiclens.codeLens.enabled` is on. The Comments API controller is registered on activation; the gutter "+" therefore appears only after LogicLens has activated once in the window. Open decision 4 (arch §10) covers whether to activate on `onLanguage` to show it earlier.
+`activationEvents` are implicit from contributed commands (VS Code infers `onCommand`; `onView` joins with the Bookmarks view in S11). No `*` or `onStartupFinished`. CodeLens registration happens on first activation and only if `logiclens.codeLens.enabled` is on. The Comments API controller (`ui/inlineThreads.ts`, shared by explanations and, from S4, questions) is registered on activation; the gutter "+" therefore appears only after LogicLens has activated once in the window. Open decision 4 (arch §10) covers whether to activate on `onLanguage` to show it earlier.
 
 ## Concurrency
 

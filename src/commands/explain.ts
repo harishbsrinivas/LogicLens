@@ -3,16 +3,25 @@ import * as vscode from 'vscode';
 import type { ExplainOptions, ExplainResult, ExplainService } from '../explain/walkthrough';
 import { SessionStore } from '../state/session';
 import type { ActiveEditor } from '../ui/activeEditor';
-import type { PanelProvider } from '../ui/panel';
 
 export function registerExplainCommands(
   service: ExplainService,
   session: SessionStore,
   active: ActiveEditor,
-  panel: PanelProvider,
 ): vscode.Disposable[] {
-  async function explainFile(options: ExplainOptions = {}): Promise<ExplainResult> {
-    const editor = active.editor;
+  // Thread title actions pass their comment thread; the palette and editor title pass nothing.
+  function targetEditor(arg: unknown): vscode.TextEditor | undefined {
+    const uri = threadUri(arg);
+    if (!uri) {
+      return active.editor;
+    }
+    return vscode.window.visibleTextEditors.find(
+      (e) => e.document.uri.toString() === uri.toString(),
+    );
+  }
+
+  async function explainFile(options: ExplainOptions = {}, arg?: unknown): Promise<ExplainResult> {
+    const editor = targetEditor(arg);
     if (!editor) {
       void vscode.window.showInformationMessage('Open a file to explain it with LogicLens.');
       return { kind: 'refused', reason: 'cancelled', message: 'No active editor.' };
@@ -21,9 +30,7 @@ export function registerExplainCommands(
       void vscode.window.showInformationMessage('LogicLens does not explain notebooks yet.');
       return { kind: 'refused', reason: 'cancelled', message: 'Notebooks are not supported.' };
     }
-    panel.reveal();
     const result = await service.explainFile(editor.document, options);
-    panel.refresh();
     if (result.kind === 'refused') {
       reportRefusal(result);
     }
@@ -35,7 +42,7 @@ export function registerExplainCommands(
     switch (result.reason) {
       case 'terms':
       case 'cancelled':
-        // The panel shows the terms state; a cancel needs no message.
+        // The terms prompt already said what happened; a cancel needs no message.
         return;
       case 'excluded': {
         const open = 'Open Settings';
@@ -69,14 +76,29 @@ export function registerExplainCommands(
   }
 
   return [
-    vscode.commands.registerCommand('logiclens.explainFile', () => explainFile()),
-    vscode.commands.registerCommand('logiclens.stop', () => {
-      const editor = active.editor;
+    vscode.commands.registerCommand('logiclens.explainFile', (arg?: unknown) =>
+      explainFile({}, arg),
+    ),
+    vscode.commands.registerCommand('logiclens.stop', (arg?: unknown) => {
+      const editor = targetEditor(arg);
       if (editor && session.isBusy(SessionStore.key(editor.document.uri))) {
         session.stop(SessionStore.key(editor.document.uri));
         return;
       }
       session.stopAll();
     }),
+    vscode.commands.registerCommand('logiclens.closeExplanation', (arg?: unknown) => {
+      const uri = threadUri(arg) ?? active.editor?.document.uri;
+      if (uri) {
+        session.delete(SessionStore.key(uri));
+      }
+    }),
   ];
+}
+
+function threadUri(arg: unknown): vscode.Uri | undefined {
+  if (typeof arg === 'object' && arg !== null && 'uri' in arg && arg.uri instanceof vscode.Uri) {
+    return arg.uri;
+  }
+  return undefined;
 }

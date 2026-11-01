@@ -28,9 +28,9 @@ Five packs plus Neutral. Packs ship with LogicLens; users cannot write their own
 ## Choosing a pack
 
 - Setting `logiclens.personality` (application scope: a repository cannot pick a voice for the user), default `none`.
-- **LogicLens: Set Personality** and a chip in the panel header open a quick pick. Each pack shows its name, a one-line description, and a sample sentence explaining the same line of code, so users can compare before choosing.
-- Changing the pack applies to the next request. For the current walkthrough the panel offers **Regenerate in this voice**, which needs confirmation like depth and audience changes (spec §4). Existing threads keep the voice they were written in.
-- The footer shows the pack's name next to the model, so a reader knows why the tone is unusual.
+- **LogicLens: Set Personality**, from the palette or the explanation thread's title, opens a quick pick. Each pack shows its name, a one-line description, and a sample sentence explaining the same line of code, so users can compare before choosing.
+- Changing the pack applies to the next request. For the current walkthrough the explanation thread offers **Regenerate in this voice**, which needs confirmation like depth and audience changes (spec §4). Existing threads keep the voice they were written in.
+- The explanation's header line shows the pack's name next to the model, so a reader knows why the tone is unusual.
 
 ## Quality
 

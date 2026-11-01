@@ -14,17 +14,13 @@ export interface ProviderRequest {
 
 export type StreamChunk = { type: 'text'; text: string } | { type: 'done' };
 
-export interface PanelStateLike {
-  kind: string;
-  walkthrough?: {
-    status: string;
-    fallbackMarkdown: string | null;
-    providerLabel: string;
-    model: string;
-    withheld: number[];
-    error: string | null;
-  };
-  termsAccepted?: boolean;
+export interface ThreadSnapshot {
+  label: string;
+  contextValue: string;
+  author: string;
+  commentLabel: string;
+  body: string;
+  expanded: boolean;
 }
 
 export interface TestApi {
@@ -32,7 +28,7 @@ export interface TestApi {
   setPrompter(prompter: FakePrompter): void;
   setTrusted(trusted: boolean | undefined): void;
   globalState: vscode.Memento;
-  panel: { computeState(): Promise<PanelStateLike>; readonly webviewReadyCount: number };
+  threads: { snapshot(uri: vscode.Uri): ThreadSnapshot | undefined };
 }
 
 export interface ExplainResult {

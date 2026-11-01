@@ -8,7 +8,7 @@ Per open document URI:
 - **Focus:** focused step index or none.
 - **Threads:** id, range, turns (role, text, provider/model), status.
 
-A small event emitter notifies the panel, decorations, and comments. State is plain data so it can be serialized to the cache.
+A small event emitter notifies the inline threads, CodeLens, and decorations. State is plain data so it can be serialized to the cache.
 
 ## Range tracking (ADR-0019)
 

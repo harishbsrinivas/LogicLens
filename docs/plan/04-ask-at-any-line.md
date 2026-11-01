@@ -8,7 +8,7 @@
 
 In:
 - `CommentController` with commenting ranges on all lines of eligible documents (trusted, not excluded, `file` or `untitled`).
-- Thread creation from the gutter "+", from `logiclens.askAtLine` (cursor or selection), from a step's **Ask**, and from a concept chip (pre-filled).
+- Thread creation from the gutter "+", from `logiclens.askAtLine` (cursor or selection), from a step thread's **Ask**, and from a concept tag (pre-filled).
 - Question pipeline (arch §5 step 8): context per spec §5, related step, thread history with budget.
 - Streaming answer into a Markdown comment, throttled; Stop; copy, regenerate, delete.
 - `L<n>` references rendered as links that move the cursor.
@@ -21,10 +21,10 @@ Out: persistence across reloads (S8).
 
 ## Tasks
 
-- [ ] `ui/comments.ts` controller, thread and comment models, menus via `contextValue`.
+- [ ] Question threads on the `ui/inlineThreads.ts` controller (commenting ranges, thread and comment models, menus via `contextValue`).
 - [ ] `explain/question.ts` and `prompts/question.ts` v1; snapshot tests.
 - [ ] Line-reference linkifier with unit tests.
-- [ ] Wire panel **Ask** and concept chips through the bridge.
+- [ ] Wire step **Ask** and concept tags (command links limited with `isTrusted: { enabledCommands }`, or thread actions; decide and record in arch §8).
 - [ ] Integration tests with `FakeProvider`: create thread, stream, follow-up includes history, stop, regenerate, delete, refuses empty and over-length questions, refused in excluded files.
 - [ ] Document the multiple-commenting-provider picker behavior in the README draft.
 

@@ -2,7 +2,7 @@
 
 Security rules for this project. Applies to humans and AI agents alike. `AGENTS.md` makes these rules mandatory for agents; [docs/architecture/08-security-controls.md](docs/architecture/08-security-controls.md) lists the controls that implement them. If this file and the architecture disagree, fix whichever is wrong in the same change.
 
-Scope: a VS Code extension written in TypeScript, bundled with esbuild, with a webview UI, that sends user-selected source code to AI providers the user already has (VS Code Language Model API, local provider CLIs, or HTTP APIs with a user-supplied key).
+Scope: a VS Code extension written in TypeScript, bundled with esbuild, with inline editor UI and no webview (ADR-0028), that sends user-selected source code to AI providers the user already has (VS Code Language Model API, local provider CLIs, or HTTP APIs with a user-supplied key).
 
 ## Reporting a vulnerability
 
@@ -25,7 +25,7 @@ This is the main risk in this product. User code is sent to a third-party model.
 ## 2. Secrets and credentials
 
 - No secrets in git, ever.
-- User API keys are stored only in `context.secrets` (VS Code `SecretStorage`). Never in `settings.json`, workspace state, global state, the webview, logs, or error messages.
+- User API keys are stored only in `context.secrets` (VS Code `SecretStorage`). Never in `settings.json`, workspace state, global state, explanations, logs, or error messages.
 - Never pass an API key on a CLI argument list. Pass via environment variable to the child process if the CLI requires one, scoped to that spawn.
 - Redact anything matching a key pattern before writing to the debug output channel.
 - Run `gitleaks detect --no-banner` before every commit and in CI.
@@ -39,12 +39,12 @@ This is the main risk in this product. User code is sent to a third-party model.
 - Pin GitHub Actions to a full commit SHA. Default workflow `permissions: contents: read`.
 - Marketplace (and, from S7, Open VSX) publish tokens live only in CI secrets, scoped to publishing.
 
-## 4. Webview
+## 4. Rendering model output
 
-- Strict CSP: `default-src 'none'; script-src 'nonce-<random>'; style-src ${webview.cspSource}; img-src ${webview.cspSource} data:; font-src ${webview.cspSource}`. No `unsafe-inline`, no `unsafe-eval`, no remote origins.
-- `localResourceRoots` limited to the extension's `dist/webview` folder.
-- Model output is Markdown. Render it with a Markdown renderer that disables raw HTML, then sanitize the result. Links open only through the extension host after scheme check (`http`, `https`, and `vscode` file links inside the workspace).
-- Messages between webview and extension host are typed and validated on receipt. The extension host never trusts a file path, line number, or command name from the webview without checking it against the current session.
+- LogicLens has no webview (ADR-0028). Adding one needs a new ADR and brings back a strict CSP with a per-load nonce, no remote resources, and validated messages.
+- Model output is shown only as a `vscode.MarkdownString` with `isTrusted`, `supportHtml`, and `supportThemeIcons` set to `false`. Never set `isTrusted: true` on a string that contains model output; if a later slice needs command links next to model text, use `isTrusted: { enabledCommands: [...] }` with commands that validate their arguments.
+- Before rendering, pass model output through `ui/safeMarkdown.ts`: images become links (nothing loads on render), and links, reference definitions, and autolinks that are not http(s) become plain text.
+- Commands run from thread actions resolve their target from the thread's document among open editors; they never take a file path or command from content.
 
 ## 5. Provider CLIs and processes
 
@@ -71,6 +71,6 @@ This is the main risk in this product. User code is sent to a third-party model.
 - [ ] Exclusion rules and the secrets-file guard apply to the new path.
 - [ ] No API key outside `SecretStorage`; no key in logs.
 - [ ] CLI spawns use argument arrays, stdin for content, timeout, and cancel.
-- [ ] Webview CSP unchanged or tightened; Markdown rendering still sanitized.
+- [ ] Model output still rendered only through `safeMarkdown` into an untrusted `MarkdownString`; no webview added without an ADR.
 - [ ] `pnpm audit --audit-level=high` clean or exceptions documented.
 - [ ] `gitleaks detect --no-banner` clean.

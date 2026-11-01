@@ -4,6 +4,5 @@
     "lib": ["ES2022"],
     "types": ["node", "vscode"]
   },
-  "include": ["src", "shared", "test/unit"],
-  "exclude": ["test/unit/webview"]
+  "include": ["src", "test/unit"]
 }

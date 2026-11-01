@@ -10,7 +10,7 @@ Real code calls into other files. A reader who jumps to a definition, then anoth
 - The same action is offered on a focused walkthrough step for identifiers inside its range ("Follow…" in the step menu lists the symbols the step's lines reference).
 - Plain VS Code **Go to Definition** (F12, Ctrl+click) is not recorded. LogicLens cannot reliably tell a definition jump from any other editor switch, and a trail that sometimes records jumps would be worse than one that records them on request.
 
-Following never sends code. Definition lookup is done by the language's own extension on the machine. When the user lands in a file with no walkthrough, the panel shows the empty state for that symbol with **Explain <symbol>** (a symbol target, spec §3). Explaining is a separate explicit action (spec §8).
+Following never sends code. Definition lookup is done by the language's own extension on the machine. When the user lands in a file with no walkthrough, a CodeLens above the symbol offers **Explain <symbol>** (a symbol target, spec §3). Explaining is a separate explicit action (spec §8).
 
 ## The trail
 
@@ -22,17 +22,17 @@ A trail entry records: file, symbol name (if known), cursor position, the walkth
 
 ## Breadcrumbs
 
-The panel header shows the trail as breadcrumbs, below the file name:
+When the trail has more than one entry, a row of CodeLens breadcrumbs above the first line of the current file shows it:
 
 ```
 app.ts › handleRequest  ›  auth.ts › verifyUser  ›  token.ts › decode
 ```
 
-- Each crumb is file plus symbol; the current one is bold. Hover shows the full path and line.
+- Each crumb is file plus symbol; the current one is marked with a dot. Hover shows the full path and line.
 - Clicking a crumb reopens that file at the saved position, restores its walkthrough (in session or from cache, spec §10), and refocuses the step that was focused when the user left.
-- When the crumbs do not fit, the middle ones collapse into a `…` button that opens a list.
-- Excluded files (spec §8) appear in the trail with a lock icon; their crumb opens the file but the panel shows "Excluded by LogicLens settings".
-- If a crumb's file was deleted or its position no longer exists, the crumb is shown struck through; clicking it offers to remove it.
+- When there are more than four crumbs, the middle ones collapse into a `…` crumb that opens the trail in a quick pick.
+- Excluded files (spec §8) appear in the trail with a lock icon; their crumb opens the file, and no explanation is offered for it.
+- If a crumb's file was deleted or its position no longer exists, the crumb is marked "(missing)"; clicking it offers to remove it.
 
 ## Back and forward
 

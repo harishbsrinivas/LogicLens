@@ -3,38 +3,27 @@
   "tasks": [
     {
       "label": "watch",
-      "dependsOn": ["watch:host", "watch:webview"],
-      "group": { "kind": "build", "isDefault": true }
-    },
-    {
-      "label": "watch:host",
       "type": "shell",
       "command": "pnpm watch",
       "isBackground": true,
       "problemMatcher": {
         "owner": "esbuild",
-        "pattern": { "regexp": "^✘ \\[ERROR\\] (.*)$", "message": 1 },
+        "pattern": {
+          "regexp": "^✘ \\[ERROR\\] (.*)$",
+          "message": 1
+        },
         "background": {
           "activesBegin": "^\\[watch\\] build started",
           "endsPattern": "^\\[watch\\] build finished"
         }
       },
-      "presentation": { "reveal": "never" }
-    },
-    {
-      "label": "watch:webview",
-      "type": "shell",
-      "command": "pnpm watch:webview",
-      "isBackground": true,
-      "problemMatcher": {
-        "owner": "vite",
-        "pattern": { "regexp": "^error (.*)$", "message": 1 },
-        "background": {
-          "activesBegin": "^build started",
-          "endsPattern": "^built in"
-        }
+      "presentation": {
+        "reveal": "never"
       },
-      "presentation": { "reveal": "never" }
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
     }
   ]
 }

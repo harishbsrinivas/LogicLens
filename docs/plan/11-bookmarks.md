@@ -7,11 +7,11 @@
 ## Scope
 
 In:
-- Bookmark actions: step icon in the panel, "Bookmark" in thread comment menus, `logiclens.addBookmark` on selection or cursor line, optional note input.
+- Bookmark actions: step title CodeLens, "Bookmark" in thread comment menus, `logiclens.addBookmark` on selection or cursor line, optional note input.
 - Store in `src/bookmarks/store.ts` per ADR-0022: atomic JSON, cap 500, separate from the cache.
 - Shared re-anchoring module used by cache and bookmarks (move from `src/cache/` if S8 put it there).
 - Bookmarks `TreeView` (`logiclens.bookmarks`) grouped by file; edit note, copy as Markdown, remove, clear all with confirmation; empty state.
-- Selecting a bookmark: reveal and highlight range; panel shows a read-only "Bookmarked explanation" card with **Explain again**.
+- Selecting a bookmark: reveal and highlight range; a read-only "Bookmarked explanation" thread appears at the range with **Explain again**.
 - Gutter bookmark icon; filled bookmark icon on bookmarked steps.
 - "code changed" marking on failed re-anchor.
 - Refuse bookmarking excluded files; store withheld lines as hashes only (ADR-0020).

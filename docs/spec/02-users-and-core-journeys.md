@@ -15,9 +15,9 @@ Each persona maps to an explanation **audience** setting (spec §4): newcomer an
 
 1. User opens a file, or right-clicks it in the Explorer, and runs **LogicLens: Explain File**.
 2. On first use, LogicLens asks the user to accept its terms of use (spec §8). If no provider is configured, it offers the detected ones (spec §6) and the one-time data notice (spec §8).
-3. The LogicLens panel opens beside the editor. A one-paragraph overview streams in within a few seconds.
-4. Steps appear as they arrive. Each step has a title, a line range, and an explanation.
-5. Selecting a step, or pressing the next-step key, scrolls the editor to its lines and highlights them. Other lines dim slightly.
+3. The explanation opens inline at the top of the file, over the code. A one-paragraph overview streams in within a few seconds.
+4. Steps appear as they arrive, each above its own lines in the editor. Each step has a title, a line range, and an explanation.
+5. Clicking a step's title, or pressing the next-step key, scrolls the editor to its lines, opens its explanation under its first line, and highlights them. Other lines dim slightly.
 6. User reaches the last step and sees a short summary with key takeaways.
 
 ### J2. Explain a selection
@@ -35,7 +35,7 @@ Each persona maps to an explanation **audience** setting (spec §4): newcomer an
 
 ### J4. Ask about a step
 
-1. While reading a step in the panel, user clicks **Ask** on that step.
+1. While reading a step's inline explanation, user clicks **Ask** on that step.
 2. A thread opens at the step's first line, pre-scoped to the step's range and explanation.
 
 ### J5. Switch AI provider
@@ -52,7 +52,7 @@ Each persona maps to an explanation **audience** setting (spec §4): newcomer an
 ### J7. Follow code across files
 
 1. While reading step 3 of `app.ts`, the user puts the cursor on `verifyUser` and runs **LogicLens: Follow to Definition**.
-2. `auth.ts` opens at `verifyUser`. The panel breadcrumbs read `app.ts › handleRequest › auth.ts › verifyUser`.
+2. `auth.ts` opens at `verifyUser`. The trail row at the top of the editor reads `app.ts › handleRequest › auth.ts › verifyUser`.
 3. User explains the symbol, follows one more call into `token.ts`, then clicks the `app.ts` crumb.
 4. `app.ts` reopens with step 3 focused, exactly where they left (spec §13).
 

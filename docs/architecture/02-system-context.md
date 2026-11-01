@@ -8,12 +8,12 @@
                      │  │ LogicLens extension host code                                      │  │
                      │  │  commands · RequestGate · explain pipeline · providers · state   │  │
                      │  └──────┬──────────────┬───────────────┬──────────────┬─────────_───┘  │
-                     │         │ postMessage  │ Comments API  │ vscode.lm    │ spawn (stdin)  │
-                     │  ┌──────▼─────┐  ┌─────▼──────┐  ┌─────▼────────┐  ┌──▼────────────┐   │
-                     │  │ Panel      │  │ Editor     │  │ Other ext.   │  │ claude/codex/ │   │
-                     │  │ (webview)  │  │ threads,   │  │ (Copilot...) │  │ gemini/kiro   │   │
-                     │  └────────────┘  │ decorations│  └─────┬────────┘  │ CLIs          │   │
-                     │                  └────────────┘        │           └──┬────────────┘   │
+                     │         │ CodeLens     │ Comments API  │ vscode.lm    │ spawn (stdin)  │
+                     │  ┌──────▼──────────────▼──────┐  ┌─────▼────────┐  ┌──▼────────────┐   │
+                     │  │ Editor: inline explanation │  │ Other ext.   │  │ claude/codex/ │   │
+                     │  │ and question threads,      │  │ (Copilot...) │  │ gemini/kiro   │   │
+                     │  │ CodeLens, decorations      │  └─────┬────────┘  │ CLIs          │   │
+                     │  └────────────────────────────┘        │           └──┬────────────┘   │
                      │                                        │              │   ┌─────────┐  │
                      │                                        │              │   │ Ollama  │◄─┼── HTTP localhost
                      │                                        │              │   └─────────┘  │
@@ -42,4 +42,4 @@ The MVP uses only the VS Code Language Model API (tested with Copilot Free) and 
 | Ollama (S7) | HTTP to localhost (configurable) | User | No. |
 | VS Code Marketplace (Open VSX from S7, ADR-0026) | Publishing only, from CI | Microsoft, Eclipse Foundation | Publish tokens in CI secrets only. |
 
-LogicLens makes no other network calls. The webview loads nothing remote.
+LogicLens makes no other network calls. It has no webview, and inline explanations never load images (arch §8).

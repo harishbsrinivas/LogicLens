@@ -17,9 +17,9 @@ Each section lives in its own file; `arch §N` points at `NN-*.md`.
 | 3 | [03-extension-structure.md](03-extension-structure.md) | Folder layout, modules, activation, dependency rules | `src/`, `package.json` contributions |
 | 4 | [04-provider-layer.md](04-provider-layer.md) | Provider interface, each adapter, detection, spike checklist | `src/providers/` |
 | 5 | [05-explanation-pipeline.md](05-explanation-pipeline.md) | Context building, prompts, streaming protocol, parsing, anchoring | `src/explain/`, `src/prompts/` |
-| 6 | [06-ui-architecture.md](06-ui-architecture.md) | Webview panel, messaging, decorations, comment threads, trail breadcrumbs, bookmarks view, status bar | `src/ui/`, `webview/` |
+| 6 | [06-ui-architecture.md](06-ui-architecture.md) | Inline explanation threads, CodeLens rows, decorations, question threads, trail breadcrumbs, bookmarks view, status bar | `src/ui/` |
 | 7 | [07-state-and-storage.md](07-state-and-storage.md) | Session state, cache, range tracking, bookmarks store, trail state, secrets | `src/state/`, `src/cache/`, `src/bookmarks/`, `src/nav/` |
-| 8 | [08-security-controls.md](08-security-controls.md) | Control per risk | `src/guard/`, webview CSP, CLI spawning, `SECURITY.md` |
+| 8 | [08-security-controls.md](08-security-controls.md) | Control per risk | `src/guard/`, rendering model output, CLI spawning, `SECURITY.md` |
 | 9 | [09-build-test-release.md](09-build-test-release.md) | Toolchain, tests, CI, packaging, publishing | `package.json`, `esbuild.mjs`, `.github/`, `test/` |
 | 10 | [10-open-decisions.md](10-open-decisions.md) | Open architecture items | Resolving a decision (also add an ADR) |
 

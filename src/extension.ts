@@ -14,7 +14,7 @@ import { SessionStore } from './state/session';
 import { ActiveEditor } from './ui/activeEditor';
 import { trackFileExcluded } from './ui/contextKeys';
 import { Decorations } from './ui/decorations';
-import { PANEL_VIEW_ID, PanelProvider } from './ui/panel';
+import { InlineThreads } from './ui/inlineThreads';
 import { StatusBar } from './ui/statusBar';
 import { createLogger } from './util/log';
 
@@ -24,7 +24,7 @@ export interface TestApi {
   setPrompter(prompter: Prompter): void;
   setTrusted(trusted: boolean | undefined): void;
   globalState: vscode.Memento;
-  panel: PanelProvider;
+  threads: InlineThreads;
 }
 
 export function activate(context: vscode.ExtensionContext): TestApi | undefined {
@@ -53,7 +53,7 @@ export function activate(context: vscode.ExtensionContext): TestApi | undefined 
 
   const session = new SessionStore();
   const active = new ActiveEditor();
-  const panel = new PanelProvider(context.extensionUri, session, active, context.globalState, log);
+  const threads = new InlineThreads(session);
   const service = new ExplainService(gate, session, log, (message, action) =>
     prompter.confirm(message, action),
   );
@@ -62,13 +62,12 @@ export function activate(context: vscode.ExtensionContext): TestApi | undefined 
     channel,
     session,
     active,
-    panel,
+    threads,
     new StatusBar(session),
     new Decorations(session),
     trackFileExcluded(active),
-    vscode.window.registerWebviewViewProvider(PANEL_VIEW_ID, panel),
     vscode.workspace.onDidCloseTextDocument((doc) => session.delete(SessionStore.key(doc.uri))),
-    ...registerExplainCommands(service, session, active, panel),
+    ...registerExplainCommands(service, session, active),
     registerTermsCommand(context.extensionUri),
   );
 
@@ -80,7 +79,7 @@ export function activate(context: vscode.ExtensionContext): TestApi | undefined 
     setPrompter: (p) => (prompter = p),
     setTrusted: (t) => (trustOverride = t),
     globalState: context.globalState,
-    panel,
+    threads,
   };
 }
 

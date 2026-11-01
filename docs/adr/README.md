@@ -48,7 +48,7 @@ What follows, good and bad.
 | [0006](0006-direct-http-adapters-with-secret-storage.md) | Direct HTTP adapters with keys in SecretStorage | Accepted | providers, http, security |
 | [0007](0007-line-tagged-streaming-protocol.md) | Line-tagged text protocol for walkthrough output | Accepted | protocol, prompts |
 | [0008](0008-comments-api-for-line-questions.md) | Comments API for line questions | Accepted | ui, comments |
-| [0009](0009-svelte-webview-view-panel.md) | Single webview view panel built with Svelte 5 | Accepted | ui, webview, stack |
+| [0009](0009-svelte-webview-view-panel.md) | Single webview view panel built with Svelte 5 | Superseded by ADR-0028 | ui, webview, stack |
 | [0010](0010-absolute-line-numbers-in-prompts.md) | Absolute line numbers in prompts | Accepted | prompts, protocol |
 | [0011](0011-typescript-esbuild-pnpm-toolchain.md) | TypeScript, esbuild, Vite, pnpm, vitest, test-cli | Accepted | stack, build |
 | [0012](0012-publish-to-marketplace-and-open-vsx.md) | Publish to Marketplace and Open VSX | Superseded by ADR-0026 | release |
@@ -66,3 +66,4 @@ What follows, good and bad.
 | [0024](0024-terms-of-use-acceptance-gate.md) | Terms of use accepted before the first request | Accepted | product, privacy, security |
 | [0025](0025-mvp-providers-copilot-free-and-claude-code.md) | MVP providers: Copilot Free through `vscode.lm`, and Claude Code | Accepted | providers, scope |
 | [0026](0026-mvp-targets-vscode-on-linux.md) | MVP targets VS Code on Linux only; Marketplace only | Accepted | scope, release |
+| [0028](0028-inline-explanations-in-the-editor.md) | Explanations inline in the editor; no side panel | Accepted | ui, comments, product |

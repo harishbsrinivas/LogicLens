@@ -1,6 +1,6 @@
 // Orchestrates an explain-file request (arch §5). S1: plain Markdown, streamed into the session.
 import * as vscode from 'vscode';
-import type { WalkthroughView } from '../../shared/messages';
+import type { WalkthroughView } from '../state/types';
 import type { GateOutcome, RefusalReason, RequestGate, SecretsAction } from '../guard/gate';
 import { pathInfo } from '../guard/settings';
 import { ProviderError } from '../providers/types';

@@ -8,7 +8,7 @@ Reading unfamiliar code is slow. Developers jump between files, guess at intent,
 
 - **Reading, not writing.** LogicLens explains. It never edits code, generates code, or runs commands. That keeps it safe to point at any file and keeps its interface focused.
 - **Bring your own AI.** LogicLens has no model and no account of its own. It uses the AI assistant the user already has and already trusts: GitHub Copilot through the VS Code Language Model API (which also exposes Claude, GPT, and Gemini models to Copilot users), or Claude Code. The first release supports these two; OpenAI Codex, Gemini CLI, Kiro, a local Ollama model, and Anthropic or OpenAI API keys follow after release (spec §6). No new subscription, no new data processor.
-- **Anchored to the code.** Every step and every answer points at specific lines. The editor is the primary surface; the panel is a guide beside it.
+- **Anchored to the code.** Every step and every answer points at specific lines. The editor is the only surface: explanations appear inline, over the code they describe (ADR-0028).
 - **Elegant and quiet.** Native look, follows the user's theme, no clutter, no chat-window sprawl (spec §7).
 
 ## Name

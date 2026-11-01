@@ -1,8 +1,8 @@
 # S2. Step-by-Step Walkthrough
 
 **Status:** Not started
-**User value:** the explanation becomes a guided walkthrough: overview, numbered steps tied to line ranges, and a summary. Clicking a step or pressing Alt+] highlights its lines in the editor.
-**Spec:** §4 (all except depth/audience controls), §7 (panel layout, highlight, accessibility), §10 (output contract, failure handling)
+**User value:** the explanation becomes a guided walkthrough: overview, numbered steps tied to line ranges, and a summary. Each step appears inline above its lines; clicking its title or pressing Alt+] opens its explanation and highlights its lines.
+**Spec:** §4 (all except depth/audience controls), §7 (inline layout, highlight, accessibility), §10 (output contract, failure handling)
 
 ## Scope
 
@@ -10,13 +10,13 @@ In:
 - Prompt `walkthrough.system` v1 with the line-tagged protocol (arch §5).
 - Incremental protocol parser and anchor validator.
 - State store for walkthroughs per document, focus state.
-- Panel: overview, step list with expand/collapse and "Show all", concepts chips (display only; click wired in S4), summary and things to watch, streaming progress line.
+- Inline threads (ADR-0028): overview thread at line 1 (summary and things to watch added when finished), one thread per step under its first line with only the focused one expanded, "Show all", concept tags (display only; click wired in S4).
+- Step title CodeLens rows with Previous and Next.
 - Decorations: focus highlight, dimming, gutter step numbers; reveal on focus.
 - Commands `logiclens.nextStep`, `logiclens.previousStep`, `logiclens.clearFocus`; context keys; default keybindings.
 - Follow-cursor mode.
-- Panel follows the active editor (shows that document's walkthrough or the empty state).
 - Partial-failure handling: keep finished steps, **Continue** for truncated output, plain-Markdown fallback when not parseable.
-- Accessibility: list roles, step announcements, polite live region, keyboard navigation in the panel.
+- Accessibility: step announcements (confirm a mechanism without a webview live region, ADR-0028), keyboard-only reading through commands, CodeLens, and Accessible View.
 
 Out: depth and audience controls (S3), Ask buttons (S4), range tracking on edits (S8; for now, editing the document marks the whole walkthrough stale).
 
@@ -26,8 +26,8 @@ Out: depth and audience controls (S3), Ask buttons (S4), range tracking on edits
 - [ ] `explain/anchor.ts` with unit tests: in range, clamp within 2 lines, unanchored, multi-range.
 - [ ] `state/` walkthrough store and events.
 - [ ] `ui/decorations.ts` and gutter SVG generator; integration test asserting decorations applied to the right ranges.
-- [ ] Webview step list components with keyboard navigation; component tests.
-- [ ] Batched delta posting (about 30 ms).
+- [ ] Step threads and step title CodeLens in `ui/inlineThreads.ts` and `ui/codeLens.ts`; integration tests for expand/collapse on focus.
+- [ ] Per-thread throttled body updates (about 100 ms, as in S1).
 - [ ] Eval runner skeleton in `test/eval/` computing parse, anchor, and coverage rates; seed corpus with 10 files.
 - [ ] Remove S1's Markdown-only prompt or keep it as the fallback renderer only.
 
@@ -36,7 +36,7 @@ Out: depth and audience controls (S3), Ask buttons (S4), range tracking on edits
 1. Explain a 200-line Python file. Overview appears, then steps one by one.
 2. Click step 3: editor scrolls, lines highlight, others dim, gutter shows "3".
 3. Press Alt+] and Alt+[ to move between steps; Escape clears the highlight.
-4. Move the cursor into step 5's lines; step 5 highlights in the panel.
+4. Move the cursor into step 5's lines; step 5 becomes the focused step.
 5. Switch to another tab and back; the walkthrough is still there.
 6. Use only the keyboard to read all steps, with a screen reader announcing each.
 
