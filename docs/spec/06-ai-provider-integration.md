@@ -40,7 +40,7 @@ Each provider shows a state: **Ready**, **Needs sign-in**, **Not installed**, or
 - **After that:** `logiclens.provider` and `logiclens.model` hold the choice (`auto` by default, meaning the first Ready provider in the table order and that provider's default model).
 - **Status bar item** shows the current provider and model ("✦ Copilot · claude-sonnet"); clicking it opens the picker (J5).
 - **Per request override:** the panel header has a provider menu for regenerating the current walkthrough with another provider, which is useful for comparing.
-- Model names are never hardcoded as defaults in the extension. Each adapter uses the provider's own default unless the user picks a model.
+- Model names are never hardcoded as defaults in the extension. Each adapter uses the provider's own default unless the user picks a model. For VS Code Language Models, where the API has no default, LogicLens prefers Copilot's chat models and, among them, the one with the largest input window (arch §4).
 
 ## Fallback and errors
 

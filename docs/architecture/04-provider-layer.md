@@ -23,10 +23,11 @@ Signatures are in `src/providers/types.ts` (fixed in S1).
 ### `vscode-lm` (S1)
 
 - `vscode.lm.selectChatModels()` (bound in `vscodeLmApi.ts`, injected into `vscodeLm.ts` so the adapter is unit tested with a fake; optionally filtered by vendor or family when the user picks one) lists models. Model display uses `model.name` and `model.vendor`.
-- `model.sendRequest(messages, {}, token)`; iterate `response.text`.
-- The system prompt is sent as the first user message, because the Language Model API has no system role in all versions (confirm in S0).
-- First use triggers VS Code's consent dialog; a refusal surfaces as a `LanguageModelError` with a no-permissions code, mapped to `auth` with a message explaining how to allow access.
-- Token counting via `model.countTokens` for context budgeting (not used yet; S1 relies on the size limit).
+- **Default model (S0 finding):** VS Code 1.142 with Copilot Free lists `copilotcli · Auto` (agent-backed, `maxInputTokens` 0) first, then `copilot · GPT-4o mini` (12k input) and `copilot · Auto` (backed by claude-fable-5.1, about 936k input). `rankModels` orders vendor `copilot` first, then by `maxInputTokens`, so the default is `copilot · Auto`. Nothing is filtered (ADR-0025). Model IDs repeat across vendors (`auto`), so model keys are `vendor/id`.
+- `model.sendRequest(messages, { justification }, token)`; iterate `response.text`. The justification text appears in VS Code's access prompt.
+- The system prompt is sent as the first user message, because the Language Model API has no system role in all versions. Verified in S0: Copilot follows instructions given this way.
+- First use may trigger VS Code's consent dialog; a refusal surfaces as a `LanguageModelError` with a no-permissions code, mapped to `auth` with a message explaining how to allow access. In the S0 spike (VS Code 1.142, Extension Development Host) no prompt appeared.
+- Token counting via `model.countTokens` for context budgeting (works with Copilot: 4,043 tokens for a 300-line file; not used yet, S1 relies on the size limit).
 - Feature-detect `vscode.lm`; in editors without it the adapter reports `unavailable`.
 
 ### CLI adapters (S6: `claude-code`; S7 after release: the rest)
@@ -70,14 +71,15 @@ Shared helper `http/sse.ts` reads server-sent events from `fetch` (Node 20+ glob
 
 ## S0 spike checklist (MVP providers, ADR-0025)
 
-- [ ] `vscode.lm` in VS Code stable with **Copilot Free**: list the models offered; stream a reply; confirm consent behavior and error codes, including the quota-exhausted error; confirm system-message support.
+- [x] `vscode.lm` in VS Code stable (1.142, Linux) with **Copilot Free**: models listed (above); the real adapter streams a reply and maps Stop to `cancelled`; no consent prompt appeared in the Extension Development Host; the system prompt as a first user message works. The quota-exhausted error could not be forced; `Blocked` maps to `quota` per the API docs and is unit tested.
 - [x] Claude Code CLI: flags, tools off, model choice, no sign-in behavior verified on Linux (table above). Windows path resolution moves to S13 (ADR-0026).
-- [ ] Extension IDs of GitHub Copilot and Claude Code, for the setup view's "Install" links.
-- [ ] Measure time to first token for both on a 300-line file. Claude Code, short prompt only: process start to `init` about 0.4 s, first text delta about 1.6 s later.
+- [x] Extension IDs for the setup view's "Install" links: GitHub Copilot is `GitHub.copilot-chat` (built into VS Code 1.142 and needs `^1.142.0`, so Copilot Free users are on 1.142 or later); Claude Code is `anthropic.claude-code`.
+- [x] Time to first token on a 300-line file with the walkthrough protocol: Claude Code median 5.9 s (5.7, 5.9, 8.0 s; includes CLI start), Copilot `Auto` 4.9 s (200-line files: 7.0 and 11.6 s). Both are near or above the 5 s median target in spec §12; track in S2 and S9.
+- [x] Protocol trial (ADR-0007), prompt with the arch §5 format and one example: Claude Code on 4 files (135 to 301 lines) and Copilot `Auto` on 3 files (200 to 301 lines). Every response started with `@@overview`, had only well-formed `@@step N | L… | Title` headers (90 of 90 steps), no ranges outside the file, `@@summary`, `@@watch`, and a final `@@end`, and no code fences. Parser fixtures should still cover missing `@@end`, prose before the first tag, and fenced output, which neither model produced.
 
 Record results in this file and resolve ADR-0017.
 
-Not yet run: `vscode.lm` with Copilot Free (needs a signed-in GitHub account), the protocol trial on three sample files, and the 300-line timing.
+All S0 items are done. Spike code was throwaway and is not in the repository.
 
 ## S7 spike checklist (after release)
 
