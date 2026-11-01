@@ -18,6 +18,8 @@ export interface StepView {
   concepts: string[];
   /** False when no range could be tied to the target (spec §4). */
   anchored: boolean;
+  /** Its code was edited or could not be found again (S8, spec §10). */
+  changed?: boolean;
 }
 
 export interface WalkthroughView {
@@ -44,6 +46,10 @@ export interface WalkthroughView {
   withheld: number[];
   /** The document changed after this walkthrough was made (S2; per-step tracking in S8). */
   stale: boolean;
+  /** When the walkthrough was generated (ms since epoch). */
+  createdAt?: number;
+  /** Loaded from the cache rather than generated in this session (S8). */
+  restored?: boolean;
   /** Token counts, when the provider reports them (spec §6 cost transparency). */
   usage?: { inputTokens?: number; outputTokens?: number };
 }

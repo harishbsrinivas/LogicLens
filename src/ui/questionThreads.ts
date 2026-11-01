@@ -3,7 +3,7 @@
 // the inline explanations; renders state from `QuestionStore`.
 import * as vscode from 'vscode';
 import type { QuestionStore, QuestionThread, Turn } from '../state/questions';
-import { shiftRange } from '../state/rangeShift';
+import { applyEdits, toLineEdits } from '../state/rangeTracker';
 import type { LineRange } from '../state/types';
 import { linkifyLines, REVEAL_LINE_COMMAND } from './lineLinks';
 import { safeMarkdown } from './safeMarkdown';
@@ -58,24 +58,9 @@ export class QuestionThreads implements vscode.Disposable {
     if (threads.length === 0 || e.contentChanges.length === 0) {
       return;
     }
-    // Changes do not overlap and refer to the old document; apply bottom-up.
-    const edits = [...e.contentChanges]
-      .sort((a, b) => b.range.start.compareTo(a.range.start))
-      .map((c) => ({
-        startLine: c.range.start.line,
-        startCharacter: c.range.start.character,
-        endLine: c.range.end.line,
-        endCharacter: c.range.end.character,
-        text: c.text,
-      }));
+    const edits = toLineEdits(e.contentChanges);
     for (const thread of threads) {
-      let range = thread.range;
-      let deleted = false;
-      for (const edit of edits) {
-        const shifted = shiftRange(range, edit);
-        range = shifted.range;
-        deleted ||= shifted.deleted;
-      }
+      const { range, deleted } = applyEdits(thread.range, edits);
       if (deleted || range.start !== thread.range.start || range.end !== thread.range.end) {
         this.store.update(thread.id, (t) => {
           t.range = range;

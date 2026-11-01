@@ -32,12 +32,13 @@ Targets for MVP exit are in spec §12.
 
 ## Caching and staleness
 
-- A walkthrough is cached by document URI with a hash of the target text, provider, model, depth, audience, jargon, personality, and explanation language.
-- Reopening an unchanged file shows the cached walkthrough instantly, labeled with when and by which model it was made.
+- A walkthrough is cached by document URI, provider, model, depth, audience, jargon, personality, explanation language, prompt version, and target (whole file, or the selection's lines), together with the document's question threads. Only saved files are cached; untitled documents are not.
+- Reopening a file shows its most recent cached walkthrough and threads instantly, without a request, labeled "Generated <time> ago" with the provider and model in the header. Threads keep only finished answers.
+- **Close Explanation** also removes the document's cached walkthrough; closing the file does not.
 - **When the file changes:**
   - Step ranges move with edits while the walkthrough is open (tracked like decorations).
-  - A step whose lines were edited is marked **changed**; its text is kept but dimmed with a "code changed since this was written" note.
-  - The walkthrough header shows **Stale** if any step changed, with **Refresh** (full) and **Refresh changed steps** (sends the changed steps' current code plus the overview).
+  - A step whose lines were edited is marked **changed**; its text is kept and its title reads "(code changed)".
+  - The walkthrough header shows "file changed since" once the file is edited, with **Refresh** (full, keeping the selection or symbol) and, when steps are marked, **Refresh changed steps** (sends the current file, the overview, and the changed steps' numbers, titles, and old ranges; only those steps are rewritten). When no marked steps remain, the walkthrough is no longer stale.
 - On reopen after outside changes (git pull, another editor), LogicLens re-anchors steps by matching their original text; steps that cannot be found are marked changed.
 - The cache holds the last walkthrough per document per settings combination and is capped at 50 MB per workspace, evicting least recently used.
 

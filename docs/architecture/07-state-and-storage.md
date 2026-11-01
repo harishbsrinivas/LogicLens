@@ -13,23 +13,24 @@ Per open document URI:
 
 ## Range tracking (ADR-0019)
 
-`state/rangeTracker.ts` listens to `workspace.onDidChangeTextDocument` and shifts every tracked range (step ranges, thread ranges) using the content changes:
+`state/rangeTracker.ts` (S8; S4's `rangeShift.ts` grown) is pure: `applyEdits(range, edits)` applies one change event's edits bottom-up and returns the new range plus `touched` and `deleted`:
 
-- Edits fully above a range shift it by the line delta.
-- Edits inside a range mark the owning step as changed and adjust the end line.
-- Edits that delete the whole range mark it changed and collapse it to the edit position.
+- Edits fully above a range (ending before its first line, or at column 0 of it) shift it by the line delta.
+- Edits inside a range are `touched`; line inserts or deletes adjust the end line.
+- Edits that delete every line of the range mark it `deleted` and collapse it to the edit position.
 
-Pure logic in a function `applyChanges(ranges, changes)`; unit tested with fixture edit sequences.
+`SessionStore.applyEdits` (called from `ui/stepContext.ts` on `onDidChangeTextDocument`) moves every step range, the target, and the withheld lines, marks touched or deleted steps `changed`, and marks the walkthrough stale. `ui/questionThreads.ts` does the same for question threads. Unit tested with fixture edit sequences (insert above, inside, delete across, multi-cursor, undo).
 
 ## Persisted cache (`src/cache/`)
 
 - Location: `context.storageUri` (per workspace) under `logiclens-cache/`, or `globalStorageUri` for files outside any workspace.
-- One JSON file per document and settings combination, named by a SHA-256 of the cache key. Key: document URI, provider, model, depth, audience, jargon, personality and pack version, explanation language, prompt version.
-- Stored content: the walkthrough and threads, plus the exact text of each step's original lines (needed for re-anchoring) and a hash of the whole target text. Lines withheld by the secret scan are stored as SHA-256 hashes, never as text (ADR-0020); re-anchoring compares hashes for those lines.
-- **On reopen:** if the target hash matches, load as is. If not, re-anchor each step by searching for its original lines (exact match first, then whitespace-insensitive, nearest to the old position). Steps not found are marked changed.
-- Size cap 50 MB per workspace, LRU eviction by last-opened time kept in an index file.
-- Writes are debounced and atomic (write temp, rename).
-- `logiclens.cache.enabled = false` disables reads and writes; "Clear Cache" deletes the folder.
+- `cache/store.ts` (`CacheStore`, Node async fs only): one JSON file per document and settings combination, named by a SHA-256 of the cache key. Key: document URI, provider label, model label, depth, audience, jargon, personality (empty until S12), explanation language, walkthrough prompt version, and target range (empty for the whole file). `index.json` records each file's document URI, size, save time, and last-opened time. Operations run one at a time.
+- Stored content (`cache/restore.ts` `buildEntry`, format 1): the walkthrough view (a streaming one is saved as stopped), the raw response (for Continue), question threads with finished turns only, and for re-anchoring the text of every step range, the target, and each thread's lines, plus a SHA-256 of the whole document. Lines withheld by the secret scan are stored as `sha256:` hashes, never as text (ADR-0020); re-anchoring compares hashes for those lines, and the lock icons are re-anchored by hash.
+- **On reopen** (`cache/sync.ts` `CacheSync`, on `onDidOpenTextDocument` and for documents already open at activation): only `file` documents with no walkthrough or threads in memory; the newest entry for the URI is loaded whatever the current settings. If the document hash matches, it loads as is. If not, `restoreEntry` re-anchors each range with `state/reanchor.ts` (exact match first, then whitespace-insensitive, nearest the old position); steps and threads not found are marked changed and keep their old lines, clamped. A restored walkthrough is `restored`, and its header shows "Generated <age>".
+- **Saving:** one second after the last session or thread change for an open `file` document, unless it is still streaming. A document with neither a walkthrough nor threads (Close Explanation, Clear Threads) has its entries removed; a closed document is not saved, so closing a file keeps its cache.
+- Size cap 50 MB per workspace, LRU eviction by last-opened time. A file that does not parse, or has another format version, is deleted and ignored.
+- Writes are atomic (write `<file>.<pid>.tmp`, rename).
+- `logiclens.cache.enabled = false` disables reads and writes; **Clear Cache** deletes the folder.
 
 The cache contains user code excerpts. It lives in VS Code's per-user extension storage, never in the workspace folder, so it is not committed by accident.
 

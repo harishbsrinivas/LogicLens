@@ -5,6 +5,7 @@ import { pathInfo } from '../guard/settings';
 import type { ChatMessage, ProviderChoice, ProviderErrorCategory } from '../providers/types';
 import { ProviderError } from '../providers/types';
 import type { ExplanationStyle } from '../prompts/style';
+import { refreshUser } from '../prompts/refresh';
 import { continueUser, walkthroughSystem, walkthroughUser } from '../prompts/walkthrough';
 import { SessionStore } from '../state/session';
 import { canContinue, type LineRange, type StepView, type WalkthroughView } from '../state/types';
@@ -104,6 +105,142 @@ export class ExplainService {
       ],
       entry.view,
     );
+  }
+
+  /**
+   * Rewrites only the steps whose code changed (spec §10). The response uses the walkthrough
+   * protocol with the original step numbers; other steps, the overview, and the summary stay.
+   */
+  async refreshChanged(document: vscode.TextDocument): Promise<ExplainResult> {
+    const key = SessionStore.key(document.uri);
+    const entry = this.session.get(key);
+    const changed = entry?.view.steps.filter((s) => s.changed) ?? [];
+    if (!entry || entry.cancel || entry.view.fallbackMarkdown !== null || changed.length === 0) {
+      return { kind: 'refused', reason: 'cancelled', message: 'No steps have changed.' };
+    }
+    const view = entry.view;
+    const wid = view.id;
+    const text = document.getText();
+    const lines = text.split(/\r?\n/);
+    const info = pathInfo(document.uri);
+    const { style } = this.deps.settings(document.uri);
+    const target = view.target
+      ? clampRange(view.target, lines.length)
+      : { start: 1, end: lines.length };
+    const cancel = new vscode.CancellationTokenSource();
+    const outcome = await this.gate.send(
+      {
+        target: {
+          ...info,
+          fileName: displayName(document),
+          languageId: document.languageId,
+          lines,
+          byteLength: Buffer.byteLength(text, 'utf8'),
+        },
+        build: (prepared) => ({
+          system: walkthroughSystem(style),
+          messages: [
+            {
+              role: 'user',
+              text: refreshUser(
+                buildFileContext({
+                  path: info.relPath ?? displayName(document),
+                  languageId: document.languageId,
+                  lines: prepared.lines,
+                  withheld: prepared.withheld,
+                }),
+                view.overview,
+                changed,
+              ),
+            },
+          ],
+        }),
+      },
+      cancel.token,
+    );
+    if (outcome.kind === 'refused') {
+      cancel.dispose();
+      return outcome;
+    }
+    const wanted = new Set(changed.map((s) => s.index));
+    /** Parser step index → walkthrough step index. */
+    const mapped = new Map<number, number>();
+    this.session.update(key, wid, (e) => {
+      e.cancel = cancel;
+      e.view.status = 'streaming';
+      e.view.error = null;
+    });
+    const parser = new ProtocolParser('continuation');
+    const apply = (events: ProtocolEvent[]): void => {
+      for (const e of events) {
+        if (e.type === 'stepStart' && e.number !== null && wanted.has(e.number - 1)) {
+          const index = e.number - 1;
+          mapped.set(e.index, index);
+          this.session.update(key, wid, ({ view: v }) => {
+            const step = v.steps[index];
+            if (step) {
+              const { ranges, anchored } = anchorRanges(e.ranges, target);
+              Object.assign(step, {
+                ranges,
+                anchored,
+                title: e.title || step.title,
+                text: '',
+                concepts: [],
+                changed: false,
+              });
+            }
+          });
+        } else if (e.type === 'stepDelta' || e.type === 'concepts') {
+          const index = mapped.get(e.index);
+          const step = index === undefined ? undefined : view.steps[index];
+          if (step) {
+            this.session.stream(key, wid, () => {
+              if (e.type === 'stepDelta') {
+                step.text += e.text;
+              } else {
+                step.concepts = e.concepts;
+              }
+            });
+          }
+        }
+      }
+    };
+    const started = Date.now();
+    let status: WalkthroughView['status'] = 'done';
+    let error: string | null = null;
+    try {
+      for await (const chunk of outcome.stream) {
+        if (chunk.type === 'text') {
+          apply(parser.push(chunk.text));
+        }
+      }
+      apply(parser.finish());
+      if (cancel.token.isCancellationRequested) {
+        status = 'stopped';
+      }
+    } catch (err) {
+      apply(parser.finish());
+      status =
+        cancel.token.isCancellationRequested || isCategory(err, 'cancelled') ? 'stopped' : 'failed';
+      error =
+        status === 'failed'
+          ? err instanceof ProviderError
+            ? err.message
+            : 'The refresh failed unexpectedly.'
+          : null;
+    }
+    this.session.update(key, wid, (e) => {
+      e.cancel = undefined;
+      e.view.status = status;
+      e.view.error = error;
+      e.view.durationMs = Date.now() - started;
+      e.view.stale = e.view.steps.some((s) => s.changed);
+    });
+    cancel.dispose();
+    this.log.info(`refresh: ${status}, ${mapped.size} of ${changed.length} steps rewritten`);
+    return status === 'failed'
+      ? { kind: 'failed', wid, message: error ?? '' }
+      : { kind: status === 'stopped' ? 'stopped' : 'done', wid };
   }
 
   private async run(
@@ -403,6 +540,7 @@ function newView(
     notice: null,
     error: null,
     durationMs: null,
+    createdAt: Date.now(),
     withheld: outcome.withheld,
     stale: false,
   };

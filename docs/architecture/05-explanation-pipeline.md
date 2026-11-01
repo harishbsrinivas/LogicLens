@@ -110,4 +110,4 @@ The raw response is kept in the session entry for Continue and logged only throu
 
 ## 9. Refresh changed steps
 
-Sends the overview, the changed steps' titles, and their current code (numbered). The response uses the same protocol with only those steps; the parser maps them back by step number.
+`ExplainService.refreshChanged` (S8) sends the whole current file (numbered, through the gate), the earlier overview, and the changed steps' numbers, titles, and old ranges (`prompts/refresh.ts`, v1), with the walkthrough system prompt. The response uses the same protocol with only those steps; the parser records the number written in each `@@step N` line, and steps are mapped back by that number. Steps the response does not mention stay marked. A selection or symbol walkthrough is refreshed against the whole file, so a file over the line limit needs a full Refresh instead.

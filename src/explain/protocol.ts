@@ -5,7 +5,14 @@ import type { LineRange } from '../state/types';
 
 export type ProtocolEvent =
   | { type: 'overviewDelta'; text: string }
-  | { type: 'stepStart'; index: number; ranges: LineRange[]; title: string }
+  | {
+      type: 'stepStart';
+      index: number;
+      /** The number the model wrote (`@@step 3 | …`), used by Refresh changed steps (S8). */
+      number: number | null;
+      ranges: LineRange[];
+      title: string;
+    }
   | { type: 'stepDelta'; index: number; text: string }
   | { type: 'concepts'; index: number; concepts: string[] }
   | { type: 'summaryDelta'; text: string }
@@ -124,9 +131,11 @@ export class ProtocolParser {
       case 'step': {
         const parts = rest.split('|');
         const title = cleanTitle(parts.slice(2).join('|'));
+        const number = Number(/^\s*(\d+)\s*$/.exec(parts[0] ?? '')?.[1]);
         this.events.push({
           type: 'stepStart',
           index: this.steps,
+          number: Number.isSafeInteger(number) && number > 0 ? number : null,
           ranges: parseRanges(parts[1] ?? ''),
           title,
         });

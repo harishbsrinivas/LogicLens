@@ -194,6 +194,21 @@ export function registerExplainCommands(deps: ExplainCommandDeps): vscode.Dispos
       }
       return result;
     }),
+    // Refresh regenerates the whole walkthrough, keeping its target (spec §10).
+    vscode.commands.registerCommand('logiclens.refresh', (arg?: unknown) =>
+      explainFile(arg ?? (active.editor ? { uri: active.editor.document.uri } : undefined), {}),
+    ),
+    vscode.commands.registerCommand('logiclens.refreshChanged', async (arg?: unknown) => {
+      const editor = await targetEditor(arg);
+      if (!editor) {
+        return undefined;
+      }
+      const result = await service.refreshChanged(editor.document);
+      if (result.kind === 'refused' && result.reason !== 'cancelled') {
+        reportRefusalMessage(result);
+      }
+      return result;
+    }),
     vscode.commands.registerCommand('logiclens.closeExplanation', (arg?: unknown) => {
       const uri = threadUri(arg) ?? active.editor?.document.uri;
       if (uri) {

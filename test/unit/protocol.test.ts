@@ -117,7 +117,7 @@ describe('protocol parser', () => {
     expect(p.push('@')).toEqual([]);
     expect(p.push('@st')).toEqual([]);
     expect(p.push('ep 1 | L2 | B\n')).toEqual([
-      { type: 'stepStart', index: 0, ranges: [{ start: 2, end: 2 }], title: 'B' },
+      { type: 'stepStart', index: 0, number: 1, ranges: [{ start: 2, end: 2 }], title: 'B' },
     ]);
   });
 
