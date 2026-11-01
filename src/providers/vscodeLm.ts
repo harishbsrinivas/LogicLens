@@ -61,6 +61,7 @@ export function createVscodeLmProvider(api: LmApi): Provider {
     kind: 'vscode-lm',
     termsUrl: 'https://code.visualstudio.com/docs/copilot/overview',
     dataLeavesMachine: true,
+    setup: { label: 'Install GitHub Copilot', extensionId: 'GitHub.copilot-chat' },
 
     async detect(): Promise<ProviderState> {
       if (!api.selectChatModels) {

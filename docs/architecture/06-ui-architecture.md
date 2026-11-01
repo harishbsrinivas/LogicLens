@@ -55,7 +55,7 @@ In test mode, `TestApi.decorations.appliedTo(uri)` returns the focus ranges, num
 
 ## Status bar
 
-Right-aligned item: codicon `sparkle` plus provider short name and model (S1: the label `LogicLens` only; busy shows a spinning `loading` icon, click runs `logiclens.stop`, and the `logiclens.busy` context key is set). While busy, the icon spins and the tooltip shows the request. Click runs `logiclens.selectProvider`. Background color is never changed except for an error state, which uses `statusBarItem.errorBackground`.
+`ui/statusBar.ts`, right-aligned: codicon `sparkle` plus the resolved model's label (for `vscode-lm`, "copilot · Auto"); the tooltip names the provider. It re-resolves through the registry (detection only) on activation and on every registry change, and sets `logiclens.providerReady`. No provider ready: `$(warning) LogicLens` on `statusBarItem.errorBackground`, tooltip with the reason. Click runs `logiclens.selectProvider`. While a walkthrough or question is in flight the icon spins, `logiclens.busy` is set, and click runs `logiclens.stop`. Background color is never changed except for the error state.
 
 ## Trail breadcrumbs (S10, ADR-0021)
 
@@ -67,4 +67,4 @@ Right-aligned item: codicon `sparkle` plus provider short name and model (S1: th
 
 ## Quick picks
 
-Provider picker shows each provider with its state as description and a codicon, grouped into Ready and Others, with "Set API key…" and "Install…" actions inline. Model picker is a second step.
+`ui/providerPicker.ts` (pure) builds the entries; `commands/provider.ts` shows them. Provider picker: **Auto** (naming the provider it would use), then a **Ready** group (model count), then **Not ready** (state as description, reason and setup action as detail; picking it runs the setup action instead of selecting). Model picker is a second step with **Default** first. Choices are saved to user settings. **Regenerate with…** is one flat list of every Ready provider's models. S7 adds "Set API key…".

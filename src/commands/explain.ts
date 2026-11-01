@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import type { ExplainOptions, ExplainResult, ExplainService } from '../explain/walkthrough';
 import { SessionStore } from '../state/session';
 import type { ActiveEditor } from '../ui/activeEditor';
-import { reportRefusal as reportRefusalMessage } from './refusals';
+import { reportRefusal as reportRefusalMessage, showWithChooseProvider } from './refusals';
 import { threadUri } from './steps';
 
 export function registerExplainCommands(
@@ -35,6 +35,11 @@ export function registerExplainCommands(
     const result = await service.explainFile(editor.document, options);
     if (result.kind === 'refused') {
       reportRefusal(result);
+    } else if (
+      result.kind === 'failed' &&
+      (result.category === 'auth' || result.category === 'quota' || result.category === 'not-found')
+    ) {
+      showWithChooseProvider(result.message);
     }
     return result;
   }
@@ -44,8 +49,9 @@ export function registerExplainCommands(
   }
 
   return [
-    vscode.commands.registerCommand('logiclens.explainFile', (arg?: unknown) =>
-      explainFile({}, arg),
+    // The second argument comes only from Regenerate with…; its shape is checked.
+    vscode.commands.registerCommand('logiclens.explainFile', (arg?: unknown, options?: unknown) =>
+      explainFile(providerOverride(options), arg),
     ),
     vscode.commands.registerCommand('logiclens.stop', (arg?: unknown) => {
       const editor = targetEditor(arg);
@@ -73,4 +79,21 @@ export function registerExplainCommands(
       }
     }),
   ];
+}
+
+function providerOverride(options: unknown): ExplainOptions {
+  if (typeof options !== 'object' || options === null || !('provider' in options)) {
+    return {};
+  }
+  const p = options.provider;
+  if (
+    typeof p === 'object' &&
+    p !== null &&
+    'provider' in p &&
+    typeof p.provider === 'string' &&
+    (!('model' in p) || typeof p.model === 'string')
+  ) {
+    return { provider: { provider: p.provider, model: 'model' in p ? (p.model as string) : '' } };
+  }
+  return {};
 }

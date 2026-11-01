@@ -14,6 +14,14 @@ export type ProviderState =
   | { kind: 'not-installed'; reason: string }
   | { kind: 'unavailable'; reason: string };
 
+export interface ProviderSetup {
+  label: string;
+  /** Opens this extension in the Extensions view. */
+  extensionId?: string;
+  /** Opens this page in the browser. */
+  url?: string;
+}
+
 export interface ModelInfo {
   id: string;
   label: string;
@@ -64,7 +72,19 @@ export interface Provider {
   readonly kind: ProviderKind;
   readonly termsUrl: string;
   readonly dataLeavesMachine: boolean;
+  /** One action the provider picker offers when the provider is not ready (spec §6). */
+  readonly setup?: ProviderSetup;
   /** Must not send user code. */
   detect(): Promise<ProviderState>;
   stream(request: ProviderRequest, token: CancelToken): AsyncIterable<StreamChunk>;
 }
+
+/** A provider and model to use; empty or `auto` fields fall back to settings, then defaults. */
+export interface ProviderChoice {
+  provider?: string;
+  model?: string;
+}
+
+export type Resolution =
+  | { kind: 'ready'; provider: Provider; model: ModelInfo }
+  | { kind: 'unavailable'; reason: string; providerId?: string };

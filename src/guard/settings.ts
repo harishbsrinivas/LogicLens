@@ -16,6 +16,15 @@ export function guardSettings(): { maxLines: number; secretsAction: SecretsActio
   };
 }
 
+/** `logiclens.provider` and `logiclens.model` (application scope, spec §9). */
+export function providerSettings(): { provider: string; model: string } {
+  const config = vscode.workspace.getConfiguration('logiclens');
+  return {
+    provider: config.get<string>('provider', 'auto') || 'auto',
+    model: config.get<string>('model', '') ?? '',
+  };
+}
+
 /**
  * Workspace values are added to the user's patterns, never replacing them, so a repository
  * cannot remove a user's exclusions (spec §9).

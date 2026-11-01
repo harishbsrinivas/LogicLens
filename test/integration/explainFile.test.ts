@@ -54,6 +54,9 @@ suite('Explain File', () => {
     for (const key of api.globalState.keys()) {
       await api.globalState.update(key, undefined);
     }
+    // The status bar detects the new provider (no code is sent); count only what follows.
+    await api.refreshStatus();
+    provider.detectCalls = 0;
   });
 
   teardown(async () => {

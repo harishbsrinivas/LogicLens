@@ -1,6 +1,6 @@
 # S5. Provider Choice
 
-**Status:** Not started
+**Status:** In progress: implemented on `s5-provider-choice` (stacked on `s4-ask-at-any-line`); unit and integration tests pass with fake providers. Exit check open: the demo script needs a person with Copilot Free.
 **User value:** the status bar shows which AI is in use; one click switches provider or model. When nothing is ready, a notification opens the provider picker, which explains how to set one up.
 **Spec:** §6 (detection, selection, fallback, cost transparency), §2 J5, §8 (per-provider notice)
 
@@ -21,11 +21,12 @@ Out: new adapters (S6; S7 after release).
 
 ## Tasks
 
-- [ ] `providers/registry.ts` with unit tests (auto resolution, timeouts, caching).
-- [ ] `ui/statusBar.ts`, `commands/provider.ts`.
-- [ ] No-provider notification and status bar warning state.
-- [ ] Notice storage per provider; migrate the S1 single notice.
-- [ ] Integration tests: picker lists fake providers with states; switching changes the next request; failing provider shows fix action and does not fall back.
+- [x] `providers/registry.ts` with unit tests (auto resolution, timeouts, caching).
+- [x] `ui/statusBar.ts`, `commands/provider.ts`, `ui/providerPicker.ts`.
+- [x] No-provider notification and status bar warning state.
+- [x] Notice storage per provider (already keyed per provider since S1; no migration needed); `logiclens.resetDataNotices`.
+- [x] **Regenerate with…** on the explanation thread.
+- [x] Integration tests: picker lists fake providers with states; switching changes the next request; failing provider shows fix action and does not fall back.
 
 ## Demo script
 
@@ -34,7 +35,12 @@ Out: new adapters (S6; S7 after release).
 3. Sign out of Copilot (or disable it); a notification offers **Choose Provider** and the picker shows the state of each provider.
 4. Run "Reset Data Notices"; the next request shows the notice again.
 
+## Progress notes
+
+- 2026-11-01: the no-provider notification appears on the first refused request, with **Choose Provider**; the status bar shows the warning state from activation. A notification on activation itself would fire in windows where LogicLens is not used.
+- Errors before output that another provider or model would fix (`auth`, `quota`, `not-found`) and `provider-unavailable` refusals show **Choose Provider**. Nothing switches provider on its own.
+
 ## Exit check
 
 - [ ] Demo script passes.
-- [ ] All tests green.
+- [x] All tests green (local: unit and integration, VS Code 1.90.0, Linux).

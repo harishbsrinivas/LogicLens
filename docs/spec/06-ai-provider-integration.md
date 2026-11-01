@@ -36,10 +36,11 @@ Each provider shows a state: **Ready**, **Needs sign-in**, **Not installed**, or
 
 ## Selection
 
-- **First run:** if exactly one provider is Ready, LogicLens uses it and says so in a notification. If several are Ready, it shows the picker. If none are, a notification says so and opens the provider picker, which lists each provider's state with one action to install or configure it; the status bar item shows a warning until one is Ready.
+- **First run:** on the first request with `logiclens.provider` set to `auto`: if exactly one provider is Ready, LogicLens uses it and says so in a notification. If several are Ready, it shows the picker before anything is sent. If none are, the request is refused with a notification whose **Choose Provider** action opens the provider picker, which lists each provider's state with one action to install or configure it; the status bar item shows a warning (error background) from activation until one is Ready.
 - **After that:** `logiclens.provider` and `logiclens.model` hold the choice (`auto` by default, meaning the first Ready provider in the table order and that provider's default model).
 - **Status bar item** shows the current provider and model ("✦ Copilot · claude-sonnet"); clicking it opens the picker (J5).
-- **Per request override:** the explanation thread's title has a **Regenerate with…** action that regenerates the current walkthrough with another provider, which is useful for comparing.
+- **Per request override:** the explanation thread's title has a **Regenerate with…** action that lists every Ready provider's models and regenerates the current walkthrough with the one picked, once; settings do not change. Useful for comparing.
+- A configured model the provider no longer lists is refused with **Choose Provider**; LogicLens does not substitute another model.
 - Model names are never hardcoded as defaults in the extension. Each adapter uses the provider's own default unless the user picks a model. For VS Code Language Models, where the API has no default, LogicLens prefers Copilot's chat models and, among them, the one with the largest input window (arch §4).
 
 ## Fallback and errors

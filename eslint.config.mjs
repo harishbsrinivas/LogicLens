@@ -12,7 +12,15 @@ export default tseslint.config(
   },
   {
     files: ['src/**/*.ts'],
-    ignores: ['src/providers/**', 'src/extension.ts'],
+    // ui/statusBar.ts, ui/providerPicker.ts, and commands/provider.ts list and select providers
+    // through the registry (arch §3); they never send.
+    ignores: [
+      'src/providers/**',
+      'src/extension.ts',
+      'src/ui/statusBar.ts',
+      'src/ui/providerPicker.ts',
+      'src/commands/provider.ts',
+    ],
     rules: {
       // Providers are reached only through RequestGate (ADR-0014, arch §3). extension.ts builds
       // the adapters and hands them to the gate; everything else may use the shared types only.

@@ -2,7 +2,7 @@
 import * as vscode from 'vscode';
 import type { GateOutcome, RefusalReason, RequestGate, SecretsAction } from '../guard/gate';
 import { pathInfo } from '../guard/settings';
-import type { ChatMessage } from '../providers/types';
+import type { ChatMessage, ProviderChoice, ProviderErrorCategory } from '../providers/types';
 import { ProviderError } from '../providers/types';
 import { continueUser, walkthroughSystem, walkthroughUser } from '../prompts/walkthrough';
 import { SessionStore } from '../state/session';
@@ -14,11 +14,13 @@ import { ProtocolParser, type ProtocolEvent } from './protocol';
 
 export type ExplainResult =
   | { kind: 'done' | 'stopped' | 'truncated'; wid: string }
-  | { kind: 'failed'; wid: string; message: string }
+  | { kind: 'failed'; wid: string; message: string; category?: ProviderErrorCategory }
   | { kind: 'refused'; reason: RefusalReason; message: string; lines?: number[] };
 
 export interface ExplainOptions {
   secretsAction?: SecretsAction;
+  /** One-request provider and model, from "Regenerate with…" (spec §6). */
+  provider?: ProviderChoice;
 }
 
 export const NOT_STRUCTURED_NOTICE = 'Shown as plain text: the model did not return steps.';
@@ -104,6 +106,7 @@ export class ExplainService {
             byteLength: Buffer.byteLength(text, 'utf8'),
           },
           secretsAction: options.secretsAction,
+          provider: options.provider,
           build: (prepared) => ({
             system: walkthroughSystem(),
             messages: messages(
@@ -206,7 +209,12 @@ export class ExplainService {
         `explain: failed (${err instanceof ProviderError ? err.category : 'unexpected'})`,
       );
       finish('failed', message);
-      return { kind: 'failed', wid, message };
+      return {
+        kind: 'failed',
+        wid,
+        message,
+        category: err instanceof ProviderError ? err.category : undefined,
+      };
     }
   }
 
