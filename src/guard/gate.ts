@@ -59,7 +59,7 @@ export interface GateDeps {
   state: KeyValueStore;
   prompter: Prompter;
   isTrusted(): boolean;
-  isExcluded(path: PathInfo): boolean;
+  isExcluded(path: PathInfo): boolean | PromiseLike<boolean>;
   settings(): { maxLines: number; secretsAction: SecretsAction };
   provider(): Provider;
   log: Logger;
@@ -85,7 +85,7 @@ export class RequestGate {
         'LogicLens does not send code from a restricted workspace. Trust this workspace to use it.',
       );
     }
-    if (deps.isExcluded(target)) {
+    if (await deps.isExcluded(target)) {
       return refuse('excluded', `${target.fileName} is excluded by LogicLens settings.`);
     }
     const settings = deps.settings();

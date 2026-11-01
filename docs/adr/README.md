@@ -46,9 +46,9 @@ What follows, good and bad.
 | [0004](0004-vscode-language-model-api-as-primary-provider.md) | VS Code Language Model API as the primary provider | Accepted | providers |
 | [0005](0005-provider-clis-in-headless-isolated-mode.md) | Provider CLIs headless, tools disabled, isolated directory | Proposed (Claude Code verified; others in S7) | providers, cli, security |
 | [0006](0006-direct-http-adapters-with-secret-storage.md) | Direct HTTP adapters with keys in SecretStorage | Accepted | providers, http, security |
-| [0007](0007-line-tagged-streaming-protocol.md) | Line-tagged text protocol for walkthrough output | Proposed (S0) | protocol, prompts |
+| [0007](0007-line-tagged-streaming-protocol.md) | Line-tagged text protocol for walkthrough output | Accepted | protocol, prompts |
 | [0008](0008-comments-api-for-line-questions.md) | Comments API for line questions | Accepted | ui, comments |
-| [0009](0009-svelte-webview-view-panel.md) | Single webview view panel built with Svelte 5 | Proposed (S1) | ui, webview, stack |
+| [0009](0009-svelte-webview-view-panel.md) | Single webview view panel built with Svelte 5 | Accepted | ui, webview, stack |
 | [0010](0010-absolute-line-numbers-in-prompts.md) | Absolute line numbers in prompts | Accepted | prompts, protocol |
 | [0011](0011-typescript-esbuild-pnpm-toolchain.md) | TypeScript, esbuild, Vite, pnpm, vitest, test-cli | Accepted | stack, build |
 | [0012](0012-publish-to-marketplace-and-open-vsx.md) | Publish to Marketplace and Open VSX | Superseded by ADR-0026 | release |
@@ -56,7 +56,7 @@ What follows, good and bad.
 | [0014](0014-explicit-action-gate-and-data-notice.md) | Single request gate; explicit action, data notice, no silent fallback | Accepted | privacy, security, providers |
 | [0015](0015-thin-vertical-slices.md) | Deliver in thin vertical slices | Accepted | process |
 | [0016](0016-kiro-integration-path.md) | Kiro integration path | Open (S7, deferred by ADR-0025) | providers |
-| [0017](0017-minimum-vscode-engine-version.md) | Minimum VS Code engine version | Proposed (S0, `^1.90.0`) | stack, release |
+| [0017](0017-minimum-vscode-engine-version.md) | Minimum VS Code engine version | Accepted (`^1.90.0`) | stack, release |
 | [0018](0018-product-name-and-publisher.md) | Product name and publisher ID: LogicLens | Accepted (name); publisher ID before S9 | product, release |
 | [0019](0019-local-cache-with-text-reanchoring.md) | Local cache with text-based re-anchoring | Accepted | cache, state, privacy |
 | [0020](0020-deterministic-secret-scan-withhold-or-refuse.md) | Deterministic local secret scan; withhold lines or refuse, never send | Accepted | security, privacy |

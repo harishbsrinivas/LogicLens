@@ -21,6 +21,25 @@ export default tseslint.config(
     },
   },
   {
+    files: ['src/**/*.ts'],
+    ignores: ['src/providers/**', 'src/extension.ts'],
+    rules: {
+      // Providers are reached only through RequestGate (ADR-0014, arch §3). extension.ts builds
+      // the adapters and hands them to the gate; everything else may use the shared types only.
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['**/providers/*', '!**/providers/types'],
+              message: 'Call providers only through guard/RequestGate.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     files: ['webview/**/*.ts'],
     languageOptions: { globals: globals.browser },
     rules: {

@@ -37,8 +37,6 @@ Names here are the contract for `package.json`. Add new ones here first.
 | `logiclens.showLog` | LogicLens: Show Log | Palette |
 | `logiclens.viewTerms` | LogicLens: View Terms of Use | Palette, terms prompt, panel |
 
-Temporary: `logiclens.hello` (LogicLens: Hello, palette) exists only as the S0 skeleton smoke test and is removed when S1 adds `logiclens.explainFile`.
-
 ## Default keybindings
 
 Chosen to avoid common defaults; all use a `Ctrl+Alt+E` / `Cmd+Alt+E` chord prefix ("E" for explain).

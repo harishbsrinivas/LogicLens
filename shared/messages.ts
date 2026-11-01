@@ -1,8 +1,5 @@
 // Types shared by the extension host and the webview (arch §6). No Node or vscode imports.
 
-/** S0 placeholder command text; removed with `logiclens.hello` later in S1. */
-export const HELLO_MESSAGE = 'Hello from LogicLens';
-
 /** Inclusive, 1-based line range. */
 export interface LineRange {
   start: number;
@@ -57,6 +54,8 @@ interface Session {
 export type HostToWebviewMessage = Session &
   (
     | { type: 'state'; state: PanelState }
+    /** Plain Markdown explanation text (S1, and the fallback in spec §10). */
+    | { type: 'markdownDelta'; wid: string; text: string }
     | { type: 'overviewDelta'; wid: string; text: string }
     | { type: 'stepStart'; wid: string; step: StepView }
     | { type: 'stepDelta'; wid: string; index: number; text: string }
@@ -79,6 +78,7 @@ export type WebviewToHostMessage = Session &
   );
 
 export const DELTA_TYPES = [
+  'markdownDelta',
   'overviewDelta',
   'stepDelta',
   'summaryDelta',
