@@ -132,6 +132,19 @@ describe('RequestGate', () => {
     expect(log.lines.join('\n')).toContain('L3 aws-access-key-id');
   });
 
+  it('reports withheld lines as document lines for a window target', async () => {
+    const { gate, provider } = setup();
+    const lines = [...CODE.slice(0, 2), `const id = '${AWS}';`, ...CODE.slice(2)];
+    const outcome = await gate.send(
+      { target: { ...target(lines), firstLine: 40 }, build },
+      token(),
+    );
+    expect(outcome).toMatchObject({ kind: 'sent', withheld: [42] });
+    if (outcome.kind !== 'sent') return;
+    await collect(outcome.stream);
+    expect((provider.requests[0]?.messages[0]?.text ?? '').split('\n')[2]).toBe(WITHHELD_MARKER);
+  });
+
   it('refuses under refuse-file and lists the lines', async () => {
     const { gate, provider } = setup({
       settings: () => ({ maxLines: 2000, secretsAction: 'refuse-file' }),

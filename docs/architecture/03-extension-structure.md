@@ -23,17 +23,22 @@ logiclens/
 │  ├─ explain/
 │  │  ├─ context.ts        # builds target + context text with line numbers
 │  │  ├─ walkthrough.ts    # orchestrates a walkthrough request
-│  │  ├─ question.ts       # orchestrates a thread question
+│  │  ├─ question.ts       # orchestrates a thread question (S4)
+│  │  ├─ questionWindow.ts # pure: question limits, validation, context window
+│  │  ├─ symbols.ts        # document symbols via the language's symbol provider
 │  │  ├─ protocol.ts       # incremental parser for the tagged format
 │  │  └─ anchor.ts         # validates and clamps ranges
 │  ├─ prompts/             # templates as TS string builders, versioned (walkthrough.ts from S2)
 │  │  └─ personalities/    # one fragment per voice pack (S12, ADR-0023)
-│  ├─ state/               # in-memory session: walkthroughs, threads, focus; rangeTracker, reanchor
+│  ├─ state/               # in-memory session: walkthroughs, focus (session.ts), question threads
+│  │                       #   (questions.ts), rangeShift.ts (S4); rangeTracker, reanchor (S8)
 │  ├─ cache/               # persisted walkthroughs and threads
 │  ├─ nav/                 # trail model and follow-definition service (S10, ADR-0021)
 │  ├─ bookmarks/           # bookmark store and service (S11, ADR-0022)
 │  ├─ ui/
-│  │  ├─ inlineThreads.ts  # CommentController: inline explanation threads (ADR-0028)
+│  │  ├─ inlineThreads.ts  # inline explanation threads (ADR-0028) on the shared CommentController
+│  │  ├─ questionThreads.ts# question threads, commenting ranges, edit tracking (S4)
+│  │  ├─ lineLinks.ts      # pure: L<n> references to revealLine links
 │  │  ├─ safeMarkdown.ts   # pure: images to links, non-http(s) links dropped
 │  │  ├─ activeEditor.ts   # the editor commands act on (survives focus in other views)
 │  │  ├─ contextKeys.ts    # menu context keys
@@ -63,7 +68,7 @@ One pnpm package. Everything is bundled into `dist/extension.js`, so `vsce packa
 
 ## Activation
 
-`activationEvents` are implicit from contributed commands (VS Code infers `onCommand`; `onView` joins with the Bookmarks view in S11). No `*` or `onStartupFinished`. CodeLens registration happens on first activation and only if `logiclens.codeLens.enabled` is on. The Comments API controller (`ui/inlineThreads.ts`, shared by explanations and, from S4, questions) is registered on activation; the gutter "+" therefore appears only after LogicLens has activated once in the window. Open decision 4 (arch §10) covers whether to activate on `onLanguage` to show it earlier.
+`activationEvents` are implicit from contributed commands (VS Code infers `onCommand`; `onView` joins with the Bookmarks view in S11). No `*` or `onStartupFinished`. CodeLens registration happens on first activation and only if `logiclens.codeLens.enabled` is on. The Comments API controller (created in `extension.ts`, shared by explanations and questions) is registered on activation; the gutter "+" therefore appears only after LogicLens has activated once in the window. ADR-0030 keeps it that way: no `onLanguage` activation. "Ask About This Line" is in the editor context menu and bound to `Ctrl+Alt+E Q`, both of which activate the extension.
 
 ## Concurrency
 

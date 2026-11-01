@@ -1,22 +1,27 @@
 import * as vscode from 'vscode';
 import { registerExplainCommands } from './commands/explain';
+import { registerQuestionCommands, type InputFn } from './commands/questions';
 import { registerStepCommands } from './commands/steps';
 import { registerTermsCommand } from './commands/terms';
+import { QuestionService } from './explain/question';
+import { enclosingSymbol } from './explain/symbols';
 import { ExplainService } from './explain/walkthrough';
 import { RequestGate } from './guard/gate';
 import type { Prompter } from './guard/prompter';
-import { guardSettings, isPathExcluded } from './guard/settings';
+import { guardSettings, isExcluded, isPathExcluded } from './guard/settings';
 import { isWorkspaceTrusted } from './guard/trust';
 import { createVscodePrompter } from './guard/vscodePrompter';
 import type { Provider } from './providers/types';
 import { createVscodeLmProvider } from './providers/vscodeLm';
 import { vscodeLmApi } from './providers/vscodeLmApi';
+import { QuestionStore } from './state/questions';
 import { SessionStore } from './state/session';
 import { ActiveEditor } from './ui/activeEditor';
 import { StepCodeLens } from './ui/codeLens';
 import { trackFileExcluded } from './ui/contextKeys';
 import { Decorations } from './ui/decorations';
-import { InlineThreads } from './ui/inlineThreads';
+import { CONTROLLER_ID, InlineThreads } from './ui/inlineThreads';
+import { commentingRanges, QuestionThreads } from './ui/questionThreads';
 import { StepContext } from './ui/stepContext';
 import { StatusBar } from './ui/statusBar';
 import { createLogger } from './util/log';
@@ -26,8 +31,10 @@ export interface TestApi {
   setProvider(provider: Provider): void;
   setPrompter(prompter: Prompter): void;
   setTrusted(trusted: boolean | undefined): void;
+  setInput(input: InputFn): void;
   globalState: vscode.Memento;
   threads: InlineThreads;
+  questions: QuestionThreads;
   decorations: Decorations;
 }
 
@@ -38,6 +45,8 @@ export function activate(context: vscode.ExtensionContext): TestApi | undefined 
   let provider: Provider = createVscodeLmProvider(vscodeLmApi());
   let prompter: Prompter = createVscodePrompter(context.extensionUri);
   let trustOverride: boolean | undefined;
+  let input: InputFn = (prompt, value) => vscode.window.showInputBox({ prompt, value });
+  const isTrusted = (): boolean => trustOverride ?? isWorkspaceTrusted();
 
   const gate = new RequestGate({
     state: context.globalState,
@@ -48,7 +57,7 @@ export function activate(context: vscode.ExtensionContext): TestApi | undefined 
       openUrl: (url) => prompter.openUrl(url),
       confirm: (message, action) => prompter.confirm(message, action),
     },
-    isTrusted: () => trustOverride ?? isWorkspaceTrusted(),
+    isTrusted,
     isExcluded: isPathExcluded,
     settings: guardSettings,
     provider: () => provider,
@@ -57,7 +66,23 @@ export function activate(context: vscode.ExtensionContext): TestApi | undefined 
 
   const session = new SessionStore();
   const active = new ActiveEditor();
-  const threads = new InlineThreads(session);
+  const controller = vscode.comments.createCommentController(CONTROLLER_ID, 'LogicLens');
+  controller.commentingRangeProvider = commentingRanges(
+    async (doc) => isTrusted() && !(await isExcluded(doc.uri)),
+  );
+  const threads = new InlineThreads(session, controller);
+  const questionStore = new QuestionStore();
+  const questions = new QuestionService({
+    gate,
+    store: questionStore,
+    session,
+    log,
+    maxLines: () => guardSettings().maxLines,
+    enclosingSymbol,
+  });
+  const questionThreads = new QuestionThreads(controller, questionStore, (id) =>
+    questions.isBusy(id),
+  );
   const decorations = new Decorations(session);
   const codeLens = new StepCodeLens(session);
   const service = new ExplainService(gate, session, log, (message, action) =>
@@ -69,6 +94,9 @@ export function activate(context: vscode.ExtensionContext): TestApi | undefined 
     session,
     active,
     threads,
+    questionStore,
+    questionThreads,
+    controller,
     new StatusBar(session),
     decorations,
     codeLens,
@@ -81,6 +109,15 @@ export function activate(context: vscode.ExtensionContext): TestApi | undefined 
     vscode.workspace.onDidCloseTextDocument((doc) => session.delete(SessionStore.key(doc.uri))),
     ...registerExplainCommands(service, session, active),
     ...registerStepCommands(session, active),
+    ...registerQuestionCommands({
+      service: questions,
+      store: questionStore,
+      ui: questionThreads,
+      inline: threads,
+      session,
+      active,
+      input: () => input,
+    }),
     registerTermsCommand(context.extensionUri),
   );
 
@@ -91,8 +128,10 @@ export function activate(context: vscode.ExtensionContext): TestApi | undefined 
     setProvider: (p) => (provider = p),
     setPrompter: (p) => (prompter = p),
     setTrusted: (t) => (trustOverride = t),
+    setInput: (i) => (input = i),
     globalState: context.globalState,
     threads,
+    questions: questionThreads,
     decorations,
   };
 }

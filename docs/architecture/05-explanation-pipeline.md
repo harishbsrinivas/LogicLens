@@ -98,7 +98,15 @@ The raw response is kept in the session entry for Continue and logged only throu
 
 ## 8. Questions
 
-`explain/question.ts` builds messages from the thread history (oldest dropped first past budget), context per spec §5, and the related step. The response is free Markdown streamed into the comment. Line references `L<n>` or "line n" are turned into links by the renderer.
+`explain/question.ts` (`QuestionService`) answers one turn of a question thread; its pure parts (limits, validation, window choice) are in `explain/questionWindow.ts`.
+
+- **Validation:** empty questions and questions over 2,000 characters are refused before anything else.
+- **Concurrency:** at most two answers in flight across the window; others wait in a queue (cancellable) with status `queued`.
+- **Window:** the whole file when it is under about 60,000 characters and within `logiclens.maxLines`; otherwise the innermost document symbol containing the target (`explain/symbols.ts`, via `vscode.executeDocumentSymbolProvider`, if under 400 lines); otherwise the target ±40 lines.
+- **Gate:** the window goes through `RequestGate.send()` as the target with `firstLine` set, so withheld line numbers stay absolute.
+- **Context:** `buildWindowContext` numbers the window with absolute line numbers, wraps the target in `<<<TARGET` / `TARGET>>>`, and adds a header with path, language, shown lines, target, and withheld lines. When a walkthrough of the document exists and is not stale, its overview and the step containing the target are added.
+- **Messages** (`prompts/question.ts`, v1): the context goes with the first kept question; earlier `done` turns follow as user and assistant messages. Past about 16,000 characters of history the oldest turns are dropped, with a note.
+- **Output:** free Markdown streamed into the answer comment. Refusals remove the turn (and an empty thread). Line references `L<n>`, `L<a>-L<b>`, "line n", "lines a to b" become links (`ui/lineLinks.ts`) outside code spans, fences, and existing links.
 
 ## 9. Refresh changed steps
 

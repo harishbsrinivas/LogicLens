@@ -1,6 +1,6 @@
 # S4. Ask at Any Line
 
-**Status:** Not started
+**Status:** In progress: implemented on `s4-ask-at-any-line` (stacked on `s2-step-walkthrough`); unit and integration tests pass with a fake provider. Exit check open: the demo script and the keyboard-only run need a person and Copilot Free.
 **User value:** hover any line, click "+", type a question, and get an answer inline under that line. Ask follow-ups in the same thread. Ask from a walkthrough step or a concept chip.
 **Spec:** §5, §2 J3 and J4
 
@@ -21,12 +21,13 @@ Out: persistence across reloads (S8).
 
 ## Tasks
 
-- [ ] Question threads on the `ui/inlineThreads.ts` controller (commenting ranges, thread and comment models, menus via `contextValue`).
-- [ ] `explain/question.ts` and `prompts/question.ts` v1; snapshot tests.
-- [ ] Line-reference linkifier with unit tests.
-- [ ] Wire step **Ask** and concept tags (command links limited with `isTrusted: { enabledCommands }`, or thread actions; decide and record in arch §8).
-- [ ] Integration tests with `FakeProvider`: create thread, stream, follow-up includes history, stop, regenerate, delete, refuses empty and over-length questions, refused in excluded files.
-- [ ] Document the multiple-commenting-provider picker behavior in the README draft.
+- [x] Question threads on the `ui/inlineThreads.ts` controller (commenting ranges, thread and comment models, menus via `contextValue`).
+- [x] `explain/question.ts` and `prompts/question.ts` v1; unit tests for the prompt, window, and history budget.
+- [x] Line-reference linkifier with unit tests.
+- [x] Wire step **Ask** (thread title action) and concept tags (command links limited with `isTrusted: { enabledCommands }`; recorded in arch §8).
+- [x] Integration tests with `FakeProvider`: create thread, stream, follow-up includes history, stop, regenerate, delete, refuses empty and over-length questions, refused in excluded files.
+- [x] Document the multiple-commenting-provider picker behavior in the README draft.
+- [x] Measure activation and decide open decision 4: keep lazy activation (ADR-0030).
 
 ## Demo script
 
@@ -37,8 +38,14 @@ Out: persistence across reloads (S8).
 5. Click a concept chip; a thread opens with the question pre-filled.
 6. Insert three lines above the thread; it moves down with its line.
 
+## Progress notes
+
+- 2026-11-01: VS Code cannot pre-fill a comment input box, so a concept tag opens an input box with the question pre-filled and asks it in a new thread at the step (spec §5 updated).
+- Gate refusals (excluded, untrusted, secrets) remove the question turn and an empty thread, then show the usual message.
+- Range shifting is a pure function (`state/rangeShift.ts`) applied per edit, bottom-up; S8's tracker replaces it.
+
 ## Exit check
 
 - [ ] Demo script passes.
 - [ ] Keyboard-only run of the demo works (comment widget focus and submit).
-- [ ] All tests green.
+- [x] All tests green (local: unit and integration, VS Code 1.90.0, Linux).

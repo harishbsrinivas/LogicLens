@@ -10,7 +10,8 @@ There is no webview. Explanations render inline in the editor with stable APIs o
 - **S2:** the overview thread holds the overview (or the Markdown fallback with its notice), unanchored steps marked "not linked to lines", and a stopped, incomplete, or failed note; the summary and things to watch are a second comment with author "Summary". Each anchored step gets its own thread attached to `stepLine(start) = max(0, start − 2)` (0-based), the line before the step, so it shows just above its code (ADR-0029). Step threads are created `Collapsed`; a thread is `Expanded` when it is the session's `opened` step or `showAll` is on. Expansion is set only when that wanted state changes, so a thread the user opened or closed by hand stays that way. A Markdown fallback has no step threads.
 - Step thread: `label` "N · Title", one comment with author "LogicLens", `label` with its ranges ("L5–8"), body with the explanation and concept tags as inline code.
 - Overview `thread.label`: "Explaining <file>…" while streaming, the file name when done, "<file>: stopped", "<file>: incomplete" (truncated), or "<file>: failed"; " (file changed since)" is appended once the document is edited.
-- `thread.contextValue` drives `comments/commentThread/title` menus: overview `streaming` (Stop), `finished` (Explain again), `continuable` (Continue and Explain again); Show All Steps and Close on any overview thread; step threads are `step` and have no title actions yet. Thread commands receive the thread and resolve its document from `thread.uri` among the visible editors.
+- `thread.contextValue` drives `comments/commentThread/title` menus: overview `streaming` (Stop), `finished` (Explain again), `continuable` (Continue and Explain again); Show All Steps and Close on any overview thread; step threads are `step` with Ask About This Step (S4).
+- Concept tags in a step body are links to `logiclens.askConcept` with arguments `[documentKey, stepIndex, conceptIndex]` only; the concept text comes from the session, never from the link. Step and overview comments set `isTrusted: { enabledCommands: ['logiclens.askConcept'] }` (arch §8). Thread commands receive the thread and resolve its document from `thread.uri` among the visible editors.
 - Streaming text arrives through `SessionStore.onDelta`; bodies are re-rendered at most about every 100 ms. Structural changes (new step, status, focus) re-render at once. Each thread keeps a signature of its label, context value, and comments and is left alone when nothing changed.
 - A new walkthrough for the same document disposes the old thread; closing the document or **Close Explanation** deletes the session entry, which disposes its thread.
 - Bodies pass through `ui/safeMarkdown.ts` and are set with `isTrusted`, `supportHtml`, and `supportThemeIcons` off (arch §8).
@@ -42,11 +43,14 @@ In test mode, `TestApi.decorations.appliedTo(uri)` returns the focus ranges, num
 
 ## Question threads (ADR-0008, S4)
 
-- The same `CommentController` as the inline explanations; question threads use their own `contextValue`s.
-- `commentingRangeProvider` returns the full document range for files that are trusted, not excluded, and of scheme `file` or `untitled`. This gives the gutter "+" on every line.
-- New thread input: the user's text becomes a `Comment` with author "You"; LogicLens adds a reply comment with author "LogicLens · provider/model" whose `body` is a `MarkdownString` updated as chunks arrive (throttled to about 10 updates per second).
-- Comment `contextValue` drives menus: copy, regenerate, delete; thread-level stop while streaming.
-- `thread.range` is updated by the range tracker (arch §7). When the anchored line is deleted, thread `label` becomes "code changed" and `collapsibleState` collapsed.
+- `extension.ts` creates the one `CommentController` and passes it to `InlineThreads` and `ui/questionThreads.ts` (`QuestionThreads`); question threads use their own `contextValue`s.
+- `commentingRangeProvider` (`commentingRanges`) returns the full document range for files that are trusted, not excluded, and of scheme `file` or `untitled`. This gives the gutter "+" on every line once LogicLens has activated (ADR-0030).
+- `logiclens.askAtLine`, `askStep`, and `askConcept` open an empty thread (`canReply`, expanded, `contextValue` `question-new`) and remember its target range; a gutter "+" thread is created by VS Code. The input box's submit button runs `logiclens.submitQuestion` (`comments/commentThread/context`) with a `CommentReply`; the first submit adopts the thread into `QuestionStore`.
+- Each turn renders as two comments: the question with author "You", and the answer with author "LogicLens · provider/model" whose `MarkdownString` body is re-rendered at most every 100 ms while streaming. Comments are `QuestionComment` objects carrying `threadId`, `turnId`, and `part`; VS Code passes the same object to comment menu commands.
+- Comment `contextValue` drives `comments/comment/title`: `answer` has Copy, Regenerate, and Delete; `question` has Delete; `answer-busy` has none. Thread `contextValue` is `question-busy` (Stop in the title) while a turn is in flight, else `question`.
+- Answers set `isTrusted: { enabledCommands: ['logiclens.revealLine'] }` for the line links; HTML and theme icons stay off (arch §8).
+- `QuestionThreads` listens to `onDidChangeTextDocument` and moves each thread's range through the edits with `state/rangeShift.ts` (bottom-up). When every anchored line is deleted the thread label becomes "Code changed" and it collapses once. S8 replaces this with the shared range tracker.
+- In test mode, `TestApi.questions` exposes `snapshots(uri)`, `comments(threadId)`, and `pendingThreads(uri)`.
 - If another extension also provides commenting ranges (for example a pull request extension), VS Code shows a picker on "+"; this is expected and documented in the README.
 
 ## Status bar

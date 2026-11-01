@@ -74,6 +74,68 @@
         "command": "logiclens.viewTerms",
         "title": "View Terms of Use",
         "category": "LogicLens"
+      },
+      {
+        "command": "logiclens.askAtLine",
+        "title": "Ask About This Line",
+        "category": "LogicLens",
+        "icon": "$(comment-discussion)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "logiclens.submitQuestion",
+        "title": "Ask",
+        "category": "LogicLens"
+      },
+      {
+        "command": "logiclens.stopQuestion",
+        "title": "Stop",
+        "category": "LogicLens",
+        "icon": "$(debug-stop)"
+      },
+      {
+        "command": "logiclens.copyAnswer",
+        "title": "Copy Answer",
+        "category": "LogicLens",
+        "icon": "$(copy)"
+      },
+      {
+        "command": "logiclens.regenerateAnswer",
+        "title": "Regenerate Answer",
+        "category": "LogicLens",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "logiclens.deleteQuestionComment",
+        "title": "Delete",
+        "category": "LogicLens",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "logiclens.askStep",
+        "title": "Ask About This Step",
+        "category": "LogicLens",
+        "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "logiclens.askConcept",
+        "title": "Ask About Concept",
+        "category": "LogicLens"
+      },
+      {
+        "command": "logiclens.revealLine",
+        "title": "Go to Line",
+        "category": "LogicLens"
+      },
+      {
+        "command": "logiclens.clearThreadsInFile",
+        "title": "Clear Threads in File",
+        "category": "LogicLens"
+      },
+      {
+        "command": "logiclens.clearAllThreads",
+        "title": "Clear All Threads",
+        "category": "LogicLens"
       }
     ],
     "menus": {
@@ -112,6 +174,38 @@
         {
           "command": "logiclens.showAllSteps",
           "when": "logiclens.walkthroughActive"
+        },
+        {
+          "command": "logiclens.submitQuestion",
+          "when": "false"
+        },
+        {
+          "command": "logiclens.stopQuestion",
+          "when": "false"
+        },
+        {
+          "command": "logiclens.copyAnswer",
+          "when": "false"
+        },
+        {
+          "command": "logiclens.regenerateAnswer",
+          "when": "false"
+        },
+        {
+          "command": "logiclens.deleteQuestionComment",
+          "when": "false"
+        },
+        {
+          "command": "logiclens.askStep",
+          "when": "false"
+        },
+        {
+          "command": "logiclens.askConcept",
+          "when": "false"
+        },
+        {
+          "command": "logiclens.revealLine",
+          "when": "false"
         }
       ],
       "comments/commentThread/title": [
@@ -132,13 +226,54 @@
         },
         {
           "command": "logiclens.showAllSteps",
-          "when": "commentController == logiclens && commentThread != step",
+          "when": "commentController == logiclens && commentThread =~ /^(streaming|finished|continuable)$/",
           "group": "inline@3"
         },
         {
           "command": "logiclens.closeExplanation",
-          "when": "commentController == logiclens && commentThread != step",
+          "when": "commentController == logiclens && commentThread =~ /^(streaming|finished|continuable)$/",
           "group": "inline@4"
+        },
+        {
+          "command": "logiclens.askStep",
+          "when": "commentController == logiclens && commentThread == step",
+          "group": "inline@1"
+        },
+        {
+          "command": "logiclens.stopQuestion",
+          "when": "commentController == logiclens && commentThread == question-busy",
+          "group": "inline@1"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "logiclens.askAtLine",
+          "when": "(resourceScheme == file || resourceScheme == untitled) && !logiclens.fileExcluded",
+          "group": "logiclens@2"
+        }
+      ],
+      "comments/commentThread/context": [
+        {
+          "command": "logiclens.submitQuestion",
+          "when": "commentController == logiclens",
+          "group": "inline"
+        }
+      ],
+      "comments/comment/title": [
+        {
+          "command": "logiclens.copyAnswer",
+          "when": "commentController == logiclens && comment == answer",
+          "group": "inline@1"
+        },
+        {
+          "command": "logiclens.regenerateAnswer",
+          "when": "commentController == logiclens && comment == answer",
+          "group": "inline@2"
+        },
+        {
+          "command": "logiclens.deleteQuestionComment",
+          "when": "commentController == logiclens && comment =~ /^(question|answer)$/",
+          "group": "inline@3"
         }
       ]
     },
@@ -220,6 +355,12 @@
         "key": "escape",
         "mac": "escape",
         "when": "logiclens.stepFocused && editorTextFocus && !suggestWidgetVisible && !findWidgetVisible && !inSnippetMode && !hasMultipleSelections"
+      },
+      {
+        "command": "logiclens.askAtLine",
+        "key": "ctrl+alt+e q",
+        "mac": "cmd+alt+e q",
+        "when": "editorTextFocus"
       }
     ]
   },

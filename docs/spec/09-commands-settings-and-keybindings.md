@@ -10,6 +10,14 @@ Names here are the contract for `package.json`. Add new ones here first.
 | `logiclens.explainSelection` | LogicLens: Explain Selection | Palette, editor context (when selection) |
 | `logiclens.explainSymbol` | LogicLens: Explain Symbol | CodeLens, palette (symbol picker) |
 | `logiclens.askAtLine` | LogicLens: Ask About This Line | Palette, editor context, keybinding |
+| `logiclens.submitQuestion` | Ask | Question thread input box (hidden from the palette) |
+| `logiclens.stopQuestion` | Stop | Question thread title while answering (hidden from the palette) |
+| `logiclens.copyAnswer` | Copy Answer | Answer comment title (hidden from the palette) |
+| `logiclens.regenerateAnswer` | Regenerate Answer | Answer comment title (hidden from the palette) |
+| `logiclens.deleteQuestionComment` | Delete | Question and answer comment titles (hidden from the palette) |
+| `logiclens.askStep` | Ask About This Step | Step thread title (hidden from the palette) |
+| `logiclens.askConcept` | Ask About Concept | Concept tag links in step threads only (hidden from the palette) |
+| `logiclens.revealLine` | Go to Line | Line reference links in answers only (hidden from the palette) |
 | `logiclens.nextStep` | LogicLens: Next Step | Palette, keybinding, step CodeLens |
 | `logiclens.previousStep` | LogicLens: Previous Step | Palette, keybinding, step CodeLens |
 | `logiclens.clearFocus` | LogicLens: Clear Step Highlight | Escape when a step is focused, palette |
