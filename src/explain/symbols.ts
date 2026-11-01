@@ -34,3 +34,13 @@ export async function enclosingSymbol(
   visit(await documentSymbols(document));
   return best;
 }
+
+/** Symbols in document order with their nesting depth, for pickers and CodeLens. */
+export function flattenSymbols(
+  symbols: readonly vscode.DocumentSymbol[],
+  depth = 0,
+): { symbol: vscode.DocumentSymbol; depth: number }[] {
+  return [...symbols]
+    .sort((a, b) => a.range.start.compareTo(b.range.start))
+    .flatMap((symbol) => [{ symbol, depth }, ...flattenSymbols(symbol.children, depth + 1)]);
+}

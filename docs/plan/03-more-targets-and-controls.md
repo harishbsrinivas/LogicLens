@@ -1,6 +1,6 @@
 # S3. More Targets and Controls
 
-**Status:** Not started
+**Status:** In progress: implemented on `s3-more-targets-and-controls` (stacked on `s6-claude-code`); unit and integration tests pass with a fake provider. Exit check open: demo script and eval runs need a person and a real provider.
 **User value:** explain just a selection or a function, start from the Explorer, use CodeLens, and tune depth and audience.
 **Spec:** §3 (all entry points and limits), §4 (depth, audience, explanation language), §9
 
@@ -22,13 +22,13 @@ Out: folders and multi-select (post-MVP), notebooks.
 
 ## Tasks
 
-- [ ] Target resolution for selection and symbol; unit tests for line expansion and markers.
-- [ ] Budgeting algorithm with unit tests (target always whole, symbol next, outward expansion).
-- [ ] Prompt variants for depth, audience, and jargon; snapshot tests; bump prompt version.
+- [x] Target resolution for selection and symbol; unit tests for line expansion and markers.
+- [x] Budgeting algorithm with unit tests (target always whole, symbol next, outward expansion).
+- [x] Prompt variants for depth, audience, and jargon; unit tests (every combination parses); prompt version 2.
 - [ ] Eval spot check: `eli5` output on 10 files has no unexplained jargon and keeps anchor rate within 2 points of `practitioner`.
-- [ ] Explorer and editor menu contributions with `when` clauses (hide for excluded files using `logiclens.fileExcluded`).
-- [ ] CodeLens provider; integration test toggling the setting.
-- [ ] Explanation thread title actions for depth, audience, and jargon.
+- [x] Explorer and editor menu contributions with `when` clauses (hide for excluded files using `logiclens.fileExcluded`).
+- [x] CodeLens provider; integration test toggling the setting.
+- [x] Explanation thread title action for depth, audience, and jargon (one **Adjust Explanation…** quick pick).
 - [ ] Grow eval corpus to 30 files; run at each depth and check step counts fall in range.
 
 ## Demo script
@@ -40,8 +40,14 @@ Out: folders and multi-select (post-MVP), notebooks.
 5. Switch audience to "Explain like I'm five": everyday words and one analogy per step, same line ranges. Set jargon to `define` with `expert`: terse, with each term defined once.
 6. Open a 5,000-line file; LogicLens offers selection, visible range, or symbol.
 
+## Progress notes
+
+- 2026-11-01: one title action (**Adjust Explanation…**) instead of three keeps the overview thread title readable; the three palette commands remain.
+- The context budget uses character counts (about 4 per token) for every provider; `countTokens` for `vscode-lm` is not wired yet (arch §5.3).
+- Not done here: the eval spot check and growing the corpus to 30 files. Both need recorded responses from a real provider (`test/eval/README.md`).
+
 ## Exit check
 
 - [ ] Demo script passes.
 - [ ] Step count per depth on the eval corpus within spec §4 ranges for ≥ 90% of files.
-- [ ] All tests green.
+- [x] All tests green (local: unit and integration, VS Code 1.90.0, Linux).

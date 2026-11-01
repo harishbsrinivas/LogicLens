@@ -62,13 +62,68 @@ export function buildWindowContext(input: WindowInput): string {
   const start = Math.max(input.target.start, input.firstLine) - input.firstLine;
   const end = Math.min(input.target.end, last) - input.firstLine + 1;
   const parts = [
+    input.firstLine > 1 ? omitted(1, input.firstLine - 1) : '',
     numberLines(input.lines.slice(0, start), input.firstLine, width),
     TARGET_START,
     numberLines(input.lines.slice(start, end), input.firstLine + start, width),
     TARGET_END,
     numberLines(input.lines.slice(end), input.firstLine + end, width),
+    last < input.lineCount ? omitted(last + 1, input.lineCount) : '',
   ];
   return `${header.join('\n')}\n\n${parts.filter(Boolean).join('\n')}`;
+}
+
+function omitted(start: number, end: number): string {
+  return `… lines ${start}–${end} omitted …`;
+}
+
+/** About 24k tokens at 4 characters per token (arch §5.3). */
+export const CONTEXT_BUDGET_CHARS = 96_000;
+
+/**
+ * Lines to send with a selection or symbol target (arch §5.3): the target whole, then the
+ * enclosing symbol if it fits, then lines outward one at a time on each side until the budget
+ * or `maxLines` is reached. A file that fits is sent whole. Pure.
+ */
+export function contextWindow(
+  lines: readonly string[],
+  target: LineRange,
+  budgetChars: number,
+  maxLines: number,
+  symbol?: LineRange,
+): LineRange {
+  const cost = (line: number): number => (lines[line - 1]?.length ?? 0) + 1;
+  let start = target.start;
+  let end = target.end;
+  let used = 0;
+  for (let l = start; l <= end; l++) {
+    used += cost(l);
+  }
+  if (symbol && symbol.start <= start && symbol.end >= end) {
+    let extra = 0;
+    for (let l = symbol.start; l <= symbol.end; l++) {
+      extra += l < start || l > end ? cost(l) : 0;
+    }
+    if (used + extra <= budgetChars && symbol.end - symbol.start < maxLines) {
+      start = symbol.start;
+      end = symbol.end;
+      used += extra;
+    }
+  }
+  for (let grew = true; grew;) {
+    grew = false;
+    if (start > 1 && end - start + 1 < maxLines && used + cost(start - 1) <= budgetChars) {
+      start--;
+      used += cost(start);
+      grew = true;
+    }
+    if (end < lines.length && end - start + 1 < maxLines && used + cost(end + 1) <= budgetChars) {
+      end++;
+      used += cost(end);
+      grew = true;
+    }
+  }
+  return { start, end };
 }
 
 export function rangeText(r: LineRange): string {

@@ -4,12 +4,18 @@ import type { GateOutcome, RefusalReason, RequestGate, SecretsAction } from '../
 import { pathInfo } from '../guard/settings';
 import type { ChatMessage, ProviderChoice, ProviderErrorCategory } from '../providers/types';
 import { ProviderError } from '../providers/types';
+import type { ExplanationStyle } from '../prompts/style';
 import { continueUser, walkthroughSystem, walkthroughUser } from '../prompts/walkthrough';
 import { SessionStore } from '../state/session';
 import { canContinue, type LineRange, type StepView, type WalkthroughView } from '../state/types';
 import type { Logger } from '../util/log';
 import { anchorRanges } from './anchor';
-import { buildFileContext } from './context';
+import {
+  buildFileContext,
+  buildWindowContext,
+  CONTEXT_BUDGET_CHARS,
+  contextWindow,
+} from './context';
 import { ProtocolParser, type ProtocolEvent } from './protocol';
 
 export type ExplainResult =
@@ -21,6 +27,22 @@ export interface ExplainOptions {
   secretsAction?: SecretsAction;
   /** One-request provider and model, from "Regenerate with…" (spec §6). */
   provider?: ProviderChoice;
+  /** Selection or symbol lines (1-based); the whole file when absent (spec §3). */
+  target?: LineRange;
+}
+
+export interface ExplainSettings {
+  style: ExplanationStyle;
+  maxLines: number;
+}
+
+export interface ExplainDeps {
+  gate: RequestGate;
+  session: SessionStore;
+  log: Logger;
+  confirm(message: string, action: string): Promise<boolean>;
+  settings(uri: vscode.Uri): ExplainSettings;
+  enclosingSymbol(document: vscode.TextDocument, range: LineRange): Promise<LineRange | undefined>;
 }
 
 export const NOT_STRUCTURED_NOTICE = 'Shown as plain text: the model did not return steps.';
@@ -28,13 +50,17 @@ export const UNANCHORED_NOTICE =
   'Shown as plain text: most steps could not be tied to lines in this file.';
 
 export class ExplainService {
-  constructor(
-    private readonly gate: RequestGate,
-    private readonly session: SessionStore,
-    private readonly log: Logger,
-    private readonly confirm: (message: string, action: string) => Promise<boolean>,
-  ) {}
+  private readonly gate: RequestGate;
+  private readonly session: SessionStore;
+  private readonly log: Logger;
 
+  constructor(private readonly deps: ExplainDeps) {
+    this.gate = deps.gate;
+    this.session = deps.session;
+    this.log = deps.log;
+  }
+
+  /** Explains the file, or `options.target` within it. */
   async explainFile(
     document: vscode.TextDocument,
     options: ExplainOptions = {},
@@ -42,15 +68,15 @@ export class ExplainService {
     const key = SessionStore.key(document.uri);
     if (
       this.session.isBusy(key) &&
-      !(await this.confirm(
+      !(await this.deps.confirm(
         'An explanation of this file is still streaming. Stop it and start again?',
         'Restart',
       ))
     ) {
       return { kind: 'refused', reason: 'cancelled', message: 'Cancelled.' };
     }
-    return this.run(document, options, (context) => [
-      { role: 'user', text: walkthroughUser(context) },
+    return this.run(document, options, (context, target) => [
+      { role: 'user', text: walkthroughUser(context, target) },
     ]);
   }
 
@@ -70,9 +96,9 @@ export class ExplainService {
     const raw = entry.raw;
     return this.run(
       document,
-      {},
-      (context) => [
-        { role: 'user', text: walkthroughUser(context) },
+      { target: entry.view.target ?? undefined },
+      (context, target) => [
+        { role: 'user', text: walkthroughUser(context, target) },
         { role: 'assistant', text: raw },
         { role: 'user', text: continueUser() },
       ],
@@ -83,7 +109,7 @@ export class ExplainService {
   private async run(
     document: vscode.TextDocument,
     options: ExplainOptions,
-    messages: (context: string) => ChatMessage[],
+    messages: (context: string, target?: LineRange) => ChatMessage[],
     previous?: WalkthroughView,
   ): Promise<ExplainResult> {
     const key = SessionStore.key(document.uri);
@@ -92,6 +118,19 @@ export class ExplainService {
     const lines = text.split(/\r?\n/);
     const info = pathInfo(document.uri);
     const displayPath = info.relPath ?? displayName(document);
+    const { style, maxLines } = this.deps.settings(document.uri);
+    const focus = options.target && clampRange(options.target, lines.length);
+    // A selection or symbol is sent with a budgeted window of the file around it (arch §5.3).
+    const window = focus
+      ? contextWindow(
+          lines,
+          focus,
+          CONTEXT_BUDGET_CHARS,
+          maxLines,
+          await this.deps.enclosingSymbol(document, focus),
+        )
+      : { start: 1, end: lines.length };
+    const windowLines = focus ? lines.slice(window.start - 1, window.end) : lines;
     const cancel = new vscode.CancellationTokenSource();
 
     let outcome: GateOutcome;
@@ -102,20 +141,34 @@ export class ExplainService {
             ...info,
             fileName: displayName(document),
             languageId: document.languageId,
-            lines,
-            byteLength: Buffer.byteLength(text, 'utf8'),
+            lines: windowLines,
+            byteLength: focus
+              ? Buffer.byteLength(windowLines.join('\n'), 'utf8')
+              : Buffer.byteLength(text, 'utf8'),
+            firstLine: window.start,
           },
           secretsAction: options.secretsAction,
           provider: options.provider,
           build: (prepared) => ({
-            system: walkthroughSystem(),
+            system: walkthroughSystem(style),
             messages: messages(
-              buildFileContext({
-                path: displayPath,
-                languageId: document.languageId,
-                lines: prepared.lines,
-                withheld: prepared.withheld,
-              }),
+              focus
+                ? buildWindowContext({
+                    path: displayPath,
+                    languageId: document.languageId,
+                    lines: prepared.lines,
+                    withheld: prepared.withheld,
+                    firstLine: window.start,
+                    lineCount: lines.length,
+                    target: focus,
+                  })
+                : buildFileContext({
+                    path: displayPath,
+                    languageId: document.languageId,
+                    lines: prepared.lines,
+                    withheld: prepared.withheld,
+                  }),
+              focus,
             ),
           }),
         },
@@ -130,7 +183,7 @@ export class ExplainService {
       return outcome;
     }
 
-    const target: LineRange = { start: 1, end: lines.length };
+    const target: LineRange = focus ?? { start: 1, end: lines.length };
     const parser = new ProtocolParser(previous ? 'continuation' : 'response');
     let wid: string;
     if (previous) {
@@ -141,7 +194,7 @@ export class ExplainService {
         entry.view.error = null;
       });
     } else {
-      const view = newView(document, outcome);
+      const view = newView(document, outcome, focus ?? null, style);
       wid = view.id;
       this.session.set(key, { view, cancel, raw: '', focus: null, opened: null, showAll: false });
     }
@@ -331,8 +384,12 @@ function asMarkdown(view: WalkthroughView): string {
 function newView(
   document: vscode.TextDocument,
   outcome: Extract<GateOutcome, { kind: 'sent' }>,
+  target: LineRange | null,
+  style: ExplanationStyle,
 ): WalkthroughView {
   return {
+    target,
+    style,
     id: newId(),
     fileName: displayName(document),
     providerLabel: outcome.providerLabel,
@@ -349,6 +406,11 @@ function newView(
     withheld: outcome.withheld,
     stale: false,
   };
+}
+
+function clampRange(range: LineRange, lineCount: number): LineRange {
+  const start = Math.min(Math.max(1, range.start), lineCount);
+  return { start, end: Math.min(Math.max(start, range.end), lineCount) };
 }
 
 function isCategory(err: unknown, category: ProviderError['category']): boolean {

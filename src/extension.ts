@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { registerExplainCommands } from './commands/explain';
+import { registerStyleCommands } from './commands/style';
 import {
   createResolver,
   registerProviderCommands,
@@ -10,12 +11,13 @@ import { registerQuestionCommands, type InputFn } from './commands/questions';
 import { registerStepCommands } from './commands/steps';
 import { registerTermsCommand } from './commands/terms';
 import { QuestionService } from './explain/question';
-import { enclosingSymbol } from './explain/symbols';
+import { documentSymbols, enclosingSymbol } from './explain/symbols';
 import { ExplainService } from './explain/walkthrough';
 import { RequestGate } from './guard/gate';
 import type { Prompter } from './guard/prompter';
 import {
   cliSettings,
+  explanationStyle,
   guardSettings,
   isExcluded,
   isPathExcluded,
@@ -33,7 +35,7 @@ import { vscodeLmApi } from './providers/vscodeLmApi';
 import { QuestionStore } from './state/questions';
 import { SessionStore } from './state/session';
 import { ActiveEditor } from './ui/activeEditor';
-import { StepCodeLens } from './ui/codeLens';
+import { ExplainCodeLens, StepCodeLens } from './ui/codeLens';
 import { trackFileExcluded } from './ui/contextKeys';
 import { Decorations } from './ui/decorations';
 import { CONTROLLER_ID, InlineThreads } from './ui/inlineThreads';
@@ -114,6 +116,7 @@ export function activate(context: vscode.ExtensionContext): TestApi | undefined 
     session,
     log,
     maxLines: () => guardSettings().maxLines,
+    style: (uri) => explanationStyle(uri),
     enclosingSymbol,
   });
   const questionThreads = new QuestionThreads(controller, questionStore, (id) =>
@@ -124,9 +127,18 @@ export function activate(context: vscode.ExtensionContext): TestApi | undefined 
   );
   const decorations = new Decorations(session);
   const codeLens = new StepCodeLens(session);
-  const service = new ExplainService(gate, session, log, (message, action) =>
-    prompter.confirm(message, action),
-  );
+  const explainLens = new ExplainCodeLens(documentSymbols, isExcluded);
+  const service = new ExplainService({
+    gate,
+    session,
+    log,
+    confirm: (message, action) => prompter.confirm(message, action),
+    settings: (uri) => ({
+      style: explanationStyle(uri),
+      maxLines: guardSettings().maxLines,
+    }),
+    enclosingSymbol,
+  });
 
   context.subscriptions.push(
     channel,
@@ -163,9 +175,20 @@ export function activate(context: vscode.ExtensionContext): TestApi | undefined 
       [{ scheme: 'file' }, { scheme: 'untitled' }],
       codeLens,
     ),
+    explainLens,
+    vscode.languages.registerCodeLensProvider(
+      [{ scheme: 'file' }, { scheme: 'untitled' }],
+      explainLens,
+    ),
     trackFileExcluded(active),
     vscode.workspace.onDidCloseTextDocument((doc) => session.delete(SessionStore.key(doc.uri))),
-    ...registerExplainCommands(service, session, active),
+    ...registerExplainCommands({ service, session, active, pick: () => pick }),
+    ...registerStyleCommands({
+      session,
+      active,
+      pick: () => pick,
+      confirm: (message, action) => prompter.confirm(message, action),
+    }),
     ...registerStepCommands(session, active),
     ...registerQuestionCommands({
       service: questions,

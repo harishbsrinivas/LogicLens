@@ -45,9 +45,9 @@ Everything is inline in the editor (spec §7, ADR-0028):
 
 ## Depth and audience
 
-Three settings shape the walkthrough; all can be changed for the current walkthrough from the explanation's title actions or the palette.
+Three settings shape the walkthrough; all can be changed for the current walkthrough from the explanation's **Adjust Explanation…** title action or the palette (Set Explanation Depth, Set Audience, Set Jargon Level). The new value is saved to settings (where it is already set: user, workspace, or folder).
 
-- **Depth:** `overview` (3 to 5 steps, big picture), `standard` (default), `detailed` (line-by-line for dense code).
+- **Depth:** `overview` (3 to 5 steps, big picture), `standard` (default, 3 to 15 steps), `detailed` (8 to 25 steps, line-by-line for dense code).
 - **Audience** (technical level):
   - `eli5` ("Explain like I'm five"): everyday words, short sentences, one concrete analogy per step ("a cache is like keeping your keys by the door"). No jargon at all. Still accurate and still tied to line ranges; the analogy never replaces what the code actually does.
   - `newcomer`: names concepts and explains each one the first time it appears.

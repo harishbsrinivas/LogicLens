@@ -110,7 +110,9 @@ export class InlineThreads implements vscode.Disposable {
       if (!entry) {
         return;
       }
-      doc = this.createDoc(vscode.Uri.parse(key, true), entry.view.id);
+      // A selection or symbol walkthrough starts just above its lines (ADR-0029 placement).
+      const top = entry.view.target ? stepLine(entry.view.target.start) : 0;
+      doc = this.createDoc(vscode.Uri.parse(key, true), entry.view.id, top);
       this.docs.set(key, doc);
     }
     const { view } = entry;
@@ -157,12 +159,12 @@ export class InlineThreads implements vscode.Disposable {
     }
   }
 
-  private createDoc(uri: vscode.Uri, wid: string): DocThreads {
-    const top = new vscode.Range(0, 0, 0, 0);
+  private createDoc(uri: vscode.Uri, wid: string, line: number): DocThreads {
+    const top = new vscode.Range(line, 0, line, 0);
     const thread = this.controller.createCommentThread(uri, top, []);
     thread.canReply = false;
     thread.collapsibleState = vscode.CommentThreadCollapsibleState.Expanded;
-    // The overview starts at the top of the file, so bring it into view.
+    // Bring the overview into view.
     for (const editor of vscode.window.visibleTextEditors) {
       if (editor.document.uri.toString() === uri.toString()) {
         editor.revealRange(top, vscode.TextEditorRevealType.AtTop);
@@ -233,17 +235,20 @@ function update(rendered: Rendered, content: Content): void {
 
 function overviewLabel(view: WalkthroughView): string {
   const stale = view.stale ? ' (file changed since)' : '';
+  const name = view.target
+    ? `${view.fileName} ${view.target.start === view.target.end ? `L${view.target.start}` : `L${view.target.start}–${view.target.end}`}`
+    : view.fileName;
   switch (view.status) {
     case 'streaming':
-      return `Explaining ${view.fileName}…`;
+      return `Explaining ${name}…`;
     case 'stopped':
-      return `${view.fileName}: stopped${stale}`;
+      return `${name}: stopped${stale}`;
     case 'failed':
-      return `${view.fileName}: failed${stale}`;
+      return `${name}: failed${stale}`;
     case 'truncated':
-      return `${view.fileName}: incomplete${stale}`;
+      return `${name}: incomplete${stale}`;
     default:
-      return `${view.fileName}${stale}`;
+      return `${name}${stale}`;
   }
 }
 

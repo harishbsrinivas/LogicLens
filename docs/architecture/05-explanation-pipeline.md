@@ -22,18 +22,18 @@ Single entry point for any provider call (arch §8). In order: current terms of 
 
 - Every line is prefixed with its absolute 1-based line number and a separator, for example `  42│ const x = 1;` (ADR-0010). Numbers are padded to equal width.
 - For a selection, symbol, or line target, the target lines are wrapped in `<<<TARGET` / `TARGET>>>` marker lines, and surrounding file context is included with its own numbers.
-- **Budget:** context is sized to the model's input limit when known (`countTokens` for `vscode-lm`, provider docs otherwise), capped at 24k input tokens by default. When over budget: keep the target whole, then the enclosing symbol, then nearest lines outward, with `… lines 120–380 omitted …` markers.
+- **Budget (S3, `contextWindow`):** a selection or symbol target is sent with one contiguous window of the file: the target whole, then the enclosing symbol if it fits, then lines outward one at a time on each side, up to about 96,000 characters (about 24k tokens at 4 characters per token) and `logiclens.maxLines`. A file that fits is sent whole. Lines outside the window are named by `… lines 1–119 omitted …` marker lines. A whole-file target is not budgeted; it is limited by `logiclens.maxLines` and 200 KB (spec §3). Character counts stand in for tokens for every provider; `countTokens` is not used yet.
 - Withheld lines (secret scan) keep their number: `  42│ «line withheld by LogicLens: possible secret»`. The header lists withheld line numbers.
-- Header block: workspace-relative path, language ID, depth, audience, jargon, explanation language, withheld lines.
+- Header block: workspace-relative path, language ID, lines (or lines shown and target for a window), withheld lines. Depth, audience, jargon, and explanation language are rules in the system prompt (`prompts/style.ts`), not header lines.
 
 ## 4. Prompt templates
 
 Kept in `src/prompts/` as functions returning strings, each with a version constant included in the cache key.
 
-- `walkthrough.system` (`prompts/walkthrough.ts`, v1 in S2): role, the quality rules from spec §10, the output protocol below with a short example, "explain, do not rewrite", "do not guess the content of withheld lines". Depth, audience, and jargon instructions arrive in S3. A unit test feeds the prompt's own example to the parser.
+- `walkthrough.system` (`prompts/walkthrough.ts`, v2 in S3): role, the quality rules from spec §10, the output protocol below with a short example, "explain, do not rewrite", "do not guess the content of withheld lines", "walk through only the lines between the target markers", then the style rules from `prompts/style.ts`: depth (step count range: overview 3–5, standard 3–15, detailed 8–25), audience, jargon (`auto` resolved from the audience), and explanation language (BCP 47; `auto` is VS Code's display language; identifiers, tags, and ranges never translated). The user message names the target range when there is one. A unit test feeds the prompt's own example to the parser for every depth, audience, and jargon combination. A unit test feeds the prompt's own example to the parser.
 - `continue.user`: sent after the user turn and the earlier raw response (as the assistant turn) when the user chooses Continue; asks for the next step onward without repeating the overview.
 - Personality fragment (S12, ADR-0023): appended last, after a fixed precedence line stating that protocol, ranges, facts, audience, and jargon override voice. `none` adds nothing.
-- `question.system`: same rules, answer about the anchored lines, use `L<n>` for line references, may answer in free Markdown.
+- `question.system` (`prompts/question.ts`, v2 in S3): same rules, answer about the anchored lines, use `L<n>` for line references, may answer in free Markdown; audience, jargon, and language rules as for walkthroughs, but no depth.
 - `refreshSteps.system`: given the overview and changed steps' current code, rewrite only those steps.
 
 Template text is reviewed like code; changes bump the version and rerun the evaluation set.

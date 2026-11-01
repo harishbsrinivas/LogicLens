@@ -29,7 +29,8 @@ logiclens/
 │  │  ├─ symbols.ts        # document symbols via the language's symbol provider
 │  │  ├─ protocol.ts       # incremental parser for the tagged format
 │  │  └─ anchor.ts         # validates and clamps ranges
-│  ├─ prompts/             # templates as TS string builders, versioned (walkthrough.ts from S2)
+│  ├─ prompts/             # templates as TS string builders, versioned: walkthrough.ts (S2), question.ts (S4),
+│  │                       #   style.ts (depth, audience, jargon, language rules; S3)
 │  │  └─ personalities/    # one fragment per voice pack (S12, ADR-0023)
 │  ├─ state/               # in-memory session: walkthroughs, focus (session.ts), question threads
 │  │                       #   (questions.ts), rangeShift.ts (S4); rangeTracker, reanchor (S8)
@@ -70,7 +71,7 @@ One pnpm package. Everything is bundled into `dist/extension.js`, so `vsce packa
 
 ## Activation
 
-`activationEvents` are implicit from contributed commands (VS Code infers `onCommand`; `onView` joins with the Bookmarks view in S11). No `*` or `onStartupFinished`. CodeLens registration happens on first activation and only if `logiclens.codeLens.enabled` is on. The Comments API controller (created in `extension.ts`, shared by explanations and questions) is registered on activation; the gutter "+" therefore appears only after LogicLens has activated once in the window. ADR-0030 keeps it that way: no `onLanguage` activation. "Ask About This Line" is in the editor context menu and bound to `Ctrl+Alt+E Q`, both of which activate the extension.
+`activationEvents` are implicit from contributed commands (VS Code infers `onCommand`; `onView` joins with the Bookmarks view in S11). No `*` or `onStartupFinished`. CodeLens providers are registered on activation; the "Explain" lens returns nothing unless `logiclens.codeLens.enabled` is on. The Comments API controller (created in `extension.ts`, shared by explanations and questions) is registered on activation; the gutter "+" therefore appears only after LogicLens has activated once in the window. ADR-0030 keeps it that way: no `onLanguage` activation. "Ask About This Line" is in the editor context menu and bound to `Ctrl+Alt+E Q`, both of which activate the extension.
 
 ## Concurrency
 
