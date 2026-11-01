@@ -361,8 +361,15 @@ function comment(author: string, label: string, markdown: string): vscode.Commen
   return { author: { name: author }, label, body, mode: vscode.CommentMode.Preview };
 }
 
+/** Duration and, when reported, token counts (spec §6). Never a price. */
 function duration(view: WalkthroughView): string {
-  return view.durationMs === null ? '' : `${(view.durationMs / 1000).toFixed(1)}s`;
+  const parts = view.durationMs === null ? [] : [`${(view.durationMs / 1000).toFixed(1)}s`];
+  const { inputTokens, outputTokens } = view.usage ?? {};
+  if (inputTokens !== undefined && outputTokens !== undefined) {
+    const n = (x: number): string => x.toLocaleString('en-US');
+    parts.push(`${n(inputTokens)} in / ${n(outputTokens)} out tokens`);
+  }
+  return parts.join(' · ');
 }
 
 function snap(thread: vscode.CommentThread): ThreadSnapshot | undefined {

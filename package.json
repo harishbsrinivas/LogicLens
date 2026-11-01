@@ -370,11 +370,13 @@
           "type": "string",
           "enum": [
             "auto",
-            "vscode-lm"
+            "vscode-lm",
+            "claude-code"
           ],
           "enumDescriptions": [
-            "The first ready provider: VS Code language models (for example GitHub Copilot).",
-            "VS Code language models from installed extensions, such as GitHub Copilot."
+            "The first ready provider, in this order: VS Code language models, then Claude Code.",
+            "VS Code language models from installed extensions, such as GitHub Copilot.",
+            "The Claude Code CLI, run headless with its tools turned off."
           ],
           "default": "auto",
           "scope": "application",
@@ -385,6 +387,19 @@
           "default": "",
           "scope": "application",
           "markdownDescription": "Model ID for the chosen provider, as **LogicLens: Select Model** lists it. Empty uses the provider's default."
+        },
+        "logiclens.cli.claudePath": {
+          "type": "string",
+          "default": "",
+          "scope": "machine",
+          "markdownDescription": "Path to the Claude Code `claude` binary. Empty uses `claude` on `PATH`. Machine scope: workspace settings cannot change it."
+        },
+        "logiclens.cli.timeoutSeconds": {
+          "type": "number",
+          "default": 180,
+          "minimum": 10,
+          "scope": "application",
+          "description": "Stop a CLI provider request after this many seconds."
         }
       }
     },

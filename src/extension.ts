@@ -14,9 +14,18 @@ import { enclosingSymbol } from './explain/symbols';
 import { ExplainService } from './explain/walkthrough';
 import { RequestGate } from './guard/gate';
 import type { Prompter } from './guard/prompter';
-import { guardSettings, isExcluded, isPathExcluded, providerSettings } from './guard/settings';
+import {
+  cliSettings,
+  guardSettings,
+  isExcluded,
+  isPathExcluded,
+  providerSettings,
+} from './guard/settings';
 import { isWorkspaceTrusted } from './guard/trust';
 import { createVscodePrompter } from './guard/vscodePrompter';
+import { createClaudeCodeProvider } from './providers/cli/claudeCode';
+import { minimalEnv } from './providers/cli/spawn';
+import { workDirFactory } from './providers/cli/workDir';
 import { ProviderRegistry } from './providers/registry';
 import type { ProviderChoice, Provider } from './providers/types';
 import { createVscodeLmProvider } from './providers/vscodeLm';
@@ -38,6 +47,8 @@ export interface TestApi {
   /** Replaces every adapter with this one. */
   setProvider(provider: Provider): void;
   setProviders(providers: Provider[]): void;
+  /** Restores the real adapters (vscode-lm, claude-code). */
+  resetProviders(): void;
   setPick(pick: PickFn): void;
   statusText(): string;
   refreshStatus(): Promise<void>;
@@ -54,10 +65,17 @@ export function activate(context: vscode.ExtensionContext): TestApi | undefined 
   const channel = vscode.window.createOutputChannel('LogicLens', { log: true });
   const log = createLogger(channel);
 
-  const registry = new ProviderRegistry({
-    providers: [createVscodeLmProvider(vscodeLmApi())],
-    settings: providerSettings,
-  });
+  // Spec §6 order: VS Code language models, then Claude Code.
+  const adapters: Provider[] = [
+    createVscodeLmProvider(vscodeLmApi()),
+    createClaudeCodeProvider({
+      binary: () => cliSettings().claudePath,
+      timeoutMs: () => cliSettings().timeoutMs,
+      workDir: workDirFactory(vscode.Uri.joinPath(context.globalStorageUri, 'cli').fsPath),
+      env: () => minimalEnv(process.env),
+    }),
+  ];
+  const registry = new ProviderRegistry({ providers: adapters, settings: providerSettings });
   let pick: PickFn = showPick;
   let prompter: Prompter = createVscodePrompter(context.extensionUri);
   let trustOverride: boolean | undefined;
@@ -129,7 +147,8 @@ export function activate(context: vscode.ExtensionContext): TestApi | undefined 
     vscode.workspace.onDidChangeConfiguration((e) => {
       if (
         e.affectsConfiguration('logiclens.provider') ||
-        e.affectsConfiguration('logiclens.model')
+        e.affectsConfiguration('logiclens.model') ||
+        e.affectsConfiguration('logiclens.cli')
       ) {
         registry.invalidate();
       }
@@ -166,6 +185,7 @@ export function activate(context: vscode.ExtensionContext): TestApi | undefined 
   return {
     setProvider: (p) => registry.setProviders([p]),
     setProviders: (list) => registry.setProviders(list),
+    resetProviders: () => registry.setProviders(adapters),
     setPick: (p) => (pick = p),
     statusText: () => statusBar.text,
     refreshStatus: () => statusBar.refresh(),

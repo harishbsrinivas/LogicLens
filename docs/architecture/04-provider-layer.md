@@ -37,15 +37,24 @@ Signatures are in `src/providers/types.ts` (fixed in S1).
 
 ### CLI adapters (S6: `claude-code`; S7 after release: the rest)
 
-Shared helper `cli/spawn.ts`:
+Shared helper `cli/spawn.ts` (`runCli`, S6):
 
-- `spawn(binary, fixedArgs, { shell: false, cwd: isolatedDir, env: minimalEnv })`.
-- `isolatedDir` is an empty folder under the extension's global storage, so the CLI does not load project instruction files or index the repo, and has nothing to modify (ADR-0005).
-- Prompt written to stdin, then stdin closed.
-- stdout parsed line by line by the adapter (most CLIs offer a JSON-lines stream mode; text deltas are extracted from it). stderr collected, capped at 64 KB, used for error messages.
-- Timeout from `logiclens.cli.timeoutSeconds`; cancel kills the process tree.
+- `spawn(binary, fixedArgs, { shell: false, detached: true, cwd: isolatedDir, env: minimalEnv })`. `detached` makes the CLI lead its own process group so cancel can kill the whole tree.
+- `isolatedDir` (`cli/workDir.ts`) is a fresh empty folder `<globalStorage>/cli/run-XXXX` per request, removed afterwards, so the CLI does not load project instruction files or index the repo, and has nothing to modify (ADR-0005).
+- `minimalEnv` passes only named variables: `PATH`, `HOME`, `USER`, `LOGNAME`, `SHELL`, `LANG`, `LC_ALL`, `TMPDIR`, the `XDG_*` base directories, proxy variables, `ANTHROPIC_*`, `CLAUDE_CONFIG_DIR`, `CLAUDE_CODE_OAUTH_TOKEN`, `CLAUDE_CODE_USE_BEDROCK`, and `CLAUDE_CODE_USE_VERTEX`. Not the whole `CLAUDE_CODE_` prefix: a parent Claude Code session (for example VS Code launched from one) sets session and messaging variables the child must not inherit. Bedrock and Vertex users who rely on cloud credentials from other variables are not supported yet.
+- Prompt written to stdin, then stdin closed. stdout yielded line by line to the adapter. stderr collected, capped at 64 KB, used for error classification only.
+- Timeout from `logiclens.cli.timeoutSeconds` (default 180). Cancel, timeout, output cap, or the consumer stopping early send SIGTERM to the process group, then SIGKILL after 2 seconds.
 - Output cap of 1 MB per request.
-- `detect()` runs `<binary> --version` only.
+- `detect()` runs `<binary> --version` only (5-second timeout). `ENOENT` is `not-installed`.
+- Errors are `CliError` with a kind (`not-found`, `timeout`, `cancelled`, `output-cap`, `exit`); adapters map them to `ProviderError`.
+
+`cli/claudeCode.ts` (S6):
+
+- Binary from `logiclens.cli.claudePath` (machine scope) or `claude` on `PATH`.
+- Print mode takes one prompt, so `renderPrompt` writes the system prompt, then either the single user message or the turns wrapped in `<user>`/`<assistant>` tags with an instruction to answer the last one.
+- Models: `default` (no `--model` flag, the CLI's own default), and the aliases `sonnet`, `opus`, `haiku`. No model is hardcoded as the default (spec §6).
+- `parseClaudeLine`: `stream_event` text deltas become text chunks; the `result` line gives usage (input and output tokens, shown in the walkthrough header); `assistant` lines with `error` and `result` lines with `is_error` become `ProviderError`s (`auth`, `rate-limit`, `quota`, `unknown`) with fixed messages, never the CLI's text.
+- The CLI has no sign-in status command, so after an `auth` failure `detect()` reports **Needs sign-in** for 60 seconds; a successful request clears it.
 
 Per adapter. `claude-code` is verified in S0; the others are verified in S7, after release (ADR-0025):
 

@@ -63,6 +63,7 @@ export interface PickerEntry {
 export interface TestApi {
   setProvider(provider: FakeProvider): void;
   setProviders(providers: FakeProvider[]): void;
+  resetProviders(): void;
   setPick(pick: (entries: PickerEntry[], title: string) => Thenable<string | undefined>): void;
   statusText(): string;
   refreshStatus(): Promise<void>;

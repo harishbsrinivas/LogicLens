@@ -25,6 +25,16 @@ export function providerSettings(): { provider: string; model: string } {
   };
 }
 
+/** CLI provider settings (spec §9). `cli.claudePath` is machine scope, so a workspace cannot set it. */
+export function cliSettings(): { claudePath: string; timeoutMs: number } {
+  const config = vscode.workspace.getConfiguration('logiclens');
+  const seconds = config.get<number>('cli.timeoutSeconds', 180);
+  return {
+    claudePath: config.get<string>('cli.claudePath', '').trim() || 'claude',
+    timeoutMs: (Number.isFinite(seconds) && seconds > 0 ? seconds : 180) * 1000,
+  };
+}
+
 /**
  * Workspace values are added to the user's patterns, never replacing them, so a repository
  * cannot remove a user's exclusions (spec §9).
