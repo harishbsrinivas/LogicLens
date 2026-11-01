@@ -18,6 +18,7 @@ export class PanelProvider implements vscode.WebviewViewProvider, vscode.Disposa
   private pending: { key: string; wid: string; text: string } | undefined;
   private flushTimer: ReturnType<typeof setTimeout> | undefined;
   private stateVersion = 0;
+  private readyCount = 0;
   private readonly subscriptions: vscode.Disposable[];
 
   constructor(
@@ -59,6 +60,11 @@ export class PanelProvider implements vscode.WebviewViewProvider, vscode.Disposa
     });
   }
 
+  /** Times the webview script loaded and said `ready`; integration tests use it. */
+  get webviewReadyCount(): number {
+    return this.readyCount;
+  }
+
   /** Shows the panel without taking focus from the editor. */
   reveal(): void {
     if (this.view) {
@@ -81,6 +87,7 @@ export class PanelProvider implements vscode.WebviewViewProvider, vscode.Disposa
   private async handle(msg: WebviewToHostMessage): Promise<void> {
     switch (msg.type) {
       case 'ready':
+        this.readyCount++;
         await this.postState();
         return;
       case 'explain':

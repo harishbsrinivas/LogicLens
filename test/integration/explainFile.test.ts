@@ -67,6 +67,15 @@ suite('Explain File', () => {
     assert.ok(!commands.includes('logiclens.hello'));
   });
 
+  test('loads the panel webview under its CSP and completes the ready handshake', async () => {
+    await vscode.commands.executeCommand('logiclens.panel.focus');
+    const deadline = Date.now() + 15000;
+    while (api.panel.webviewReadyCount === 0 && Date.now() < deadline) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    assert.ok(api.panel.webviewReadyCount > 0, 'webview never sent ready');
+  });
+
   test('streams an explanation into the panel state', async () => {
     await openUntitled('export const add = (a: number, b: number) => a + b;\n');
     const result = await explain();

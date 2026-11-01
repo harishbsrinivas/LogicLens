@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { createVscodeLmProvider, type LmApi, type LmModel } from '../../src/providers/vscodeLm';
+import {
+  createVscodeLmProvider,
+  rankModels,
+  type LmApi,
+  type LmModel,
+} from '../../src/providers/vscodeLm';
 import { ProviderError } from '../../src/providers/types';
 import { collect, token } from './helpers';
 
@@ -9,11 +14,18 @@ class FakeLmError extends Error {
   }
 }
 
-function model(id: string, chunks: string[] | Error, sent: unknown[][] = []): LmModel {
+function model(
+  id: string,
+  chunks: string[] | Error,
+  sent: unknown[][] = [],
+  vendor = 'copilot',
+  maxInputTokens = 100,
+): LmModel {
   return {
     id,
     name: `Name ${id}`,
-    vendor: 'copilot',
+    vendor,
+    maxInputTokens,
     async sendRequest(messages) {
       sent.push(messages);
       if (chunks instanceof Error) {
@@ -51,7 +63,10 @@ describe('vscode-lm adapter', () => {
 
   it('lists models with vendor and name', async () => {
     const state = await createVscodeLmProvider(api([model('a', [])])).detect();
-    expect(state).toEqual({ kind: 'ready', models: [{ id: 'a', label: 'copilot · Name a' }] });
+    expect(state).toEqual({
+      kind: 'ready',
+      models: [{ id: 'copilot/a', label: 'copilot · Name a' }],
+    });
   });
 
   it('sends the system prompt first as a user message and streams text', async () => {
@@ -75,9 +90,36 @@ describe('vscode-lm adapter', () => {
     const provider = createVscodeLmProvider(
       api([model('a', ['x'], sentA), model('b', ['y'], sentB)]),
     );
-    await collect(provider.stream({ ...request, model: 'b' }, token()));
+    await collect(provider.stream({ ...request, model: 'copilot/b' }, token()));
     expect(sentA).toHaveLength(0);
     expect(sentB).toHaveLength(1);
+  });
+
+  it('defaults to a Copilot model with the largest window, ranking agent models last', async () => {
+    const sentAgent: unknown[][] = [];
+    const sentBig: unknown[][] = [];
+    const provider = createVscodeLmProvider(
+      api([
+        model('auto', ['x'], sentAgent, 'copilotcli', 0),
+        model('gpt-4o-mini', ['y'], [], 'copilot', 12078),
+        model('auto', ['z'], sentBig, 'copilot', 935793),
+      ]),
+    );
+    const state = await provider.detect();
+    expect(state.kind === 'ready' && state.models.map((m) => m.label)).toEqual([
+      'copilot · Name auto',
+      'copilot · Name gpt-4o-mini',
+      'copilotcli · Name auto',
+    ]);
+    await collect(provider.stream(request, token()));
+    await collect(provider.stream({ ...request, model: 'copilot/auto' }, token()));
+    expect(sentBig).toHaveLength(2);
+    expect(sentAgent).toHaveLength(0);
+  });
+
+  it('keeps non-Copilot vendors, ordered by window size', () => {
+    const ranked = rankModels([model('s', [], [], 'other', 10), model('l', [], [], 'other', 20)]);
+    expect(ranked.map((m) => m.id)).toEqual(['l', 's']);
   });
 
   it('throws not-found when there is no model', async () => {
@@ -105,6 +147,7 @@ describe('vscode-lm adapter', () => {
       id: 'a',
       name: 'a',
       vendor: 'v',
+      maxInputTokens: 0,
       async sendRequest() {
         return {
           text: (async function* () {

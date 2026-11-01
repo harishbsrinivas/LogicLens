@@ -32,7 +32,7 @@ export interface TestApi {
   setPrompter(prompter: FakePrompter): void;
   setTrusted(trusted: boolean | undefined): void;
   globalState: vscode.Memento;
-  panel: { computeState(): Promise<PanelStateLike> };
+  panel: { computeState(): Promise<PanelStateLike>; readonly webviewReadyCount: number };
 }
 
 export interface ExplainResult {

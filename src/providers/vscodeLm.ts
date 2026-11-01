@@ -12,6 +12,8 @@ export interface LmModel {
   id: string;
   name: string;
   vendor: string;
+  /** 0 when the vendor does not report it. */
+  maxInputTokens: number;
   sendRequest(
     messages: LmMessage[],
     token: CancelToken,
@@ -30,9 +32,27 @@ export interface LmApi {
   errorCode(err: unknown): string | undefined;
 }
 
+/**
+ * Default order: Copilot chat models first (ADR-0025), then the largest input window. VS Code
+ * 1.142 also lists agent-backed models (vendor `copilotcli`, no token limit) first; they are
+ * kept, not filtered, but ranked last (S0 spike, arch §4).
+ */
+export function rankModels(models: readonly LmModel[]): LmModel[] {
+  return [...models].sort(
+    (a, b) =>
+      Number(b.vendor === 'copilot') - Number(a.vendor === 'copilot') ||
+      b.maxInputTokens - a.maxInputTokens,
+  );
+}
+
+/** Model IDs repeat across vendors (both Copilot vendors expose `auto`), so keys include it. */
+export function modelKey(m: LmModel): string {
+  return `${m.vendor}/${m.id}`;
+}
+
 export function createVscodeLmProvider(api: LmApi): Provider {
   async function models(): Promise<LmModel[]> {
-    return api.selectChatModels ? api.selectChatModels() : [];
+    return rankModels(api.selectChatModels ? await api.selectChatModels() : []);
   }
 
   return {
@@ -56,13 +76,13 @@ export function createVscodeLmProvider(api: LmApi): Provider {
       }
       return {
         kind: 'ready',
-        models: list.map((m) => ({ id: m.id, label: `${m.vendor} · ${m.name}` })),
+        models: list.map((m) => ({ id: modelKey(m), label: `${m.vendor} · ${m.name}` })),
       };
     },
 
     async *stream(request: ProviderRequest, token: CancelToken): AsyncIterable<StreamChunk> {
       const list = await models();
-      const model = (request.model && list.find((m) => m.id === request.model)) || list[0];
+      const model = (request.model && list.find((m) => modelKey(m) === request.model)) || list[0];
       if (!model) {
         throw new ProviderError('not-found', 'No language model is available.');
       }

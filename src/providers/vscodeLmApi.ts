@@ -12,10 +12,12 @@ export function vscodeLmApi(): LmApi {
             id: m.id,
             name: m.name,
             vendor: m.vendor,
+            maxInputTokens: m.maxInputTokens,
             sendRequest: (messages, token) =>
               m.sendRequest(
                 messages as vscode.LanguageModelChatMessage[],
-                {},
+                // Shown in VS Code's language model access prompt.
+                { justification: 'LogicLens explains the code you ask it to explain.' },
                 token as vscode.CancellationToken,
               ),
           }));

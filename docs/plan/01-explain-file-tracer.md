@@ -51,7 +51,10 @@ Out: steps, highlighting, selection, Explorer menu, questions, provider picker, 
 - `activate` returns a `TestApi` in test mode only; integration tests use it to swap in a fake provider and prompter and to override trust.
 - The editor title button is hidden for excluded files via the `logiclens.fileExcluded` context key.
 - Exclusion matching fails closed for non-`file` schemes (arch §8).
-- Not yet verified by hand: the demo script against real Copilot models, light/dark/high-contrast rendering, and the model-access prompt order.
+- 2026-11-01: the S0 spike found the `vscode-lm` adapter would have picked an agent-backed `copilotcli` model first and could confuse models sharing the ID `auto`. Fixed: Copilot chat models rank first, then by input window; model keys are `vendor/id`. The real adapter was then run against Copilot Free in VS Code 1.142: it lists models, streams, and maps Stop to `cancelled`.
+- Integration tests now also prove the panel webview loads under its CSP (ready handshake), and pass on VS Code 1.90.0 and 1.144.0.
+- Panel rendering checked in dark, light, and high-contrast themes from screenshots of the test host (empty, terms, done with a withheld line).
+- Still manual: the demo script itself, which needs a person to answer the terms, notice, and access prompts.
 
 ## Exit check
 
