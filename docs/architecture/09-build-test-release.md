@@ -8,7 +8,7 @@
 - esbuild bundles `src/extension.ts` to `dist/extension.js` (CommonJS, `vscode` external, minified for release, sourcemaps for dev).
 - Vite builds `webview/` to `dist/webview/` (`webview/vite.config.mts`, fixed output name `main.js`).
 - ESLint (typescript-eslint) and Prettier. Lint rule restricting provider imports (arch §3).
-- `@vscode/vsce` packages the VSIX with `--no-dependencies` (everything is bundled, which also avoids pnpm symlink issues in vsce). Until a repository URL and license exist, packaging also passes `--no-rewrite-relative-links --allow-missing-repository --skip-license`. `.vscodeignore` allowlists `dist/extension.js`, `dist/webview/`, and the manifest files. `ovsx` publishes to Open VSX.
+- `@vscode/vsce` packages the VSIX with `--no-dependencies` (everything is bundled, which also avoids pnpm symlink issues in vsce). Until a repository URL and license exist, packaging also passes `--no-rewrite-relative-links --allow-missing-repository --skip-license`. `.vscodeignore` allowlists `dist/extension.js`, `dist/webview/`, and the manifest files. Release builds are platform-specific (`--target linux-x64` and `linux-arm64`) so the Marketplace offers them to Linux only (ADR-0026). `ovsx` publishing to Open VSX starts in S7.
 - `pnpm-workspace.yaml` allows install scripts only for esbuild (`@vscode/vsce-sign` explicitly denied) and holds `overrides` for audited transitive fixes, each with its advisory ID.
 
 ## Scripts (target)
@@ -32,13 +32,13 @@
 - **Integration (@vscode/test-electron):** with a `FakeProvider` registered through a test-only hook, cover every command, panel messages, decorations applied, comment threads created and streamed, gate refusals, untrusted workspace, no implicit send.
 - **Webview component tests:** vitest with a DOM environment for step list, keyboard navigation, sanitization.
 - **Evaluation:** spec §10; not in CI by default because it needs real providers. A nightly optional job can run it with a repository secret for one HTTP provider.
-- **Manual matrix before release:** VS Code stable and Insiders on Windows, macOS, Linux; Cursor and Kiro smoke test if available; light, dark, high contrast.
+- **Manual matrix before release:** VS Code stable and Insiders on Linux, with Copilot Free and Claude Code; light, dark, high contrast (ADR-0026). Windows and macOS join in S13; Cursor and Kiro smoke tests in S7.
 
 ## CI (GitHub Actions)
 
 On pull request and push to `main` (`.github/workflows/ci.yml`): install with frozen lockfile, typecheck, lint, format check, unit tests, integration tests under `xvfb-run` on Linux, `pnpm audit --audit-level=high`, gitleaks (release binary pinned by version and SHA-256), package VSIX and upload as artifact. Actions pinned by SHA, `permissions: contents: read`, checkout without persisted credentials.
 
-On tag `v*`: same, then publish to the VS Code Marketplace (`vsce publish`) and Open VSX (`ovsx publish`) using environment-protected secrets, then attach the VSIX to a GitHub release.
+On tag `v*`: same, then package the `linux-x64` and `linux-arm64` VSIXs, publish them to the VS Code Marketplace (`vsce publish --packagePath`) using environment-protected secrets, and attach them to a GitHub release. Open VSX (`ovsx publish`) is added in S7.
 
 ## Versioning
 

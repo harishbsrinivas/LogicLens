@@ -17,8 +17,8 @@ logiclens/
 │  │  ├─ types.ts          # Provider, ProviderState, ChatMessage, StreamChunk
 │  │  ├─ registry.ts       # detection, selection, status
 │  │  ├─ vscodeLm.ts
-│  │  ├─ cli/              # shared spawn helper + claudeCode.ts, codex.ts, gemini.ts, kiro.ts
-│  │  └─ http/             # shared SSE reader + anthropic.ts, openai.ts, ollama.ts
+│  │  ├─ cli/              # shared spawn helper + claudeCode.ts (S6); codex.ts, gemini.ts, kiro.ts (S7)
+│  │  └─ http/             # shared SSE reader + anthropic.ts, openai.ts, ollama.ts (S7)
 │  ├─ explain/
 │  │  ├─ context.ts        # builds target + context text with line numbers
 │  │  ├─ walkthrough.ts    # orchestrates a walkthrough request

@@ -17,7 +17,7 @@ In:
 - Errors with a single fix action; no silent provider switch.
 - Only the `vscode-lm` adapter exists so far, but `vscode-lm` exposes one entry per vendor/model family, so users can already switch between, for example, Copilot's Claude and GPT models.
 
-Out: new adapters (S6, S7).
+Out: new adapters (S6; S7 after release).
 
 ## Tasks
 
@@ -29,8 +29,8 @@ Out: new adapters (S6, S7).
 
 ## Demo script
 
-1. With Copilot signed in, the status bar shows "Copilot · <model>".
-2. Click it; pick a different model family; explain again; footer shows the new model.
+1. With Copilot Free signed in, the status bar shows "Copilot · <model>".
+2. Click it; pick a different model family offered on Copilot Free; explain again; footer shows the new model.
 3. Sign out of Copilot (or disable it); the panel shows the setup view with the state of each provider.
 4. Run "Reset Data Notices"; the next request shows the notice again.
 

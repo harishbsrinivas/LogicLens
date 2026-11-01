@@ -2,21 +2,26 @@
 
 ## MVP scope
 
-The MVP is complete when slices S1 to S11 in [../plan/README.md](../plan/README.md) pass their exit checks (S9, publishing, runs last). In summary:
+The MVP is complete when slices S1 to S11 in [../plan/README.md](../plan/README.md), except S7, pass their exit checks (S9, publishing, runs last). In summary:
 
 - Explain a file, a selection, or a symbol, from the editor, the Explorer, the command palette, or CodeLens (spec §3).
 - Step-by-step walkthrough with editor highlighting, navigation, depth, audience (including `eli5`), and jargon level (spec §4).
 - Ask questions at any line in inline threads with follow-ups (spec §5).
-- Providers: VS Code Language Models, Claude Code CLI, Codex CLI, Gemini CLI, Anthropic API, OpenAI API, Ollama, and Kiro if the S0 spike finds a supported path (spec §6).
+- Providers: VS Code Language Models (tested with GitHub Copilot Free) and Claude Code CLI (spec §6, ADR-0025).
 - Data notice, exclusions, deterministic secret scan that withholds lines or refuses the file, workspace trust (spec §8).
 - Local cache with staleness tracking (spec §10).
 - Follow definitions across files with a breadcrumb trail (spec §13).
 - Bookmarks for steps, answers, and code (spec §14).
-- Published to the VS Code Marketplace and Open VSX (arch §9).
+- Platform: VS Code stable on Linux (x64, arm64) only (ADR-0026).
+- Published to the VS Code Marketplace as Linux-only builds (arch §9).
 
 ## After the MVP release
 
-Planned as the next slice after publishing (S12): five personality packs for the explainer's voice (spec §15).
+Planned after publishing, in this order:
+
+1. S12: five personality packs for the explainer's voice (spec §15).
+2. S7: the remaining providers: Codex CLI, Gemini CLI, Kiro (if a supported path exists), Anthropic API, OpenAI API, Ollama, and compatibility checks in VS Code forks with Open VSX publishing (spec §6, ADR-0025, ADR-0026).
+3. S13: Windows and macOS support (ADR-0026). S7 and S13 are independent.
 
 ## Explicit non-goals
 

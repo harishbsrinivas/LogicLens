@@ -44,18 +44,18 @@ What follows, good and bad.
 | [0002](0002-explain-only-product-boundary.md) | Explain only; never edit or run code | Accepted | product, scope, security |
 | [0003](0003-bring-your-own-ai-no-backend.md) | Bring your own AI; no LogicLens backend | Accepted | product, providers, privacy |
 | [0004](0004-vscode-language-model-api-as-primary-provider.md) | VS Code Language Model API as the primary provider | Accepted | providers |
-| [0005](0005-provider-clis-in-headless-isolated-mode.md) | Provider CLIs headless, tools disabled, isolated directory | Proposed (S0; Claude Code verified) | providers, cli, security |
+| [0005](0005-provider-clis-in-headless-isolated-mode.md) | Provider CLIs headless, tools disabled, isolated directory | Proposed (Claude Code verified; others in S7) | providers, cli, security |
 | [0006](0006-direct-http-adapters-with-secret-storage.md) | Direct HTTP adapters with keys in SecretStorage | Accepted | providers, http, security |
 | [0007](0007-line-tagged-streaming-protocol.md) | Line-tagged text protocol for walkthrough output | Proposed (S0) | protocol, prompts |
 | [0008](0008-comments-api-for-line-questions.md) | Comments API for line questions | Accepted | ui, comments |
 | [0009](0009-svelte-webview-view-panel.md) | Single webview view panel built with Svelte 5 | Proposed (S1) | ui, webview, stack |
 | [0010](0010-absolute-line-numbers-in-prompts.md) | Absolute line numbers in prompts | Accepted | prompts, protocol |
 | [0011](0011-typescript-esbuild-pnpm-toolchain.md) | TypeScript, esbuild, Vite, pnpm, vitest, test-cli | Accepted | stack, build |
-| [0012](0012-publish-to-marketplace-and-open-vsx.md) | Publish to Marketplace and Open VSX | Accepted | release |
+| [0012](0012-publish-to-marketplace-and-open-vsx.md) | Publish to Marketplace and Open VSX | Superseded by ADR-0026 | release |
 | [0013](0013-no-telemetry-in-mvp.md) | No telemetry in the MVP | Accepted | telemetry, privacy |
 | [0014](0014-explicit-action-gate-and-data-notice.md) | Single request gate; explicit action, data notice, no silent fallback | Accepted | privacy, security, providers |
 | [0015](0015-thin-vertical-slices.md) | Deliver in thin vertical slices | Accepted | process |
-| [0016](0016-kiro-integration-path.md) | Kiro integration path | Open (S0) | providers |
+| [0016](0016-kiro-integration-path.md) | Kiro integration path | Open (S7, deferred by ADR-0025) | providers |
 | [0017](0017-minimum-vscode-engine-version.md) | Minimum VS Code engine version | Proposed (S0, `^1.90.0`) | stack, release |
 | [0018](0018-product-name-and-publisher.md) | Product name and publisher ID: LogicLens | Accepted (name); publisher ID before S9 | product, release |
 | [0019](0019-local-cache-with-text-reanchoring.md) | Local cache with text-based re-anchoring | Accepted | cache, state, privacy |
@@ -64,3 +64,5 @@ What follows, good and bad.
 | [0022](0022-bookmarks-store-separate-from-cache.md) | Bookmarks in extension storage, separate from the cache | Proposed (S11) | state, ui, privacy |
 | [0023](0023-bundled-tone-only-personality-packs.md) | Bundled, tone-only personality packs | Proposed (S12) | prompts, product |
 | [0024](0024-terms-of-use-acceptance-gate.md) | Terms of use accepted before the first request | Accepted | product, privacy, security |
+| [0025](0025-mvp-providers-copilot-free-and-claude-code.md) | MVP providers: Copilot Free through `vscode.lm`, and Claude Code | Accepted | providers, scope |
+| [0026](0026-mvp-targets-vscode-on-linux.md) | MVP targets VS Code on Linux only; Marketplace only | Accepted | scope, release |

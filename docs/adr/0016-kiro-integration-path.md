@@ -1,6 +1,6 @@
 # ADR-0016: Kiro integration path
 
-- **Status:** Open (resolve in S0)
+- **Status:** Open (resolve in S7; deferred from S0 by ADR-0025)
 - **Date:** 2026-11-01
 - **Deciders:** Project owner
 - **Source:** spec §6; arch §4
@@ -14,7 +14,7 @@ Kiro is a VS Code–based IDE from AWS that installs extensions from Open VSX, a
 3. Neither works: LogicLens runs in Kiro using another provider (API key, Ollama, other CLIs); Kiro models are not supported in the MVP.
 
 ## Decision
-Pending the S0 spike.
+Pending the S7 investigation. Kiro is out of MVP scope (ADR-0025).
 
 ## Consequences
 Spec §6 and §11 are updated with the outcome.

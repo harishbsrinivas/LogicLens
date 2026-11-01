@@ -30,7 +30,7 @@ Described in prose; signatures are fixed in `src/providers/types.ts` during S1.
 - Token counting via `model.countTokens` for context budgeting.
 - Feature-detect `vscode.lm`; in editors without it the adapter reports `unavailable`.
 
-### CLI adapters (S6, S7)
+### CLI adapters (S6: `claude-code`; S7 after release: the rest)
 
 Shared helper `cli/spawn.ts`:
 
@@ -42,18 +42,18 @@ Shared helper `cli/spawn.ts`:
 - Output cap of 1 MB per request.
 - `detect()` runs `<binary> --version` only.
 
-Per adapter, to be verified in the S0 spike and recorded here:
+Per adapter. `claude-code` is verified in S0; the others are verified in S7, after release (ADR-0025):
 
 | Adapter | Expected invocation shape (verify) | Restricting tools | Auth check |
 |---|---|---|---|
 | `claude-code` | **Verified (S0, v2.1.312, Linux):** `claude -p --output-format stream-json --verbose --include-partial-messages --no-session-persistence [--model <id or alias>]`; prompt on stdin. Text deltas are `stream_event` lines with `event.delta.type == "text_delta"`; final line is `type: "result"` | **Verified:** `--tools ""` (init line reports `tools: []`), `--strict-mcp-config` (no MCP servers), `--setting-sources ""` (no user or project settings or hooks). With tools off, a model that "calls" a tool only emits text; nothing runs | **Verified:** not signed in gives an `assistant` line with `error: "authentication_failed"`, a `result` line with `is_error: true` and text `Not logged in · Please run /login`, and exit code 1. Map `authentication_failed` to `auth` |
-| `codex` | `codex exec` with JSON output, prompt on stdin, skip the git-repo check since cwd is isolated | `--sandbox read-only`, approvals never | Same |
-| `gemini-cli` | `gemini` non-interactive prompt mode with streaming JSON output if available | No tool approval mode; isolated cwd | Same |
-| `kiro` | Kiro CLI non-interactive chat mode, if one exists | Trust no tools | Same |
+| `codex` (S7) | `codex exec` with JSON output, prompt on stdin, skip the git-repo check since cwd is isolated | `--sandbox read-only`, approvals never | Same |
+| `gemini-cli` (S7) | `gemini` non-interactive prompt mode with streaming JSON output if available | No tool approval mode; isolated cwd | Same |
+| `kiro` (S7) | Kiro CLI non-interactive chat mode, if one exists | Trust no tools | Same |
 
 If a CLI cannot be run with tools disabled, its adapter is marked "agentic" in the provider picker and data notice, and is not offered by `auto` (ADR-0005).
 
-### HTTP adapters (S7)
+### HTTP adapters (S7, after release)
 
 Shared helper `http/sse.ts` reads server-sent events from `fetch` (Node 20+ global fetch in the extension host).
 
@@ -69,17 +69,22 @@ Shared helper `http/sse.ts` reads server-sent events from `fetch` (Node 20+ glob
 3. Add a row to spec §6 and to the table above.
 4. Add an ADR if the provider changes where code goes in a new way (for example a new cloud).
 
-## S0 spike checklist
+## S0 spike checklist (MVP providers, ADR-0025)
 
-- [ ] `vscode.lm` in VS Code stable: list models with Copilot signed in; stream a reply; confirm consent behavior and error codes; confirm system-message support.
+- [ ] `vscode.lm` in VS Code stable with **Copilot Free**: list the models offered; stream a reply; confirm consent behavior and error codes, including the quota-exhausted error; confirm system-message support.
+- [x] Claude Code CLI: flags, tools off, model choice, no sign-in behavior verified on Linux (table above). Windows path resolution moves to S13 (ADR-0026).
+- [ ] Extension IDs of GitHub Copilot and Claude Code, for the setup view's "Install" links.
+- [ ] Measure time to first token for both on a 300-line file. Claude Code, short prompt only: process start to `init` about 0.4 s, first text delta about 1.6 s later.
+
+Record results in this file and resolve ADR-0017.
+
+Not yet run: `vscode.lm` with Copilot Free (needs a signed-in GitHub account), the protocol trial on three sample files, and the 300-line timing.
+
+## S7 spike checklist (after release)
+
 - [ ] `vscode.lm` in Cursor, Kiro, Windsurf, VSCodium: does it exist, does it return any models?
-- [x] Claude Code CLI: flags, tools off, model choice, no sign-in behavior verified on Linux (table above). Windows path resolution still open.
-- [ ] Codex CLI: same.
+- [ ] Codex CLI: flags, tools off, model choice, no sign-in behavior, Windows.
 - [ ] Gemini CLI: same.
-- [ ] Kiro CLI: does a non-interactive mode exist; flags; auth.
-- [ ] Extension IDs of Claude Code, Codex, and Kiro extensions, for the setup view's "Install" links.
-- [ ] Measure time to first token for each on a 300-line file. Claude Code, short prompt only: process start to `init` about 0.4 s, first text delta about 1.6 s later.
-
-Record results in this file and resolve ADR-0016 and ADR-0017.
-
-Not yet run on the S0 machine (no Copilot sign-in, no Codex, Gemini, or Kiro CLI, no forks installed): `vscode.lm`, Codex, Gemini, Kiro, fork checks, the protocol trial on three sample files, and the 300-line timing.
+- [ ] Kiro CLI: does a non-interactive mode exist; flags; auth. Resolve ADR-0016.
+- [ ] Extension IDs of Codex and Kiro extensions for "Install" links.
+- [ ] Time to first token for each on a 300-line file.

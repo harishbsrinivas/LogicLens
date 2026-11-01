@@ -6,20 +6,22 @@ LogicLens has no model of its own. It uses an AI tool the user already has. A **
 
 Ordered by preference when auto-selecting (see Selection). Each is delivered in the slice shown (plan S<N>).
 
+**MVP scope (ADR-0025):** only VS Code Language Models, tested against the **GitHub Copilot Free** plan, and Claude Code ship in the first release. The remaining rows are delivered in S7, after S12. Until then they do not appear in the picker, the setup view, or the `logiclens.provider` enum.
+
 | Provider | How LogicLens reaches it | What the user needs | Slice |
 |---|---|---|---|
-| **VS Code Language Models** | VS Code Language Model API (`vscode.lm`). Lists every chat model any installed extension contributes: GitHub Copilot (which offers Claude, GPT, and Gemini models depending on the user's plan) and any other extension that registers a language model provider. | An extension that contributes models, signed in. VS Code shows its own consent prompt the first time LogicLens uses a model. | S1 |
+| **VS Code Language Models** | VS Code Language Model API (`vscode.lm`). Lists every chat model any installed extension contributes: GitHub Copilot (which offers Claude, GPT, and Gemini models depending on the user's plan) and any other extension that registers a language model provider. | GitHub Copilot signed in; the Free plan is enough. VS Code shows its own consent prompt the first time LogicLens uses a model. Paid plans and other extensions that contribute models use the same API and are not blocked, but only Copilot Free is tested for the MVP. | S1 |
 | **Claude Code** | The `claude` CLI in headless print mode, reading the prompt on stdin, with tools disabled. | Claude Code installed and signed in (subscription or API key it already holds). | S6 |
-| **OpenAI Codex** | The `codex` CLI in non-interactive exec mode, read-only sandbox. | Codex CLI installed and signed in (ChatGPT plan or API key it already holds). | S6 |
-| **Gemini CLI** | The `gemini` CLI in non-interactive mode. | Gemini CLI installed and signed in. | S7 |
-| **Kiro** | Inside the Kiro IDE: through `vscode.lm` if Kiro exposes its models there. Otherwise the Kiro CLI in non-interactive mode, if it supports one. To be confirmed in the S0 spike. | Kiro IDE or Kiro CLI, signed in. | S7 (pending spike) |
-| **Anthropic API** | HTTPS to the Anthropic Messages API with the user's key. | An API key, stored in VS Code secret storage. | S7 |
-| **OpenAI API** (ChatGPT models) | HTTPS to the OpenAI API with the user's key. | An API key, stored in VS Code secret storage. | S7 |
-| **Ollama** (local) | HTTP to a local Ollama server. Code never leaves the machine. | Ollama running with a model pulled. | S7 |
+| **OpenAI Codex** | The `codex` CLI in non-interactive exec mode, read-only sandbox. | Codex CLI installed and signed in (ChatGPT plan or API key it already holds). | S7 (post-release) |
+| **Gemini CLI** | The `gemini` CLI in non-interactive mode. | Gemini CLI installed and signed in. | S7 (post-release) |
+| **Kiro** | Inside the Kiro IDE: through `vscode.lm` if Kiro exposes its models there. Otherwise the Kiro CLI in non-interactive mode, if it supports one. To be confirmed in S7 (ADR-0016). | Kiro IDE or Kiro CLI, signed in. | S7 (post-release, pending investigation) |
+| **Anthropic API** | HTTPS to the Anthropic Messages API with the user's key. | An API key, stored in VS Code secret storage. | S7 (post-release) |
+| **OpenAI API** (ChatGPT models) | HTTPS to the OpenAI API with the user's key. | An API key, stored in VS Code secret storage. | S7 (post-release) |
+| **Ollama** (local) | HTTP to a local Ollama server. Code never leaves the machine. | Ollama running with a model pulled. | S7 (post-release) |
 
 "ChatGPT" as a consumer app has no programmatic interface. Users reach OpenAI models through Copilot (`vscode.lm`), the Codex CLI with their ChatGPT sign-in, or an OpenAI API key.
 
-Exact CLI flags, extension IDs, and Kiro's integration surface are verified in the S0 feasibility spike and recorded in arch §4. The spec does not depend on any one CLI flag.
+Exact flags for Claude Code and `vscode.lm` behavior with Copilot Free are verified in the S0 spike; the other CLIs and Kiro's integration surface are verified in S7. Results are recorded in arch §4. The spec does not depend on any one CLI flag.
 
 ## Detection
 
@@ -44,7 +46,7 @@ Each provider shows a state: **Ready**, **Needs sign-in**, **Not installed**, or
 
 - If the chosen provider fails before any output (not signed in, quota, CLI missing), LogicLens shows the error with one action to fix it (sign in, open settings, pick another provider). It does not silently switch providers, because switching changes where code is sent.
 - If it fails mid-stream, partial output stays and **Retry** or **Continue** is offered (spec §4).
-- Rate limit and quota errors show the provider's message and when to retry, if known.
+- Rate limit and quota errors show the provider's message and when to retry, if known. Copilot Free has a monthly chat quota; when it runs out, the message says so and offers Claude Code as an alternative if it is Ready, without switching automatically.
 
 ## Cost transparency
 

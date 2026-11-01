@@ -1,6 +1,6 @@
 # ADR-0005: Use provider CLIs headless, tools disabled, in an isolated directory
 
-- **Status:** Proposed (confirm flags in S0)
+- **Status:** Proposed (Claude Code confirmed in S0; other CLIs in S7 per ADR-0025)
 - **Date:** 2026-11-01
 - **Deciders:** Project owner
 - **Source:** spec §6; arch §4, §8
@@ -19,4 +19,4 @@ Spawn each CLI with an argument array and `shell: false`; send the prompt on std
 ## Consequences
 - Answers use only the context LogicLens sends.
 - Each CLI's flags are verified in S0 and pinned in arch §4; adapter tests use recorded output to catch format changes.
-- S0 evidence so far: Claude Code (2.1.312) runs headless with all tools and MCP servers off in an empty directory, confirmed by its init line (`tools: []`, `mcp_servers: []`); invocation in arch §4. Codex, Gemini CLI, and Kiro are still unverified, so this stays Proposed.
+- S0 evidence so far: Claude Code (2.1.312) runs headless with all tools and MCP servers off in an empty directory, confirmed by its init line (`tools: []`, `mcp_servers: []`); invocation in arch §4. Codex, Gemini CLI, and Kiro are deferred to S7 (ADR-0025) and still unverified, so this stays Proposed until S6 confirms the isolation canary check for Claude Code on Linux. Windows and macOS behavior is verified in S13 (ADR-0026).
