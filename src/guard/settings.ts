@@ -2,6 +2,15 @@
 import * as vscode from 'vscode';
 import { createExcludeMatcher, type PathInfo } from './exclude';
 import type { SecretsAction } from './gate';
+import {
+  AUDIENCES,
+  DEPTHS,
+  JARGONS,
+  type Audience,
+  type Depth,
+  type ExplanationStyle,
+  type Jargon,
+} from '../prompts/style';
 import { DEFAULT_MAX_LINES } from './size';
 
 export const IGNORE_FILE = '.logiclensignore';
@@ -13,6 +22,26 @@ export function guardSettings(): { maxLines: number; secretsAction: SecretsActio
     maxLines: Number.isFinite(maxLines) && maxLines > 0 ? maxLines : DEFAULT_MAX_LINES,
     secretsAction:
       config.get<string>('secrets.action') === 'refuse-file' ? 'refuse-file' : 'skip-lines',
+  };
+}
+
+/** Depth, audience, jargon, and language for a document (spec §4, §9; resource scope). */
+export function explanationStyle(scope?: vscode.Uri): ExplanationStyle {
+  const config = vscode.workspace.getConfiguration('logiclens', scope);
+  const pick = <T extends string>(key: string, values: readonly T[], fallback: T): T => {
+    const value = config.get<string>(key);
+    return values.find((v) => v === value) ?? fallback;
+  };
+  const language = config.get<string>('explanationLanguage', 'auto').trim();
+  return {
+    depth: pick<Depth>('depth', DEPTHS, 'standard'),
+    audience: pick<Audience>('audience', AUDIENCES, 'practitioner'),
+    jargon: pick<Jargon>('jargon', JARGONS, 'auto'),
+    // BCP 47 tags only; anything else falls back to the display language.
+    language:
+      language && language !== 'auto' && /^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$/.test(language)
+        ? language
+        : vscode.env.language,
   };
 }
 

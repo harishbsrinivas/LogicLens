@@ -6,6 +6,7 @@ There is no webview. Explanations render inline in the editor with stable APIs o
 
 `ui/inlineThreads.ts` owns the one `CommentController` (id `logiclens`, label "LogicLens"). It listens to the session store and renders each document's walkthrough as read-only threads (`canReply = false`).
 
+- **S3:** a selection or symbol walkthrough puts its overview thread at `stepLine(target.start)`, just above the target, and its label names the lines ("file.ts L5–8"). Title actions also include **Adjust Explanation…** (`logiclens.adjustExplanation`, finished or continuable), a quick pick for depth, audience, jargon, or all settings, so the title does not carry three more icons.
 - **S1:** one thread per document, anchored at line 1 (`Range(0,0,0,0)`), created expanded; visible editors of that document scroll to the top when it is created. Its single comment has author `LogicLens · <provider> · <model>`, `label` with the duration once finished, and a `MarkdownString` body: the withheld-lines notice (line numbers only), the explanation text, and a stopped or failed note.
 - **S2:** the overview thread holds the overview (or the Markdown fallback with its notice), unanchored steps marked "not linked to lines", and a stopped, incomplete, or failed note; the summary and things to watch are a second comment with author "Summary". Each anchored step gets its own thread attached to `stepLine(start) = max(0, start − 2)` (0-based), the line before the step, so it shows just above its code (ADR-0029). Step threads are created `Collapsed`; a thread is `Expanded` when it is the session's `opened` step or `showAll` is on. Expansion is set only when that wanted state changes, so a thread the user opened or closed by hand stays that way. A Markdown fallback has no step threads.
 - Step thread: `label` "N · Title", one comment with author "LogicLens", `label` with its ranges ("L5–8"), body with the explanation and concept tags as inline code.
@@ -23,7 +24,7 @@ There is no webview. Explanations render inline in the editor with stable APIs o
 
 - **Step title rows (S2, `StepCodeLens`):** on each anchored step's first line, "N · Title  Lstart–end" (prefixed with `$(arrow-right)` when focused), "‹ Previous", and "Next ›". Each runs the internal `logiclens.focusStep(uriString, index)`, which checks both arguments against the session. Lenses refresh on structural session changes only.
 - **Trail breadcrumbs (S10):** above line 1 of the current file when the trail has more than one entry; one lens per crumb, middle crumbs collapsed into a `…` lens that opens a quick pick.
-- **Explain (opt-in):** "Explain" above top-level and class-member symbols from the document symbol provider, only when `logiclens.codeLens.enabled`. Hidden for excluded files.
+- **Explain (opt-in, S3, `ExplainCodeLens`):** "Explain" above top-level and class-member functions, methods, classes, interfaces, enums, structs, modules, and namespaces from the document symbol provider, only when `logiclens.codeLens.enabled`. Hidden for excluded files. The provider is always registered and returns nothing while the setting is off; it refreshes when the setting or `logiclens.exclude` changes. The lens passes `[documentKey, line]`; `logiclens.explainSymbol` looks the symbol up again.
 
 ## Editor decorations
 

@@ -158,6 +158,40 @@
         "title": "Regenerate with…",
         "category": "LogicLens",
         "icon": "$(versions)"
+      },
+      {
+        "command": "logiclens.explainSelection",
+        "title": "Explain Selection",
+        "category": "LogicLens",
+        "icon": "$(sparkle)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "logiclens.explainSymbol",
+        "title": "Explain Symbol",
+        "category": "LogicLens",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "logiclens.setDepth",
+        "title": "Set Explanation Depth",
+        "category": "LogicLens"
+      },
+      {
+        "command": "logiclens.setAudience",
+        "title": "Set Audience",
+        "category": "LogicLens"
+      },
+      {
+        "command": "logiclens.setJargon",
+        "title": "Set Jargon Level",
+        "category": "LogicLens"
+      },
+      {
+        "command": "logiclens.adjustExplanation",
+        "title": "Adjust Explanation…",
+        "category": "LogicLens",
+        "icon": "$(settings)"
       }
     ],
     "menus": {
@@ -232,6 +266,14 @@
         {
           "command": "logiclens.regenerateWith",
           "when": "false"
+        },
+        {
+          "command": "logiclens.explainSelection",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "logiclens.adjustExplanation",
+          "when": "false"
         }
       ],
       "comments/commentThread/title": [
@@ -274,9 +316,24 @@
           "command": "logiclens.regenerateWith",
           "when": "commentController == logiclens && commentThread =~ /^(finished|continuable)$/",
           "group": "inline@2"
+        },
+        {
+          "command": "logiclens.adjustExplanation",
+          "when": "commentController == logiclens && commentThread =~ /^(finished|continuable)$/",
+          "group": "inline@3"
         }
       ],
       "editor/context": [
+        {
+          "command": "logiclens.explainFile",
+          "when": "(resourceScheme == file || resourceScheme == untitled) && !logiclens.fileExcluded",
+          "group": "logiclens@1"
+        },
+        {
+          "command": "logiclens.explainSelection",
+          "when": "(resourceScheme == file || resourceScheme == untitled) && !logiclens.fileExcluded && editorHasSelection",
+          "group": "logiclens@1"
+        },
         {
           "command": "logiclens.askAtLine",
           "when": "(resourceScheme == file || resourceScheme == untitled) && !logiclens.fileExcluded",
@@ -305,6 +362,13 @@
           "command": "logiclens.deleteQuestionComment",
           "when": "commentController == logiclens && comment =~ /^(question|answer)$/",
           "group": "inline@3"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "logiclens.explainFile",
+          "when": "resourceScheme == file && !explorerResourceIsFolder && !listMultiSelection",
+          "group": "logiclens@1"
         }
       ]
     },
@@ -400,10 +464,86 @@
           "minimum": 10,
           "scope": "application",
           "description": "Stop a CLI provider request after this many seconds."
+        },
+        "logiclens.depth": {
+          "type": "string",
+          "enum": [
+            "overview",
+            "standard",
+            "detailed"
+          ],
+          "enumDescriptions": [
+            "The big picture in 3 to 5 steps.",
+            "The default: 3 to 15 steps.",
+            "Line by line through dense code: 8 to 25 steps."
+          ],
+          "default": "standard",
+          "scope": "resource",
+          "description": "How many steps a walkthrough has and how much detail each gives."
+        },
+        "logiclens.audience": {
+          "type": "string",
+          "enum": [
+            "eli5",
+            "newcomer",
+            "practitioner",
+            "expert"
+          ],
+          "enumDescriptions": [
+            "Explain like I'm five: everyday words and one analogy per step.",
+            "Names concepts and explains each the first time.",
+            "Assumes working knowledge of the language.",
+            "Terse: intent, invariants, edge cases, performance."
+          ],
+          "default": "practitioner",
+          "scope": "resource",
+          "description": "Who the explanation is written for. Answers to questions follow it too."
+        },
+        "logiclens.jargon": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "avoid",
+            "define",
+            "use"
+          ],
+          "enumDescriptions": [
+            "Follows the audience.",
+            "Plain words instead of technical terms.",
+            "Technical terms with a short definition the first time.",
+            "Technical terms without definitions."
+          ],
+          "default": "auto",
+          "scope": "resource",
+          "description": "How technical terms are handled."
+        },
+        "logiclens.explanationLanguage": {
+          "type": "string",
+          "default": "auto",
+          "scope": "application",
+          "markdownDescription": "Language for explanations, as a BCP 47 tag such as `de` or `pt-BR`. `auto` follows VS Code's display language. Code identifiers are never translated."
+        },
+        "logiclens.codeLens.enabled": {
+          "type": "boolean",
+          "default": false,
+          "scope": "application",
+          "description": "Show \"Explain\" above functions and classes."
         }
       }
     },
     "keybindings": [
+      {
+        "command": "logiclens.explainFile",
+        "key": "ctrl+alt+e f",
+        "mac": "cmd+alt+e f",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "logiclens.explainSelection",
+        "key": "ctrl+alt+e s",
+        "mac": "cmd+alt+e s",
+        "when": "editorHasSelection"
+      },
       {
         "command": "logiclens.nextStep",
         "key": "alt+]",

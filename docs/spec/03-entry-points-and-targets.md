@@ -16,7 +16,7 @@ Any text document VS Code can open is a valid target, including unsaved and unti
 ## Entry points
 
 ### From the editor
-- **Editor title bar button** (LogicLens icon): explains the file, or the selection if one exists.
+- **Editor title bar button** (LogicLens icon): explains the file, or the selection if the active editor has one. **Explain again** keeps the walkthrough's selection or symbol.
 - **Editor context menu:** "Explain File", "Explain Selection" (when a selection exists), "Ask About This Line".
 - **Command palette:** every command in spec §9.
 - **Keybindings:** defaults in spec §9.
@@ -39,6 +39,7 @@ Any text document VS Code can open is a valid target, including unsaved and unti
 
 ## Limits
 
-- Files over `logiclens.maxLines` (default 2,000) or 200 KB are not sent whole. LogicLens offers to explain the visible range, the selection, or a chosen symbol instead.
+- Files over `logiclens.maxLines` (default 2,000) or 200 KB are not sent whole. LogicLens offers to explain the selection (if any), the visible range, or a chosen symbol instead.
+- A selection or symbol is sent with as much of the surrounding file as fits the context budget (arch §5.3); the walkthrough covers only the target lines, and its overview sits just above them.
 - Minified or generated files (one line over 1,000 characters, or a header such as `@generated`) get a warning before sending.
 - Notebooks (`.ipynb`) are out of scope for the MVP; the commands are disabled for notebook cells.

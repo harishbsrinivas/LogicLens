@@ -67,12 +67,14 @@ describe('window context', () => {
     expect(out).toContain('Lines shown: 10-13 of 100');
     expect(out).toContain('Target: L11-L12');
     expect(out.split('\n\n')[1]?.split('\n')).toEqual([
+      '… lines 1–9 omitted …',
       '  10│ a',
       TARGET_START,
       '  11│ b',
       '  12│ c',
       TARGET_END,
       '  13│ d',
+      '… lines 14–100 omitted …',
     ]);
   });
 });

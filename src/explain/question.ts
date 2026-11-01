@@ -4,6 +4,7 @@ import type { RequestGate } from '../guard/gate';
 import { pathInfo } from '../guard/settings';
 import { ProviderError } from '../providers/types';
 import { questionMessages, questionSystem, type PriorTurn } from '../prompts/question';
+import type { ExplanationStyle } from '../prompts/style';
 import type { QuestionStore, Turn } from '../state/questions';
 import { newId } from '../state/questions';
 import { SessionStore } from '../state/session';
@@ -27,6 +28,7 @@ export interface QuestionDeps {
   session: SessionStore;
   log: Logger;
   maxLines(): number;
+  style(uri: vscode.Uri): ExplanationStyle;
   /** The innermost document symbol containing `range`, if the language has a symbol provider. */
   enclosingSymbol(document: vscode.TextDocument, range: LineRange): Promise<LineRange | undefined>;
 }
@@ -168,7 +170,7 @@ export class QuestionService {
           firstLine: window.start,
         },
         build: (prepared) => ({
-          system: questionSystem(),
+          system: questionSystem(this.deps.style(document.uri)),
           messages: questionMessages(
             buildWindowContext({
               path: info.relPath ?? displayName(document),

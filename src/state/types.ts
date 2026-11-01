@@ -22,6 +22,10 @@ export interface StepView {
 
 export interface WalkthroughView {
   id: string;
+  /** Selection or symbol lines explained, or null for the whole file (spec §3). */
+  target: LineRange | null;
+  /** Depth, audience, jargon, and language used (spec §4); plain strings so state stays pure. */
+  style: { depth: string; audience: string; jargon: string; language: string };
   fileName: string;
   providerLabel: string;
   model: string;
