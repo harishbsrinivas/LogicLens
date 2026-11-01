@@ -2,7 +2,7 @@
 
 **Status:** Proposed MVP specification
 **Date:** 2026-11-01
-**Product:** VS Code extension (also targets VS Code–compatible editors through Open VSX)
+**Product:** VS Code extension. The MVP supports VS Code stable on Linux only (ADR-0026); Windows and macOS (S13) and VS Code–compatible editors through Open VSX (S7) come after release
 **Primary audience:** Developers reading code they did not write: new team members, reviewers, maintainers of legacy code, and learners
 
 Source of truth for what the product does. Each section lives in its own file; the file number is the section number, so `spec §N` in code comments and ADRs points at `NN-*.md`. Read this index, then open only the sections your task touches. How it is built: [../architecture/README.md](../architecture/README.md). Why: [../adr/README.md](../adr/README.md). Order of work: [../plan/README.md](../plan/README.md).

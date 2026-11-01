@@ -37,7 +37,7 @@ This is the main risk in this product. User code is sent to a third-party model.
 - `pnpm audit --audit-level=high` fails CI on high or critical advisories.
 - Keep runtime dependencies few. Prefer VS Code APIs and the Node standard library. Each new runtime dependency needs a line in the PR explaining why.
 - Pin GitHub Actions to a full commit SHA. Default workflow `permissions: contents: read`.
-- Marketplace and Open VSX publish tokens live only in CI secrets, scoped to publishing.
+- Marketplace (and, from S7, Open VSX) publish tokens live only in CI secrets, scoped to publishing.
 
 ## 4. Webview
 

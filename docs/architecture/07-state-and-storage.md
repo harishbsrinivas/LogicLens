@@ -52,7 +52,9 @@ Re-anchoring lives in `state/reanchor.ts` so the cache and bookmarks share one t
 - `lastProvider`, `lastModel` for `auto` tie-breaking.
 - `onboardingShown`.
 
-## Secrets (`context.secrets`)
+## Secrets (`context.secrets`, S7)
+
+No secrets are stored until S7 adds the API-key providers (ADR-0025).
 
 - `logiclens.anthropic.apiKey`, `logiclens.openai.apiKey`.
 - Set through `logiclens.setApiKey` (input box with `password: true`), validated with a cheap model-list call, never echoed.

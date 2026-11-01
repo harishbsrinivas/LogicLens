@@ -29,7 +29,7 @@ Names here are the contract for `package.json`. Add new ones here first.
 | `logiclens.removeBookmark` | LogicLens: Remove Bookmark | Bookmarks view |
 | `logiclens.clearAllBookmarks` | LogicLens: Clear All Bookmarks | Bookmarks view toolbar, palette |
 | `logiclens.setPersonality` | LogicLens: Set Personality | Panel, palette (S12) |
-| `logiclens.setApiKey` | LogicLens: Set API Key… | Palette, setup view |
+| `logiclens.setApiKey` | LogicLens: Set API Key… | Palette, setup view (S7) |
 | `logiclens.clearThreadsInFile` | LogicLens: Clear Threads in File | Palette |
 | `logiclens.clearAllThreads` | LogicLens: Clear All Threads | Palette |
 | `logiclens.clearCache` | LogicLens: Clear Cache | Palette |
@@ -56,7 +56,7 @@ Chosen to avoid common defaults; all use a `Ctrl+Alt+E` / `Cmd+Alt+E` chord pref
 | `logiclens.previousStep` | `Alt+[` | `Alt+[` | `logiclens.walkthroughActive` |
 | `logiclens.clearFocus` | `Escape` | `Escape` | `logiclens.stepFocused && editorTextFocus && !suggestWidgetVisible` |
 
-Final keys are confirmed in S9 against VS Code defaults and popular keymaps.
+Final keys are confirmed in S9 against VS Code defaults and popular keymaps. The MVP is Linux only (ADR-0026); the macOS column is kept for S13 and not verified before then.
 
 ## Settings
 
@@ -64,7 +64,7 @@ Scope column: `res` = resource (workspace allowed), `mach` = machine, `app` = ap
 
 | Setting | Type, default | Scope | Purpose |
 |---|---|---|---|
-| `logiclens.provider` | enum, `auto` | app | `auto`, `vscode-lm`, `claude-code`, `codex`, `gemini-cli`, `kiro`, `anthropic`, `openai`, `ollama` |
+| `logiclens.provider` | enum, `auto` | app | `auto`, `vscode-lm`, `claude-code`. S7 adds `codex`, `gemini-cli`, `kiro`, `anthropic`, `openai`, `ollama` |
 | `logiclens.model` | string, `""` | app | Model ID for the chosen provider; empty means the provider's default |
 | `logiclens.depth` | enum, `standard` | res | `overview`, `standard`, `detailed` |
 | `logiclens.audience` | enum, `practitioner` | res | `eli5`, `newcomer`, `practitioner`, `expert` (spec §4) |
@@ -79,13 +79,13 @@ Scope column: `res` = resource (workspace allowed), `mach` = machine, `app` = ap
 | `logiclens.codeLens.enabled` | boolean, false | app | Show "Explain" CodeLens on symbols |
 | `logiclens.cache.enabled` | boolean, true | app | Persist walkthroughs and threads locally |
 | `logiclens.cli.claudePath` | string, `""` | mach | Path to `claude`; empty means `PATH` |
-| `logiclens.cli.codexPath` | string, `""` | mach | Path to `codex` |
-| `logiclens.cli.geminiPath` | string, `""` | mach | Path to `gemini` |
-| `logiclens.cli.kiroPath` | string, `""` | mach | Path to the Kiro CLI |
+| `logiclens.cli.codexPath` | string, `""` | mach | Path to `codex` (S7) |
+| `logiclens.cli.geminiPath` | string, `""` | mach | Path to `gemini` (S7) |
+| `logiclens.cli.kiroPath` | string, `""` | mach | Path to the Kiro CLI (S7) |
 | `logiclens.cli.timeoutSeconds` | number, 180 | app | Kill CLI requests after this |
-| `logiclens.ollama.url` | string, `http://localhost:11434` | mach | Ollama base URL |
-| `logiclens.anthropic.baseUrl` | string, `""` | mach | Optional override (for proxies) |
-| `logiclens.openai.baseUrl` | string, `""` | mach | Optional override (for compatible gateways) |
+| `logiclens.ollama.url` | string, `http://localhost:11434` | mach | Ollama base URL (S7) |
+| `logiclens.anthropic.baseUrl` | string, `""` | mach | Optional override (for proxies) (S7) |
+| `logiclens.openai.baseUrl` | string, `""` | mach | Optional override (for compatible gateways) (S7) |
 | `logiclens.debug.logPrompts` | boolean, false | app | Log prompts and responses to the output channel |
 
 Note on `logiclens.exclude`: workspace values are merged with user values, never replace them, so a repository cannot remove a user's exclusions.
