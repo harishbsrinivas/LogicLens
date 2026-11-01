@@ -36,12 +36,13 @@ logiclens/
 │  │                       #   (questions.ts), rangeTracker.ts and reanchor.ts (pure; S8)
 │  ├─ cache/               # store.ts (files, index, LRU), restore.ts (pure: build and re-anchor),
 │  │                       #   sync.ts (save after changes, restore on open) (S8)
-│  ├─ nav/                 # trail model and follow-definition service (S10, ADR-0021)
+│  ├─ nav/                 # trail.ts (pure model), follow.ts (follow and trail navigation) (S10, ADR-0021)
 │  ├─ bookmarks/           # bookmark store and service (S11, ADR-0022)
 │  ├─ ui/
 │  │  ├─ inlineThreads.ts  # inline explanation threads (ADR-0028) on the shared CommentController
 │  │  ├─ questionThreads.ts# question threads, commenting ranges, edit tracking (S4)
 │  │  ├─ lineLinks.ts      # pure: L<n> references to revealLine links
+│  │  ├─ trailLens.ts      # trail breadcrumbs and Explain <symbol> CodeLens (S10)
 │  │  ├─ safeMarkdown.ts   # pure: images to links, non-http(s) links dropped
 │  │  ├─ activeEditor.ts   # the editor commands act on (survives focus in other views)
 │  │  ├─ contextKeys.ts    # menu context keys

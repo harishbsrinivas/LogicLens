@@ -69,6 +69,14 @@ export interface TestApi {
     restore(doc: vscode.TextDocument): Promise<boolean>;
   };
   dropState(uri: vscode.Uri): void;
+  follow: {
+    trail: {
+      size: number;
+      index: number;
+      all(): readonly { uri: string; symbol?: string; step: number | null }[];
+    };
+    clear(): Promise<void>;
+  };
   setPick(pick: (entries: PickerEntry[], title: string) => Thenable<string | undefined>): void;
   statusText(): string;
   refreshStatus(): Promise<void>;
@@ -78,6 +86,7 @@ export interface TestApi {
   threads: {
     snapshot(uri: vscode.Uri): ThreadSnapshot | undefined;
     stepSnapshots(uri: vscode.Uri): (ThreadSnapshot & { index: number })[];
+    stepThread(uri: vscode.Uri, index: number): vscode.CommentThread | undefined;
   };
   decorations: { appliedTo(uri: vscode.Uri): AppliedDecorations | undefined };
   setInput(input: (prompt: string, value: string) => Thenable<string | undefined>): void;

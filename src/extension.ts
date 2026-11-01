@@ -3,6 +3,8 @@ import { CacheStore } from './cache/store';
 import { CacheSync } from './cache/sync';
 import { registerExplainCommands } from './commands/explain';
 import { registerStyleCommands } from './commands/style';
+import { registerTrailCommands } from './commands/trail';
+import { FollowService } from './nav/follow';
 import {
   createResolver,
   registerProviderCommands,
@@ -40,6 +42,7 @@ import { QuestionStore } from './state/questions';
 import { SessionStore } from './state/session';
 import { ActiveEditor } from './ui/activeEditor';
 import { ExplainCodeLens, StepCodeLens } from './ui/codeLens';
+import { TrailCodeLens } from './ui/trailLens';
 import { trackFileExcluded } from './ui/contextKeys';
 import { Decorations } from './ui/decorations';
 import { CONTROLLER_ID, InlineThreads } from './ui/inlineThreads';
@@ -64,6 +67,7 @@ export interface TestApi {
   cache: CacheSync;
   /** Forgets a document's walkthrough and threads in memory only, as a window reload would. */
   dropState(uri: vscode.Uri): void;
+  follow: FollowService;
   globalState: vscode.Memento;
   threads: InlineThreads;
   questions: QuestionThreads;
@@ -173,8 +177,23 @@ export function activate(context: vscode.ExtensionContext): TestApi | undefined 
     }),
   });
 
+  const follow = new FollowService({
+    session,
+    state: context.workspaceState,
+    pick: (entries, title) => pick(entries, title),
+    restore: (doc) => cache.restore(doc),
+  });
+  const trailLens = new TrailCodeLens(follow, session, documentSymbols, isExcluded);
+
   context.subscriptions.push(
     cache,
+    follow,
+    trailLens,
+    vscode.languages.registerCodeLensProvider(
+      [{ scheme: 'file' }, { scheme: 'untitled' }],
+      trailLens,
+    ),
+    ...registerTrailCommands({ follow, session, active, inline: threads, pick: () => pick }),
     vscode.commands.registerCommand('logiclens.clearCache', async () => {
       await cacheStore.clear();
       void vscode.window.showInformationMessage('LogicLens cache cleared.');
@@ -254,6 +273,7 @@ export function activate(context: vscode.ExtensionContext): TestApi | undefined 
     setTrusted: (t) => (trustOverride = t),
     setInput: (i) => (input = i),
     cache,
+    follow,
     dropState: (uri) => {
       const key = SessionStore.key(uri);
       session.delete(key);

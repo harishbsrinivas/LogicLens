@@ -72,6 +72,11 @@ export class InlineThreads implements vscode.Disposable {
       });
   }
 
+  /** A step's thread; integration tests pass it to step title commands. */
+  stepThread(uri: vscode.Uri, index: number): vscode.CommentThread | undefined {
+    return this.docs.get(SessionStore.key(uri))?.steps.get(index)?.thread;
+  }
+
   /** The step a step thread belongs to, for its title actions. */
   stepIndexOf(thread: vscode.CommentThread): number | undefined {
     for (const doc of this.docs.values()) {
