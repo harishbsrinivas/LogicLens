@@ -1,0 +1,60 @@
+{
+  "name": "logiclens",
+  "displayName": "LogicLens",
+  "description": "Step-by-step code walkthroughs and line questions using the AI you already have.",
+  "version": "0.0.1",
+  "publisher": "logiclens-dev",
+  "private": true,
+  "license": "UNLICENSED",
+  "engines": {
+    "vscode": "^1.90.0",
+    "node": ">=22.12.0"
+  },
+  "packageManager": "pnpm@12.3.4",
+  "categories": [
+    "Other"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "logiclens.hello",
+        "title": "Hello",
+        "category": "LogicLens"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "pnpm build:host && pnpm build:webview",
+    "build:host": "node esbuild.mjs",
+    "build:release": "node esbuild.mjs --production && pnpm build:webview",
+    "build:webview": "vite build --config webview/vite.config.mts",
+    "watch": "node esbuild.mjs --watch",
+    "watch:webview": "vite build --config webview/vite.config.mts --watch",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p webview/tsconfig.json --noEmit && tsc -p test/integration/tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test:unit": "vitest run",
+    "pretest:integration": "pnpm build && tsc -p test/integration/tsconfig.json",
+    "test:integration": "vscode-test",
+    "package": "pnpm build:release && vsce package --no-dependencies --no-rewrite-relative-links --allow-missing-repository --skip-license"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^22.20.5",
+    "@types/vscode": "1.90.0",
+    "@vscode/test-cli": "^0.0.15",
+    "@vscode/test-electron": "^3.1.0",
+    "@vscode/vsce": "^4.1.0",
+    "esbuild": "^0.28.2",
+    "eslint": "^10.14.0",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.10",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.72.1",
+    "vite": "^8.3.5",
+    "vitest": "^5.0.5"
+  }
+}

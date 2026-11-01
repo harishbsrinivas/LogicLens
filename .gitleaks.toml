@@ -1,0 +1,4 @@
+title = "logiclens gitleaks config"
+
+[extend]
+useDefault = true
