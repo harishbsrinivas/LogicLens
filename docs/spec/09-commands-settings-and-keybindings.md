@@ -10,32 +10,33 @@ Names here are the contract for `package.json`. Add new ones here first.
 | `logiclens.explainSelection` | LogicLens: Explain Selection | Palette, editor context (when selection) |
 | `logiclens.explainSymbol` | LogicLens: Explain Symbol | CodeLens, palette (symbol picker) |
 | `logiclens.askAtLine` | LogicLens: Ask About This Line | Palette, editor context, keybinding |
-| `logiclens.nextStep` | LogicLens: Next Step | Palette, keybinding, panel |
-| `logiclens.previousStep` | LogicLens: Previous Step | Palette, keybinding, panel |
+| `logiclens.nextStep` | LogicLens: Next Step | Palette, keybinding, step CodeLens |
+| `logiclens.previousStep` | LogicLens: Previous Step | Palette, keybinding, step CodeLens |
 | `logiclens.clearFocus` | LogicLens: Clear Step Highlight | Escape when a step is focused |
-| `logiclens.refresh` | LogicLens: Refresh Explanation | Panel, palette |
-| `logiclens.stop` | LogicLens: Stop | Panel, status bar while busy |
+| `logiclens.refresh` | LogicLens: Refresh Explanation | Explanation thread title, palette |
+| `logiclens.stop` | LogicLens: Stop | Explanation thread title and status bar while busy, palette |
+| `logiclens.closeExplanation` | LogicLens: Close Explanation | Explanation thread title, palette |
 | `logiclens.selectProvider` | LogicLens: Select AI Provider | Status bar, palette |
 | `logiclens.selectModel` | LogicLens: Select Model | Palette, provider picker |
-| `logiclens.setDepth` | LogicLens: Set Explanation Depth | Panel, palette |
-| `logiclens.setAudience` | LogicLens: Set Audience | Panel, palette |
-| `logiclens.setJargon` | LogicLens: Set Jargon Level | Panel, palette |
+| `logiclens.setDepth` | LogicLens: Set Explanation Depth | Explanation thread title, palette |
+| `logiclens.setAudience` | LogicLens: Set Audience | Explanation thread title, palette |
+| `logiclens.setJargon` | LogicLens: Set Jargon Level | Explanation thread title, palette |
 | `logiclens.followDefinition` | LogicLens: Follow to Definition | Palette, editor context, step menu, keybinding |
-| `logiclens.trailBack` | LogicLens: Trail Back | Palette, panel breadcrumbs, keybinding |
-| `logiclens.trailForward` | LogicLens: Trail Forward | Palette, panel breadcrumbs, keybinding |
-| `logiclens.clearTrail` | LogicLens: Clear Trail | Palette, breadcrumb menu |
+| `logiclens.trailBack` | LogicLens: Trail Back | Palette, trail CodeLens, keybinding |
+| `logiclens.trailForward` | LogicLens: Trail Forward | Palette, trail CodeLens, keybinding |
+| `logiclens.clearTrail` | LogicLens: Clear Trail | Palette, trail list |
 | `logiclens.addBookmark` | LogicLens: Add Bookmark | Palette, editor context, step and comment menus, keybinding |
 | `logiclens.editBookmarkNote` | LogicLens: Edit Bookmark Note | Bookmarks view |
 | `logiclens.removeBookmark` | LogicLens: Remove Bookmark | Bookmarks view |
 | `logiclens.clearAllBookmarks` | LogicLens: Clear All Bookmarks | Bookmarks view toolbar, palette |
-| `logiclens.setPersonality` | LogicLens: Set Personality | Panel, palette (S12) |
-| `logiclens.setApiKey` | LogicLens: Set API Key… | Palette, setup view (S7) |
+| `logiclens.setPersonality` | LogicLens: Set Personality | Explanation thread title, palette (S12) |
+| `logiclens.setApiKey` | LogicLens: Set API Key… | Palette, provider picker (S7) |
 | `logiclens.clearThreadsInFile` | LogicLens: Clear Threads in File | Palette |
 | `logiclens.clearAllThreads` | LogicLens: Clear All Threads | Palette |
 | `logiclens.clearCache` | LogicLens: Clear Cache | Palette |
 | `logiclens.resetDataNotices` | LogicLens: Reset Data Notices | Palette |
 | `logiclens.showLog` | LogicLens: Show Log | Palette |
-| `logiclens.viewTerms` | LogicLens: View Terms of Use | Palette, terms prompt, panel |
+| `logiclens.viewTerms` | LogicLens: View Terms of Use | Palette, terms prompt |
 
 ## Default keybindings
 
@@ -94,7 +95,8 @@ Note on `logiclens.exclude`: workspace values are merged with user values, never
 
 ## Views
 
+There is no LogicLens panel; explanations render inline in the editor (ADR-0028). The only view is the Bookmarks tree (S11).
+
 | ID | Name | Container |
 |---|---|---|
-| `logiclens.panel` | LogicLens (webview) | LogicLens |
 | `logiclens.bookmarks` | Bookmarks (tree) | LogicLens |

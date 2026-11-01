@@ -14,7 +14,7 @@ In:
 - Context budgeting (arch §5 step 3) with omitted-lines markers; `countTokens` for `vscode-lm`.
 - Large-file flow: offer selection, visible range, or symbol when over `logiclens.maxLines`.
 - Generated or minified file warning.
-- Depth, audience (`eli5`, `newcomer`, `practitioner`, `expert`), and jargon (`auto`, `avoid`, `define`, `use`): settings, panel chips, quick-pick commands, regenerate with confirmation; prompt variants. Thread answers follow audience and jargon.
+- Depth, audience (`eli5`, `newcomer`, `practitioner`, `expert`), and jargon (`auto`, `avoid`, `define`, `use`): settings, explanation thread title actions, quick-pick commands, regenerate with confirmation; prompt variants. Thread answers follow audience and jargon.
 - `logiclens.explanationLanguage` with `auto` following `vscode.env.language`.
 - Editor context menu "Explain File".
 
@@ -28,7 +28,7 @@ Out: folders and multi-select (post-MVP), notebooks.
 - [ ] Eval spot check: `eli5` output on 10 files has no unexplained jargon and keeps anchor rate within 2 points of `practitioner`.
 - [ ] Explorer and editor menu contributions with `when` clauses (hide for excluded files using `logiclens.fileExcluded`).
 - [ ] CodeLens provider; integration test toggling the setting.
-- [ ] Panel header chips for depth and audience.
+- [ ] Explanation thread title actions for depth, audience, and jargon.
 - [ ] Grow eval corpus to 30 files; run at each depth and check step counts fall in range.
 
 ## Demo script

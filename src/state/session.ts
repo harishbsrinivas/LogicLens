@@ -1,6 +1,6 @@
 // In-memory session state (arch §7): the latest walkthrough per document. Nothing persisted in S1.
 import * as vscode from 'vscode';
-import type { WalkthroughView } from '../../shared/messages';
+import type { WalkthroughView } from './types';
 
 export interface SessionEntry {
   view: WalkthroughView;

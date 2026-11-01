@@ -1,5 +1,5 @@
-// The editor LogicLens acts on. Focusing the panel clears `activeTextEditor` in some layouts,
-// so the last text editor is kept while it is still visible.
+// The editor LogicLens acts on. Focusing another view (Comments, Output) clears
+// `activeTextEditor` in some layouts, so the last text editor is kept while it is still visible.
 import * as vscode from 'vscode';
 
 export class ActiveEditor implements vscode.Disposable {

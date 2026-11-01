@@ -6,7 +6,7 @@
 - Structural evaluation (spec §10) runs for the default provider and meets targets below.
 - No code is sent without an explicit action: integration test that opens, switches, and edits files with a fake provider and asserts zero requests.
 - Exclusions, secret scan, and untrusted-workspace behavior covered by integration tests.
-- Webview CSP and sanitization tests: model output containing `<script>`, `<img onerror>`, `javascript:` links, and HTML comments renders inert.
+- Rendering tests: model output containing `<script>`, `<img onerror>`, images, `javascript:` and `command:` links, and HTML comments renders inert in the inline explanation (ADR-0028).
 - Keyboard-only run of J1, J3, and J5. Screen reader spot check (Orca on Linux; NVDA and VoiceOver come with S13).
 - Light, dark, and high-contrast theme screenshots reviewed.
 - Package size under 2 MB (VSIX), activation under 50 ms of extension-host time measured with the Developer: Show Running Extensions view.
@@ -27,5 +27,5 @@ No telemetry, so these come from public signals and opt-in feedback:
 
 - Marketplace installs, rating, and review themes (Open VSX from S7).
 - Issue tracker: ratio of explanation-quality issues to bugs, time to first response.
-- An in-panel "Was this helpful?" thumbs control that, in the MVP, only opens a prefilled GitHub issue when the user chooses to; nothing is sent automatically.
+- A "Was this helpful?" thumbs action on the explanation thread that, in the MVP, only opens a prefilled GitHub issue when the user chooses to; nothing is sent automatically.
 - Provider mix reported voluntarily in issues, to decide which adapters deserve investment.

@@ -7,7 +7,7 @@ command ─► resolve target ─► RequestGate ─► build context ─► ren
                      secret scan · size                       protocol parser (incremental)
                                                                         │ events
                                                                         ▼
-                                                    anchor + validate ─► state store ─► panel, decorations
+                                                    anchor + validate ─► state store ─► inline threads, decorations
 ```
 
 ## 1. Resolve target

@@ -26,7 +26,7 @@ In:
 
 - [ ] SSE reader unit tests with chunk-split fixtures.
 - [ ] Recorded fixture tests for each adapter (success, 401, 429, 5xx, truncated).
-- [ ] Redaction tests: keys never appear in logs, errors, or webview messages.
+- [ ] Redaction tests: keys never appear in logs, errors, or explanations.
 - [ ] Setup view: "Set API key…" and "Is Ollama running?" guidance.
 - [ ] Eval run per new provider; record rates in arch §4.
 

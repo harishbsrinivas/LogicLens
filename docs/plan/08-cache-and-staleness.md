@@ -14,7 +14,7 @@ In:
 - Re-anchoring on reopen by original text match.
 - Threads persisted and restored with their documents.
 - `logiclens.cache.enabled`, `logiclens.clearCache`.
-- "Generated <time> by <provider/model>" label in the panel header.
+- "Generated <time> by <provider/model>" in the explanation thread's header line.
 
 ## Tasks
 

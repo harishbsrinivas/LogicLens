@@ -1,6 +1,6 @@
 # ADR-0009: Single webview view panel built with Svelte 5
 
-- **Status:** Accepted (implemented in S1)
+- **Status:** Superseded by ADR-0028
 - **Date:** 2026-11-01
 - **Deciders:** Project owner
 - **Source:** spec §7; arch §6

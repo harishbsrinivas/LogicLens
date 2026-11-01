@@ -19,7 +19,7 @@ pnpm install
 pnpm build
 ```
 
-Press F5 in VS Code ("Run Extension"). The default build task runs `pnpm watch` and `pnpm watch:webview` together, so host and webview rebuild on save. Reload the Extension Development Host window (Ctrl+R) to pick up changes.
+Press F5 in VS Code ("Run Extension"). The default build task runs `pnpm watch`, so the host rebuilds on save. Reload the Extension Development Host window (Ctrl+R) to pick up changes.
 
 ## 2. Branches: one per slice
 
@@ -30,7 +30,7 @@ Work is delivered in thin vertical slices (ADR-0015). Each slice gets its own br
 | Kind | Branch | Example |
 |---|---|---|
 | Slice | `s<N>-<slug>`, slug taken from the slice file name | `s2-step-walkthrough` for `docs/plan/02-step-walkthrough.md` |
-| Bug fix outside a slice | `fix/<short-slug>` | `fix/panel-csp-nonce` |
+| Bug fix outside a slice | `fix/<short-slug>` | `fix/thread-stop-action` |
 | Docs only | `docs/<short-slug>` | `docs/adr-0026-cache-format` |
 | Tooling, deps, CI | `chore/<short-slug>` | `chore/bump-vite` |
 
@@ -125,7 +125,6 @@ Then walk the SECURITY.md pre-merge checklist and the definition of done in AGEN
 - `commands/` resolve arguments and call services. No logic.
 - Only `explain/` calls providers, and only through `guard/RequestGate.send()`.
 - `providers/` know nothing about steps, walkthroughs, or UI.
-- `shared/` is types and constants only. `webview/` never imports `vscode`, `node:*`, or `src/`. Lint enforces both.
 - New module, command, view, or setting: update arch §3 and spec §9 in the same change.
 
 ### Keep `vscode` at the edges
@@ -139,15 +138,14 @@ Logic modules take small interfaces, not the `vscode` API, so they run under vit
 - Thread a `CancellationToken` from the command through the provider to the request or child process. Stop must actually stop.
 - Never block the extension host: no synchronous `fs` calls, no long loops on the main thread. Read files through `vscode.workspace.fs` or open documents.
 - Read settings through one module (`guard/settings.ts` pattern), with defaults matching `package.json` `contributes.configuration`.
-- Respect Workspace Trust and theme variables. No hard-coded colours in the webview; use `--vscode-*` variables so light, dark, and high contrast all work.
+- Respect Workspace Trust and the theme. No hard-coded colours; use theme colors (`ThemeColor`) for decorations so light, dark, and high contrast all work.
 - Log through `util/log.ts` only. Prompts, code, and responses are logged only when `logiclens.debug.logPrompts` is on.
 
-### Webview (Svelte 5)
+### Inline UI (ADR-0028)
 
-- Strict CSP with a per-load nonce, no inline script or style, no remote resources (SECURITY.md §4).
-- Model output goes through the Markdown renderer with HTML disabled, then the sanitizer. Never set `{@html}` on anything else.
-- Messages are typed in `shared/messages.ts` and validated on receipt in `ui/validate.ts`. Add a message: add its type, its validator, and a validator test.
-- The extension host owns state. The webview renders what it is sent and posts user intents back.
+- No webview. Explanations are comment threads from `ui/inlineThreads.ts`; step titles and breadcrumbs are CodeLens.
+- Model output goes through `ui/safeMarkdown.ts` into a `MarkdownString` with `isTrusted`, `supportHtml`, and `supportThemeIcons` off (SECURITY.md §4).
+- `ui/` renders state from `state/`; thread actions call commands, which resolve their document from the thread.
 
 ### Provider CLIs (S6 on)
 
@@ -158,8 +156,7 @@ Logic modules take small interfaces, not the `vscode` API, so they run under vit
 | Layer | Tool | Lives in | Covers |
 |---|---|---|---|
 | Unit | vitest | `test/unit/` | Pure logic: guard, protocol parser, context builder, prompts, validators, adapters against fakes |
-| Webview | vitest + jsdom | `test/unit/webview/` | Rendering, sanitization, keyboard handling |
-| Integration | `@vscode/test-cli` | `test/integration/` | Commands, panel messages, decorations, gate refusals, no implicit send, against a `FakeProvider` |
+| Integration | `@vscode/test-cli` | `test/integration/` | Commands, inline threads, decorations, gate refusals, no implicit send, against a `FakeProvider` |
 | Evaluation | `pnpm eval` (local only) | `test/eval/` | Explanation quality with real providers (spec §10) |
 
 - Every task in a slice ships with its tests. A bug fix starts with a failing test that reproduces it.

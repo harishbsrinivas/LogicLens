@@ -11,16 +11,6 @@ export default tseslint.config(
     languageOptions: { globals: globals.node },
   },
   {
-    files: ['shared/**/*.ts'],
-    rules: {
-      // shared/ is types and constants only, so the webview never pulls in Node code (arch §3).
-      'no-restricted-imports': [
-        'error',
-        { patterns: ['vscode', 'node:*', '../src/*', '../webview/*'] },
-      ],
-    },
-  },
-  {
     files: ['src/**/*.ts'],
     ignores: ['src/providers/**', 'src/extension.ts'],
     rules: {
@@ -37,13 +27,6 @@ export default tseslint.config(
           ],
         },
       ],
-    },
-  },
-  {
-    files: ['webview/**/*.ts'],
-    languageOptions: { globals: globals.browser },
-    rules: {
-      'no-restricted-imports': ['error', { patterns: ['vscode', 'node:*', '../../src/*'] }],
     },
   },
 );

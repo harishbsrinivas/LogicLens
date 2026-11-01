@@ -36,10 +36,10 @@ Each provider shows a state: **Ready**, **Needs sign-in**, **Not installed**, or
 
 ## Selection
 
-- **First run:** if exactly one provider is Ready, LogicLens uses it and says so in a notification. If several are Ready, it shows the picker. If none are, the panel shows a setup view listing options with links to install or configure each.
+- **First run:** if exactly one provider is Ready, LogicLens uses it and says so in a notification. If several are Ready, it shows the picker. If none are, a notification says so and opens the provider picker, which lists each provider's state with one action to install or configure it; the status bar item shows a warning until one is Ready.
 - **After that:** `logiclens.provider` and `logiclens.model` hold the choice (`auto` by default, meaning the first Ready provider in the table order and that provider's default model).
 - **Status bar item** shows the current provider and model ("✦ Copilot · claude-sonnet"); clicking it opens the picker (J5).
-- **Per request override:** the panel header has a provider menu for regenerating the current walkthrough with another provider, which is useful for comparing.
+- **Per request override:** the explanation thread's title has a **Regenerate with…** action that regenerates the current walkthrough with another provider, which is useful for comparing.
 - Model names are never hardcoded as defaults in the extension. Each adapter uses the provider's own default unless the user picks a model. For VS Code Language Models, where the API has no default, LogicLens prefers Copilot's chat models and, among them, the one with the largest input window (arch §4).
 
 ## Fallback and errors
@@ -50,5 +50,5 @@ Each provider shows a state: **Ready**, **Needs sign-in**, **Not installed**, or
 
 ## Cost transparency
 
-- After each request the panel footer shows the provider, model, duration, and token counts when the provider reports them.
+- After each request the explanation's header line shows the provider, model, duration, and token counts when the provider reports them.
 - LogicLens never shows a price estimate it cannot verify.

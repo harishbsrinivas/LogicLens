@@ -27,15 +27,14 @@ Any text document VS Code can open is a valid target, including unsaved and unti
 - **Explorer context menu** on a file: "LogicLens: Explain File". Opens the file in an editor (preview tab) and starts the walkthrough.
 - Multi-select or folders: the menu item is hidden in the MVP. Folder overviews are a post-MVP candidate (spec §11).
 
-### From the LogicLens panel
-- **Explain current file** button in the empty state.
-- **Ask** on any step (spec §5, J4).
-- **Refresh** on a stale or failed walkthrough.
+### From an explanation in the editor
+- **Explain again** and **Refresh** in the title of the file's explanation thread (stale, stopped, or failed walkthroughs included).
+- **Ask** on any step thread (spec §5, J4).
 
-## Active target and panel binding
+## Explanations stay with their document
 
-- The panel shows one walkthrough at a time: the one for the active editor's document, if it has one.
-- Switching editor tabs switches the panel to that document's walkthrough, or to the empty state with an "Explain this file" button. It never starts a request on its own.
+- Explanations render inline in the editor of the document they explain (spec §7, ADR-0028). Each document has at most one walkthrough at a time.
+- Switching editor tabs shows that document's walkthrough, if it has one. It never starts a request on its own.
 - Starting a new explanation while one is streaming for the same document cancels the old one after confirmation.
 
 ## Limits
