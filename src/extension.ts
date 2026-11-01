@@ -47,6 +47,7 @@ import { ActiveEditor } from './ui/activeEditor';
 import { ExplainCodeLens, StepCodeLens } from './ui/codeLens';
 import { TrailCodeLens } from './ui/trailLens';
 import { BookmarkDecorations, BookmarksTree, BookmarkThreads } from './ui/bookmarksView';
+import { SettingsPanel } from './ui/settingsPanel';
 import { trackFileExcluded } from './ui/contextKeys';
 import { Decorations } from './ui/decorations';
 import { CONTROLLER_ID, InlineThreads } from './ui/inlineThreads';
@@ -73,6 +74,7 @@ export interface TestApi {
   dropState(uri: vscode.Uri): void;
   follow: FollowService;
   bookmarks: BookmarkStore;
+  settings: SettingsPanel;
   globalState: vscode.Memento;
   threads: InlineThreads;
   questions: QuestionThreads;
@@ -208,7 +210,12 @@ export function activate(context: vscode.ExtensionContext): TestApi | undefined 
   });
   const trailLens = new TrailCodeLens(follow, session, documentSymbols, isExcluded);
 
+  const settingsPanel = new SettingsPanel({ extensionUri: context.extensionUri, registry });
+
   context.subscriptions.push(
+    settingsPanel,
+    vscode.commands.registerCommand('logiclens.openSettings', () => settingsPanel.show()),
+    vscode.commands.registerCommand('logiclens.showLog', () => channel.show()),
     bookmarks,
     bookmarkThreads,
     bookmarkDecorations,
@@ -319,6 +326,7 @@ export function activate(context: vscode.ExtensionContext): TestApi | undefined 
     cache,
     follow,
     bookmarks: bookmarkStore,
+    settings: settingsPanel,
     dropState: (uri) => {
       const key = SessionStore.key(uri);
       session.delete(key);

@@ -16,7 +16,7 @@ Explanations appear over the code, inline in the editor. There is no LogicLens p
 | **Status bar item** | Current provider and model, busy indicator, no-provider warning | Always visible, one click to switch |
 | **Quick picks** | Provider and model choice, depth, audience, jargon, personality, long trails | Native, keyboard first |
 
-No webviews, no custom editors, and no modal dialogs except the terms prompt and the one-time data notice.
+Explanations never use a webview. The one webview is the settings page (spec §16, ADR-0031), an editor tab that shows no code or model output. No custom editors, and no modal dialogs except the terms prompt, the one-time data notice, and confirmations.
 
 ## Inline layout
 

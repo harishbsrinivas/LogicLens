@@ -155,7 +155,7 @@
       },
       {
         "command": "logiclens.regenerateWith",
-        "title": "Regenerate with…",
+        "title": "Regenerate with\u2026",
         "category": "LogicLens",
         "icon": "$(versions)"
       },
@@ -189,7 +189,7 @@
       },
       {
         "command": "logiclens.adjustExplanation",
-        "title": "Adjust Explanation…",
+        "title": "Adjust Explanation\u2026",
         "category": "LogicLens",
         "icon": "$(settings)"
       },
@@ -218,7 +218,7 @@
       },
       {
         "command": "logiclens.followFromStep",
-        "title": "Follow…",
+        "title": "Follow\u2026",
         "category": "LogicLens",
         "icon": "$(go-to-file)"
       },
@@ -307,6 +307,17 @@
         "title": "Close",
         "category": "LogicLens",
         "icon": "$(close)"
+      },
+      {
+        "command": "logiclens.openSettings",
+        "title": "Open Settings",
+        "category": "LogicLens",
+        "icon": "$(settings-gear)"
+      },
+      {
+        "command": "logiclens.showLog",
+        "title": "Show Log",
+        "category": "LogicLens"
       }
     ],
     "menus": {
@@ -592,6 +603,11 @@
           "command": "logiclens.clearAllBookmarks",
           "when": "view == logiclens.bookmarks && logiclens.hasBookmarks",
           "group": "navigation"
+        },
+        {
+          "command": "logiclens.openSettings",
+          "when": "view == logiclens.bookmarks",
+          "group": "navigation@9"
         }
       ],
       "view/item/context": [
@@ -867,7 +883,7 @@
     "build": "node esbuild.mjs",
     "build:release": "node esbuild.mjs --production",
     "watch": "node esbuild.mjs --watch",
-    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p test/integration/tsconfig.json --noEmit",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.webview.json --noEmit && tsc -p test/integration/tsconfig.json --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

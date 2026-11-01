@@ -26,9 +26,10 @@ Source of truth for what the product does. Each section lives in its own file; t
 | 13 | [13-following-code-across-files.md](13-following-code-across-files.md) | Follow to definition, navigation trail, breadcrumbs, back and forward | Cross-file navigation, trail CodeLens |
 | 14 | [14-bookmarks.md](14-bookmarks.md) | Bookmarking steps, answers, and code; Bookmarks view; re-anchoring | Bookmarks, tree views, saved explanations |
 | 15 | [15-personality-packs.md](15-personality-packs.md) | Five explainer voices, rules they follow, picker, evaluation | Prompt tone, personality setting (S12) |
+| 16 | [16-settings-page.md](16-settings-page.md) | The LogicLens settings page: sections, editing rules, safety | Settings page, any new setting (S14) |
 
 ## Editing rules
 
-- Change only the affected section file. Keep section numbers stable; append new sections as `16-*.md` and add a row above.
+- Change only the affected section file. Keep section numbers stable; append new sections as `17-*.md` and add a row above.
 - If a section passes about 300 lines, split it and update this index.
 - If a change contradicts the spec, update the spec in the same change.

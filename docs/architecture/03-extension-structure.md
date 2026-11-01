@@ -51,7 +51,10 @@ logiclens/
 │  │  ├─ stepContext.ts    # context keys, follow-cursor focus, stale marking
 │  │  ├─ bookmarksView.ts  # Bookmarks tree, gutter icons, bookmarked explanation threads (S11)
 │  │  ├─ providerPicker.ts # pure: provider and model picker entries (S5)
+│  │  ├─ settingsPanel.ts  # settings page webview: CSP, state, validated messages (S14)
 │  │  └─ statusBar.ts      # provider and model, busy, no-provider warning (S5)
+│  ├─ settings/            # schema.ts: settings the settings page may edit, with validation (S14)
+│  ├─ webview/             # settings.ts: settings page script, bundled for the browser (S14)
 │  └─ util/                # log.ts (redacting logger), id.ts
 ├─ test/
 │  ├─ unit/                # vitest: protocol, anchor, context, guard, prompts
@@ -61,12 +64,12 @@ logiclens/
 └─ docs/
 ```
 
-One pnpm package. Everything is bundled into `dist/extension.js`, so `vsce package --no-dependencies` never touches pnpm's symlinked `node_modules` (arch §9). There is no webview bundle (ADR-0028).
+One pnpm package. The extension is bundled into `dist/extension.js` and the settings page script into `dist/webview/settings.js`, so `vsce package --no-dependencies` never touches pnpm's symlinked `node_modules` (arch §9). Explanations have no webview (ADR-0028); the settings page is the only one (ADR-0031).
 
 ## Module rules
 
 - `commands/` call services; they hold no logic beyond argument resolution.
-- Only `explain/` calls providers, and only through `guard/RequestGate.send()`. A lint rule (`no-restricted-imports` in `eslint.config.mjs`) blocks importing anything under `providers/` except `providers/types` from `src/`, other than `src/providers/` itself and `src/extension.ts`, which builds the adapters and hands them to the gate. S5 widened the exception to the registry's consumers `ui/statusBar.ts`, `ui/providerPicker.ts`, and `commands/provider.ts`, which list and select providers but never send.
+- Only `explain/` calls providers, and only through `guard/RequestGate.send()`. A lint rule (`no-restricted-imports` in `eslint.config.mjs`) blocks importing anything under `providers/` except `providers/types` from `src/`, other than `src/providers/` itself and `src/extension.ts`, which builds the adapters and hands them to the gate. S5 widened the exception to the registry's consumers `ui/statusBar.ts`, `ui/providerPicker.ts`, and `commands/provider.ts`, and S14 to `ui/settingsPanel.ts`; they list and select providers but never send.
 - `providers/` knows nothing about walkthroughs, steps, or UI. Input is messages; output is a stream of text chunks plus usage.
 - `ui/` renders state from `state/` and sends user intents to `commands/` or services. It never calls providers.
 - `nav/` and `bookmarks/` never import `providers/` or `guard/`. Navigating and bookmarking cannot send code; "Explain again" and "Explain <symbol>" go through `commands/` like any other explain action.

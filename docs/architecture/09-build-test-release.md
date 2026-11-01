@@ -6,7 +6,7 @@
 - Node 22.12+ for tooling (vitest requires it). The host bundle targets `node20`, the extension host Node of the minimum engine (ADR-0017).
 - pnpm for dependencies.
 - esbuild bundles `src/extension.ts` to `dist/extension.js` (CommonJS, `vscode` external, minified for release, sourcemaps for dev).
-- There is no webview bundle (ADR-0028).
+- A second esbuild bundle, `dist/webview/settings.js` (IIFE, browser platform), holds the settings page script (ADR-0031); `tsconfig.webview.json` typechecks `src/webview/` with the DOM library, and the main `tsconfig.json` excludes it. `media/settings.css` and `media/logiclens.svg` ship as is.
 - ESLint (typescript-eslint) and Prettier. Lint rule restricting provider imports (arch §3).
 - `@vscode/vsce` packages the VSIX with `--no-dependencies` (everything is bundled, which also avoids pnpm symlink issues in vsce). Until a repository URL and license exist, packaging also passes `--no-rewrite-relative-links --allow-missing-repository --skip-license`. `.vscodeignore` allowlists `dist/extension.js` and the manifest files. Release builds are platform-specific (`--target linux-x64` and `linux-arm64`) so the Marketplace offers them to Linux only (ADR-0026). `ovsx` publishing to Open VSX starts in S7.
 - `pnpm-workspace.yaml` allows install scripts only for esbuild (`@vscode/vsce-sign` explicitly denied) and holds `overrides` for audited transitive fixes, each with its advisory ID.

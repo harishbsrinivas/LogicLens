@@ -58,7 +58,8 @@ Names here are the contract for `package.json`. Add new ones here first.
 | `logiclens.clearAllThreads` | LogicLens: Clear All Threads | Palette |
 | `logiclens.clearCache` | LogicLens: Clear Cache | Palette |
 | `logiclens.resetDataNotices` | LogicLens: Reset Data Notices | Palette |
-| `logiclens.showLog` | LogicLens: Show Log | Palette |
+| `logiclens.showLog` | LogicLens: Show Log | Palette, settings page |
+| `logiclens.openSettings` | LogicLens: Open Settings | Palette, Bookmarks view title, Adjust Explanation… (S14) |
 | `logiclens.viewTerms` | LogicLens: View Terms of Use | Palette, terms prompt |
 
 ## Default keybindings
@@ -118,7 +119,7 @@ Note on `logiclens.exclude`: workspace values are merged with user values, never
 
 ## Views
 
-There is no LogicLens panel; explanations render inline in the editor (ADR-0028). The only view is the Bookmarks tree (S11).
+There is no LogicLens panel; explanations render inline in the editor (ADR-0028). The only view is the Bookmarks tree (S11), in the LogicLens activity bar container. The settings page (spec §16, S14) is an editor tab, not a view.
 
 | ID | Name | Container |
 |---|---|---|

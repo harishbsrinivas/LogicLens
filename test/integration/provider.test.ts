@@ -126,6 +126,7 @@ suite('Provider choice', () => {
   });
 
   test('Reset Data Notices shows the notice again on the next request', async () => {
+    await api.globalState.update('dataNotice.fake-b', 'acknowledged');
     const prompter = new FakePrompter();
     api.setPrompter(prompter);
     await explain();

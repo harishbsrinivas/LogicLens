@@ -143,7 +143,7 @@ Logic modules take small interfaces, not the `vscode` API, so they run under vit
 
 ### Inline UI (ADR-0028)
 
-- No webview. Explanations are comment threads from `ui/inlineThreads.ts`; step titles and breadcrumbs are CodeLens.
+- No webview for explanations. Explanations are comment threads from `ui/inlineThreads.ts`; step titles and breadcrumbs are CodeLens. The settings page (`ui/settingsPanel.ts`, ADR-0031) is the only webview; a new setting goes in `package.json` and `src/settings/schema.ts`.
 - Model output goes through `ui/safeMarkdown.ts` into a `MarkdownString` with `isTrusted`, `supportHtml`, and `supportThemeIcons` off (SECURITY.md §4).
 - `ui/` renders state from `state/`; thread actions call commands, which resolve their document from the thread.
 
