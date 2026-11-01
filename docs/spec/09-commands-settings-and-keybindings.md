@@ -29,6 +29,7 @@ Names here are the contract for `package.json`. Add new ones here first.
 | `logiclens.closeExplanation` | LogicLens: Close Explanation | Explanation thread title, palette |
 | `logiclens.selectProvider` | LogicLens: Select AI Provider | Status bar, palette |
 | `logiclens.selectModel` | LogicLens: Select Model | Palette, provider picker |
+| `logiclens.regenerateWith` | LogicLens: Regenerate with… | Explanation thread title (hidden from the palette) |
 | `logiclens.setDepth` | LogicLens: Set Explanation Depth | Explanation thread title, palette |
 | `logiclens.setAudience` | LogicLens: Set Audience | Explanation thread title, palette |
 | `logiclens.setJargon` | LogicLens: Set Jargon Level | Explanation thread title, palette |
@@ -74,7 +75,7 @@ Scope column: `res` = resource (workspace allowed), `mach` = machine, `app` = ap
 
 | Setting | Type, default | Scope | Purpose |
 |---|---|---|---|
-| `logiclens.provider` | enum, `auto` | app | `auto`, `vscode-lm`, `claude-code`. S7 adds `codex`, `gemini-cli`, `kiro`, `anthropic`, `openai`, `ollama` |
+| `logiclens.provider` | enum, `auto` | app | `auto`, `vscode-lm` (S5), `claude-code` (S6). S7 adds `codex`, `gemini-cli`, `kiro`, `anthropic`, `openai`, `ollama` |
 | `logiclens.model` | string, `""` | app | Model ID for the chosen provider; empty means the provider's default |
 | `logiclens.depth` | enum, `standard` | res | `overview`, `standard`, `detailed` |
 | `logiclens.audience` | enum, `practitioner` | res | `eli5`, `newcomer`, `practitioner`, `expert` (spec §4) |

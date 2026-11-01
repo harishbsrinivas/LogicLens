@@ -1,5 +1,11 @@
 import * as vscode from 'vscode';
 import { registerExplainCommands } from './commands/explain';
+import {
+  createResolver,
+  registerProviderCommands,
+  showPick,
+  type PickFn,
+} from './commands/provider';
 import { registerQuestionCommands, type InputFn } from './commands/questions';
 import { registerStepCommands } from './commands/steps';
 import { registerTermsCommand } from './commands/terms';
@@ -8,10 +14,11 @@ import { enclosingSymbol } from './explain/symbols';
 import { ExplainService } from './explain/walkthrough';
 import { RequestGate } from './guard/gate';
 import type { Prompter } from './guard/prompter';
-import { guardSettings, isExcluded, isPathExcluded } from './guard/settings';
+import { guardSettings, isExcluded, isPathExcluded, providerSettings } from './guard/settings';
 import { isWorkspaceTrusted } from './guard/trust';
 import { createVscodePrompter } from './guard/vscodePrompter';
-import type { Provider } from './providers/types';
+import { ProviderRegistry } from './providers/registry';
+import type { ProviderChoice, Provider } from './providers/types';
 import { createVscodeLmProvider } from './providers/vscodeLm';
 import { vscodeLmApi } from './providers/vscodeLmApi';
 import { QuestionStore } from './state/questions';
@@ -28,7 +35,12 @@ import { createLogger } from './util/log';
 
 /** Returned from `activate` only in test mode, so integration tests can swap the AI and prompts. */
 export interface TestApi {
+  /** Replaces every adapter with this one. */
   setProvider(provider: Provider): void;
+  setProviders(providers: Provider[]): void;
+  setPick(pick: PickFn): void;
+  statusText(): string;
+  refreshStatus(): Promise<void>;
   setPrompter(prompter: Prompter): void;
   setTrusted(trusted: boolean | undefined): void;
   setInput(input: InputFn): void;
@@ -42,7 +54,11 @@ export function activate(context: vscode.ExtensionContext): TestApi | undefined 
   const channel = vscode.window.createOutputChannel('LogicLens', { log: true });
   const log = createLogger(channel);
 
-  let provider: Provider = createVscodeLmProvider(vscodeLmApi());
+  const registry = new ProviderRegistry({
+    providers: [createVscodeLmProvider(vscodeLmApi())],
+    settings: providerSettings,
+  });
+  let pick: PickFn = showPick;
   let prompter: Prompter = createVscodePrompter(context.extensionUri);
   let trustOverride: boolean | undefined;
   let input: InputFn = (prompt, value) => vscode.window.showInputBox({ prompt, value });
@@ -60,7 +76,9 @@ export function activate(context: vscode.ExtensionContext): TestApi | undefined 
     isTrusted,
     isExcluded: isPathExcluded,
     settings: guardSettings,
-    provider: () => provider,
+    resolve: createResolver(registry, context.globalState, () =>
+      vscode.commands.executeCommand<ProviderChoice | undefined>('logiclens.selectProvider'),
+    ),
     log,
   });
 
@@ -83,6 +101,9 @@ export function activate(context: vscode.ExtensionContext): TestApi | undefined 
   const questionThreads = new QuestionThreads(controller, questionStore, (id) =>
     questions.isBusy(id),
   );
+  const statusBar = new StatusBar(session, registry, () =>
+    questionStore.all().some((t) => questions.isBusy(t.id)),
+  );
   const decorations = new Decorations(session);
   const codeLens = new StepCodeLens(session);
   const service = new ExplainService(gate, session, log, (message, action) =>
@@ -97,7 +118,25 @@ export function activate(context: vscode.ExtensionContext): TestApi | undefined 
     questionStore,
     questionThreads,
     controller,
-    new StatusBar(session),
+    statusBar,
+    ...registerProviderCommands({
+      registry,
+      state: context.globalState,
+      pick: () => pick,
+      explain: (options, arg) =>
+        vscode.commands.executeCommand('logiclens.explainFile', arg, options),
+    }),
+    vscode.workspace.onDidChangeConfiguration((e) => {
+      if (
+        e.affectsConfiguration('logiclens.provider') ||
+        e.affectsConfiguration('logiclens.model')
+      ) {
+        registry.invalidate();
+      }
+    }),
+    vscode.extensions.onDidChange(() => registry.invalidate()),
+    questionStore.onDidChange(() => statusBar.render()),
+    ...watchModels(() => registry.invalidate()),
     decorations,
     codeLens,
     new StepContext(session, active),
@@ -125,7 +164,11 @@ export function activate(context: vscode.ExtensionContext): TestApi | undefined 
     return undefined;
   }
   return {
-    setProvider: (p) => (provider = p),
+    setProvider: (p) => registry.setProviders([p]),
+    setProviders: (list) => registry.setProviders(list),
+    setPick: (p) => (pick = p),
+    statusText: () => statusBar.text,
+    refreshStatus: () => statusBar.refresh(),
     setPrompter: (p) => (prompter = p),
     setTrusted: (t) => (trustOverride = t),
     setInput: (i) => (input = i),
@@ -134,6 +177,12 @@ export function activate(context: vscode.ExtensionContext): TestApi | undefined 
     questions: questionThreads,
     decorations,
   };
+}
+
+/** Re-detects when an extension adds or removes language models, where the API has the event. */
+function watchModels(listener: () => void): vscode.Disposable[] {
+  const lm = (vscode as Partial<typeof vscode>).lm;
+  return lm?.onDidChangeChatModels ? [lm.onDidChangeChatModels(listener)] : [];
 }
 
 export function deactivate(): void {}

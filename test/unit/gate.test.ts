@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { RequestGate, type GateDeps, type GateTarget } from '../../src/guard/gate';
 import { WITHHELD_MARKER } from '../../src/guard/secretScan';
 import { TERMS_KEY, TERMS_VERSION } from '../../src/guard/terms';
+import { resolveFrom } from '../../src/providers/registry';
 import {
   collect,
   fake,
@@ -26,7 +27,7 @@ function setup(overrides: Partial<GateDeps> = {}) {
     isTrusted: () => true,
     isExcluded: () => false,
     settings: () => ({ maxLines: 2000, secretsAction: 'skip-lines' }),
-    provider: () => provider,
+    resolve: async () => resolveFrom([{ provider, state: await provider.detect() }], 'auto', ''),
     log,
     ...overrides,
   };

@@ -16,7 +16,7 @@ logiclens/
 │  │                       #   notice, secretScan; settings.ts and vscodePrompter.ts bind them to VS Code
 │  ├─ providers/
 │  │  ├─ types.ts          # Provider, ProviderState, ChatMessage, StreamChunk
-│  │  ├─ registry.ts       # detection, selection, status
+│  │  ├─ registry.ts       # detection, resolution, cache, change events (S5)
 │  │  ├─ vscodeLm.ts
 │  │  ├─ cli/              # shared spawn helper + claudeCode.ts (S6); codex.ts, gemini.ts, kiro.ts (S7)
 │  │  └─ http/             # shared SSE reader + anthropic.ts, openai.ts, ollama.ts (S7)
@@ -46,7 +46,8 @@ logiclens/
 │  │  ├─ codeLens.ts       # step title rows, trail breadcrumbs, opt-in "Explain"
 │  │  ├─ stepContext.ts    # context keys, follow-cursor focus, stale marking
 │  │  ├─ bookmarksView.ts  # TreeDataProvider for logiclens.bookmarks
-│  │  └─ statusBar.ts
+│  │  ├─ providerPicker.ts # pure: provider and model picker entries (S5)
+│  │  └─ statusBar.ts      # provider and model, busy, no-provider warning (S5)
 │  └─ util/                # logging (redacting), cancellation, ranges, hashing
 ├─ test/
 │  ├─ unit/                # vitest: protocol, anchor, context, guard, prompts
@@ -61,7 +62,7 @@ One pnpm package. Everything is bundled into `dist/extension.js`, so `vsce packa
 ## Module rules
 
 - `commands/` call services; they hold no logic beyond argument resolution.
-- Only `explain/` calls providers, and only through `guard/RequestGate.send()`. A lint rule (`no-restricted-imports` in `eslint.config.mjs`) blocks importing anything under `providers/` except `providers/types` from `src/`, other than `src/providers/` itself and `src/extension.ts`, which builds the adapters and hands them to the gate. S5 widens the exception to `registry.ts` consumers in `ui/statusBar.ts` and `commands/provider.ts` for listing and selection.
+- Only `explain/` calls providers, and only through `guard/RequestGate.send()`. A lint rule (`no-restricted-imports` in `eslint.config.mjs`) blocks importing anything under `providers/` except `providers/types` from `src/`, other than `src/providers/` itself and `src/extension.ts`, which builds the adapters and hands them to the gate. S5 widened the exception to the registry's consumers `ui/statusBar.ts`, `ui/providerPicker.ts`, and `commands/provider.ts`, which list and select providers but never send.
 - `providers/` knows nothing about walkthroughs, steps, or UI. Input is messages; output is a stream of text chunks plus usage.
 - `ui/` renders state from `state/` and sends user intents to `commands/` or services. It never calls providers.
 - `nav/` and `bookmarks/` never import `providers/` or `guard/`. Navigating and bookmarking cannot send code; "Explain again" and "Explain <symbol>" go through `commands/` like any other explain action.

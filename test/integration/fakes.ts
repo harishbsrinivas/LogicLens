@@ -52,8 +52,20 @@ export const SAMPLE_RESPONSE = [
   '@@summary\n- Port comes from config.\n@@watch\n- Throws if the file is missing.\n@@end\n',
 ];
 
+export interface PickerEntry {
+  kind: 'item' | 'separator';
+  label: string;
+  description?: string;
+  value?: string;
+  picked?: boolean;
+}
+
 export interface TestApi {
   setProvider(provider: FakeProvider): void;
+  setProviders(providers: FakeProvider[]): void;
+  setPick(pick: (entries: PickerEntry[], title: string) => Thenable<string | undefined>): void;
+  statusText(): string;
+  refreshStatus(): Promise<void>;
   setPrompter(prompter: FakePrompter): void;
   setTrusted(trusted: boolean | undefined): void;
   globalState: vscode.Memento;
@@ -91,9 +103,16 @@ export interface ExplainResult {
   lines?: number[];
 }
 
+export type FakeState =
+  | { kind: 'ready'; models: { id: string; label: string }[] }
+  | { kind: 'needs-sign-in' | 'not-installed' | 'unavailable'; reason: string };
+
 export class FakeProvider {
-  readonly id = 'fake';
-  readonly label = 'Fake Provider';
+  constructor(
+    readonly id = 'fake',
+    readonly label = 'Fake Provider',
+  ) {}
+  state: FakeState = { kind: 'ready', models: [{ id: 'fake-model', label: 'Fake Model' }] };
   readonly kind = 'vscode-lm';
   readonly termsUrl = 'https://example.com/terms';
   readonly dataLeavesMachine = true;
@@ -107,9 +126,9 @@ export class FakeProvider {
   private firstChunk: (() => void) | undefined;
   readonly firstChunkSent = new Promise<void>((resolve) => (this.firstChunk = resolve));
 
-  async detect() {
+  async detect(): Promise<FakeState> {
     this.detectCalls++;
-    return { kind: 'ready' as const, models: [{ id: 'fake-model', label: 'Fake Model' }] };
+    return this.state;
   }
 
   async *stream(request: ProviderRequest, token: CancelToken): AsyncIterable<StreamChunk> {

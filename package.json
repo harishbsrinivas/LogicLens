@@ -136,6 +136,28 @@
         "command": "logiclens.clearAllThreads",
         "title": "Clear All Threads",
         "category": "LogicLens"
+      },
+      {
+        "command": "logiclens.selectProvider",
+        "title": "Select AI Provider",
+        "category": "LogicLens",
+        "icon": "$(sparkle)"
+      },
+      {
+        "command": "logiclens.selectModel",
+        "title": "Select Model",
+        "category": "LogicLens"
+      },
+      {
+        "command": "logiclens.resetDataNotices",
+        "title": "Reset Data Notices",
+        "category": "LogicLens"
+      },
+      {
+        "command": "logiclens.regenerateWith",
+        "title": "Regenerate with…",
+        "category": "LogicLens",
+        "icon": "$(versions)"
       }
     ],
     "menus": {
@@ -206,6 +228,10 @@
         {
           "command": "logiclens.revealLine",
           "when": "false"
+        },
+        {
+          "command": "logiclens.regenerateWith",
+          "when": "false"
         }
       ],
       "comments/commentThread/title": [
@@ -243,6 +269,11 @@
           "command": "logiclens.stopQuestion",
           "when": "commentController == logiclens && commentThread == question-busy",
           "group": "inline@1"
+        },
+        {
+          "command": "logiclens.regenerateWith",
+          "when": "commentController == logiclens && commentThread =~ /^(finished|continuable)$/",
+          "group": "inline@2"
         }
       ],
       "editor/context": [
@@ -334,6 +365,26 @@
           "default": true,
           "scope": "application",
           "description": "While a step is focused, move the highlight to the step under the cursor."
+        },
+        "logiclens.provider": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "vscode-lm"
+          ],
+          "enumDescriptions": [
+            "The first ready provider: VS Code language models (for example GitHub Copilot).",
+            "VS Code language models from installed extensions, such as GitHub Copilot."
+          ],
+          "default": "auto",
+          "scope": "application",
+          "markdownDescription": "Which AI tool LogicLens sends code to. `auto` uses the first ready provider. LogicLens never switches provider on its own; pick one with **LogicLens: Select AI Provider** or the status bar."
+        },
+        "logiclens.model": {
+          "type": "string",
+          "default": "",
+          "scope": "application",
+          "markdownDescription": "Model ID for the chosen provider, as **LogicLens: Select Model** lists it. Empty uses the provider's default."
         }
       }
     },

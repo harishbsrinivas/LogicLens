@@ -6,17 +6,22 @@ Signatures are in `src/providers/types.ts` (fixed in S1).
 
 - **`Provider`**
   - `id` (matches `logiclens.provider` enum), `label`, `kind` (`vscode-lm`, `cli`, `http`)
-  - `detect()`: returns `ProviderState` (`ready` with the model list, or `needs-sign-in`, `not-installed`, `unavailable` with a reason). Must not send user code. There is no separate model-list call; the gate uses the first model until the picker lands in S5.
+  - `detect()`: returns `ProviderState` (`ready` with the model list, or `needs-sign-in`, `not-installed`, `unavailable` with a reason). Must not send user code. There is no separate model-list call; the first model is the provider's default.
   - `stream(request, token)`: async iterable of chunks: `{ type: 'text', text }`, then a final `{ type: 'done', usage? }`, or throws a `ProviderError` with a category (`auth`, `quota`, `rate-limit`, `timeout`, `not-found`, `cancelled`, `bad-response`, `unknown`) and a user-facing message.
   - `termsUrl`, `dataLeavesMachine` (false only for local Ollama).
 - **`ProviderRequest`**: `system` text, `messages` (user and assistant turns, text only), `model?`, `maxOutputTokens`.
 - Adapters never see VS Code documents or ranges, only strings.
 
-## Registry
+## Registry (S5)
 
-- Holds all adapters, runs `detect()` in parallel with a 3-second timeout each, caches states for 60 seconds.
-- Resolves `auto` to the first Ready adapter in spec §6 order.
-- Emits change events for the status bar and setup view.
+`providers/registry.ts` (`ProviderRegistry`, no vscode imports):
+
+- Holds all adapters in spec §6 order, runs `detect()` in parallel with a 3-second timeout each (a timeout or a throwing `detect` becomes `unavailable` with a reason), caches the states for 60 seconds, and shares one in-flight detection.
+- `resolve(choice?)` returns `{ provider, model }` or `unavailable` with a reason. `auto` is the first Ready adapter; an explicit provider that is not Ready is refused with its own reason, never replaced. The `logiclens.model` setting applies to the configured provider; a per-request override (`ProviderChoice`, from Regenerate with…) brings its own model. A model ID the provider does not list is refused.
+- `invalidate()` drops the cache and fires `onDidChange`; `extension.ts` calls it when `logiclens.provider` or `logiclens.model` changes, when extensions change, and on `vscode.lm.onDidChangeChatModels` where it exists.
+- The gate calls `resolve` through `createResolver` (`commands/provider.ts`), which adds the first-run choice (spec §6), stored as `providerChosen` in global state.
+- Data notices are already keyed per provider (`dataNotice.<id>`) since S1, so S5 needed no migration. `logiclens.resetDataNotices` deletes every `dataNotice.*` key.
+- `Provider.setup` (optional) names the one action the picker offers when the provider is not Ready: an extension to show in the Extensions view or a URL. `vscode-lm`: Install GitHub Copilot (`GitHub.copilot-chat`).
 
 ## Adapters
 

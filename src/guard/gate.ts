@@ -1,6 +1,12 @@
 // RequestGate: the single path to a provider (ADR-0014, ADR-0024, ADR-0020; arch §5.2, §8).
 // Checks run in order and fail closed. No vscode imports so every refusal is unit tested.
-import type { CancelToken, Provider, ProviderRequest, StreamChunk } from '../providers/types';
+import type {
+  CancelToken,
+  ProviderChoice,
+  ProviderRequest,
+  Resolution,
+  StreamChunk,
+} from '../providers/types';
 import type { Logger } from '../util/log';
 import type { PathInfo } from './exclude';
 import { ensureNotice } from './notice';
@@ -34,6 +40,8 @@ export interface GateRequest {
   target: GateTarget;
   /** One-request override, from "Skip those lines instead". */
   secretsAction?: SecretsAction;
+  /** One-request provider override, from "Regenerate with…" (spec §6). */
+  provider?: ProviderChoice;
   build(prepared: PreparedTarget): ProviderRequest;
 }
 
@@ -50,7 +58,9 @@ export type RefusalReason =
 export type GateOutcome =
   | {
       kind: 'sent';
+      providerId: string;
       providerLabel: string;
+      modelId: string;
       model: string;
       withheld: number[];
       stream: AsyncIterable<StreamChunk>;
@@ -63,7 +73,8 @@ export interface GateDeps {
   isTrusted(): boolean;
   isExcluded(path: PathInfo): boolean | PromiseLike<boolean>;
   settings(): { maxLines: number; secretsAction: SecretsAction };
-  provider(): Provider;
+  /** Picks the provider and model from settings and the override (providers/registry.ts). */
+  resolve(choice?: ProviderChoice): Promise<Resolution>;
   log: Logger;
 }
 
@@ -105,15 +116,11 @@ export class RequestGate {
       return refuse('cancelled', 'Cancelled.');
     }
 
-    const provider = deps.provider();
-    const state = await provider.detect();
-    if (state.kind !== 'ready') {
-      return refuse('provider-unavailable', state.reason);
+    const resolution = await deps.resolve(req.provider);
+    if (resolution.kind !== 'ready') {
+      return refuse('provider-unavailable', resolution.reason);
     }
-    const model = state.models[0];
-    if (!model) {
-      return refuse('provider-unavailable', 'No model is available.');
-    }
+    const { provider, model } = resolution;
     if (!(await ensureNotice(deps.state, deps.prompter, provider))) {
       return refuse('cancelled', 'Cancelled.');
     }
@@ -164,7 +171,9 @@ export class RequestGate {
     deps.log.debugContent('request', outgoing);
     return {
       kind: 'sent',
+      providerId: provider.id,
       providerLabel: provider.label,
+      modelId: model.id,
       model: model.label,
       withheld,
       stream: provider.stream(request, token),
