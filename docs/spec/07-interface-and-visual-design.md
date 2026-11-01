@@ -8,7 +8,7 @@ Explanations appear over the code, inline in the editor. There is no LogicLens p
 
 | Surface | Used for | Why this surface |
 |---|---|---|
-| **Inline explanation threads** (Comments API, read-only) | The file's explanation (S1), then overview, summary, and things to watch at the top of the file; one block per step under its first line (S2); bookmarked explanations (S11) | Sits in the code, between the lines it explains |
+| **Inline explanation threads** (Comments API, read-only) | The file's explanation (S1), then overview, summary, and things to watch at the top of the file; one block per step just above its code (S2, ADR-0029); bookmarked explanations (S11) | Sits in the code, between the lines it explains |
 | **Question threads** (Comments API) | Line questions and answers | Native inline UI users know from code review |
 | **CodeLens rows** | Step titles with Previous and Next (S2); trail breadcrumbs (S10); opt-in "Explain" above symbols | One clickable line above the code, keyboard reachable |
 | **Editor decorations** | Step highlight, dimming, step number, bookmark and withheld-line icons in gutter | Keeps the eye on the code |
@@ -28,12 +28,14 @@ No webviews, no custom editors, and no modal dialogs except the terms prompt and
    └────────────────────────────────────────────────────┘  · duration
 1  import { config } from './config';
    ...
-   2 · Build the auth URL  L16–31   ‹ Previous  Next ›      step title row (CodeLens)
-16 export function authUrl() {
-   ┌ Step 2 of 6 ─────────────────────────────────────── ┐  focused step: expanded
-   │ Builds the OAuth URL from the client settings…      │
-   │ `async/await`  `env vars`                     Ask   │
+15 
+   ┌ 2 · Build the auth URL ──────────────────────────── ┐  focused step: expanded,
+   │ LogicLens                                  L16–31   │  just above its code
+   │ Builds the OAuth URL from the client settings…      │  (ADR-0029)
+   │ `async/await` · `env vars`                     Ask  │
    └─────────────────────────────────────────────────────┘
+   → 2 · Build the auth URL  L16–31  ‹ Previous  Next ›     step title row (CodeLens)
+16 export function authUrl() {
 17   const params = new URLSearchParams({
    ...
    3 · Handle the callback  L33–70  ‹ Previous  Next ›      other steps: title row only
@@ -41,7 +43,8 @@ No webviews, no custom editors, and no modal dialogs except the terms prompt and
 
 - The file's thread is anchored at line 1, expanded when an explanation starts, and the editor scrolls to it. It can be collapsed like any comment thread and closed with **Close Explanation**.
 - While streaming, the thread title says "Explaining <file>…" and offers **Stop**. When finished, it offers **Explain again**. Stopped and failed explanations say so in the title and at the end of the text.
-- One step block is expanded at a time; **Show all** in the overview thread's title expands every step for skimming (S2).
+- One step block is expanded at a time; **Show all** in the overview thread's title expands every step for skimming. The order of a step's block and its title row is VS Code's; both sit between the previous line and the step.
+- A walkthrough that ended early offers **Continue** in the overview thread's title.
 - Settings that affect the current walkthrough (depth, audience, jargon, provider, personality) are title actions on the overview thread that open quick picks.
 - With no provider ready (S5), a notification opens the provider picker and the status bar item shows a warning.
 

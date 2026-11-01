@@ -4,3 +4,4 @@ out/
 pnpm-lock.yaml
 docs/
 *.md
+test/eval/corpus/

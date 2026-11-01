@@ -15,24 +15,57 @@ export interface ProviderRequest {
 export type StreamChunk = { type: 'text'; text: string } | { type: 'done' };
 
 export interface ThreadSnapshot {
+  line: number;
   label: string;
   contextValue: string;
-  author: string;
+  authors: string[];
   commentLabel: string;
   body: string;
   expanded: boolean;
 }
+
+export interface AppliedDecorations {
+  focus: { start: number; end: number }[];
+  dimmed: number;
+  number: number | null;
+  withheld: number[];
+}
+
+/** A small file and a matching protocol response, used by most tests. */
+export const SAMPLE_FILE = [
+  'import { readFileSync } from "node:fs";',
+  'const raw = readFileSync("config.json", "utf8");',
+  'const config = JSON.parse(raw);',
+  '',
+  'export function port(): number {',
+  '  const value = Number(config.port);',
+  '  return Number.isFinite(value) ? value : 8080;',
+  '}',
+  '',
+].join('\n');
+
+export const SAMPLE_RESPONSE = [
+  '@@overview\nReads a config file and exposes the port.\n',
+  '@@step 1 | L5-L8 | Resolve the port\nReturns the configured port, ',
+  'or 8080.\n@@concepts type coercion\n',
+  '@@step 2 | L1-L3 | Load the config\nReads and parses `config.json`.\n',
+  '@@summary\n- Port comes from config.\n@@watch\n- Throws if the file is missing.\n@@end\n',
+];
 
 export interface TestApi {
   setProvider(provider: FakeProvider): void;
   setPrompter(prompter: FakePrompter): void;
   setTrusted(trusted: boolean | undefined): void;
   globalState: vscode.Memento;
-  threads: { snapshot(uri: vscode.Uri): ThreadSnapshot | undefined };
+  threads: {
+    snapshot(uri: vscode.Uri): ThreadSnapshot | undefined;
+    stepSnapshots(uri: vscode.Uri): (ThreadSnapshot & { index: number })[];
+  };
+  decorations: { appliedTo(uri: vscode.Uri): AppliedDecorations | undefined };
 }
 
 export interface ExplainResult {
-  kind: 'done' | 'stopped' | 'failed' | 'refused';
+  kind: 'done' | 'stopped' | 'truncated' | 'failed' | 'refused';
   reason?: string;
   lines?: number[];
 }
@@ -43,7 +76,9 @@ export class FakeProvider {
   readonly kind = 'vscode-lm';
   readonly termsUrl = 'https://example.com/terms';
   readonly dataLeavesMachine = true;
-  chunks = ['## Overview\n', 'This file ', 'adds numbers.'];
+  chunks = SAMPLE_RESPONSE;
+  /** Per-request chunk lists, used in order before falling back to `chunks`. */
+  readonly queued: string[][] = [];
   /** When set, the stream waits after the first chunk until cancelled. */
   hold = false;
   detectCalls = 0;
@@ -58,7 +93,8 @@ export class FakeProvider {
 
   async *stream(request: ProviderRequest, token: CancelToken): AsyncIterable<StreamChunk> {
     this.requests.push(request);
-    for (const [i, text] of this.chunks.entries()) {
+    const chunks = this.queued.shift() ?? this.chunks;
+    for (const [i, text] of chunks.entries()) {
       yield { type: 'text', text };
       if (i === 0 && this.hold) {
         this.firstChunk?.();

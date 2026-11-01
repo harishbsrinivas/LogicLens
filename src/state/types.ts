@@ -1,4 +1,5 @@
 // Walkthrough state types (arch §7). Plain data, so it can be serialized to the cache (S8).
+// No vscode imports.
 
 /** Inclusive, 1-based line range. */
 export interface LineRange {
@@ -39,4 +40,13 @@ export interface WalkthroughView {
   withheld: number[];
   /** The document changed after this walkthrough was made (S2; per-step tracking in S8). */
   stale: boolean;
+}
+
+/** Continue can ask for the rest of a walkthrough that ended early with steps (spec §4). */
+export function canContinue(view: WalkthroughView): boolean {
+  return (
+    (view.status === 'truncated' || view.status === 'failed') &&
+    view.fallbackMarkdown === null &&
+    view.steps.length > 0
+  );
 }

@@ -26,7 +26,7 @@ logiclens/
 │  │  ├─ question.ts       # orchestrates a thread question
 │  │  ├─ protocol.ts       # incremental parser for the tagged format
 │  │  └─ anchor.ts         # validates and clamps ranges
-│  ├─ prompts/             # templates as TS string builders, versioned
+│  ├─ prompts/             # templates as TS string builders, versioned (walkthrough.ts from S2)
 │  │  └─ personalities/    # one fragment per voice pack (S12, ADR-0023)
 │  ├─ state/               # in-memory session: walkthroughs, threads, focus; rangeTracker, reanchor
 │  ├─ cache/               # persisted walkthroughs and threads
@@ -39,6 +39,7 @@ logiclens/
 │  │  ├─ contextKeys.ts    # menu context keys
 │  │  ├─ decorations.ts    # step highlight, dimming, gutter numbers
 │  │  ├─ codeLens.ts       # step title rows, trail breadcrumbs, opt-in "Explain"
+│  │  ├─ stepContext.ts    # context keys, follow-cursor focus, stale marking
 │  │  ├─ bookmarksView.ts  # TreeDataProvider for logiclens.bookmarks
 │  │  └─ statusBar.ts
 │  └─ util/                # logging (redacting), cancellation, ranges, hashing

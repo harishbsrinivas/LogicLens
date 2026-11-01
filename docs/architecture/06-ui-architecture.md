@@ -7,35 +7,38 @@ There is no webview. Explanations render inline in the editor with stable APIs o
 `ui/inlineThreads.ts` owns the one `CommentController` (id `logiclens`, label "LogicLens"). It listens to the session store and renders each document's walkthrough as read-only threads (`canReply = false`).
 
 - **S1:** one thread per document, anchored at line 1 (`Range(0,0,0,0)`), created expanded; visible editors of that document scroll to the top when it is created. Its single comment has author `LogicLens · <provider> · <model>`, `label` with the duration once finished, and a `MarkdownString` body: the withheld-lines notice (line numbers only), the explanation text, and a stopped or failed note.
-- **S2:** the same thread holds the overview, then the summary and things to watch as a second comment. Each step gets a thread under its first line; focusing a step sets it `Expanded` and the previous one `Collapsed`.
-- `thread.label`: "Explaining <file>…" while streaming, the file name when done, "<file>: stopped" or "<file>: failed" otherwise.
-- `thread.contextValue` (`streaming` or `finished`) drives `comments/commentThread/title` menus: `logiclens.stop` while streaming, `logiclens.explainFile` (Explain again) when finished, and `logiclens.closeExplanation` always. Those commands receive the thread and resolve its document from `thread.uri` among the visible editors.
-- Streaming text arrives through `SessionStore.onDelta`; bodies are re-rendered at most about every 100 ms. Status changes re-render at once.
+- **S2:** the overview thread holds the overview (or the Markdown fallback with its notice), unanchored steps marked "not linked to lines", and a stopped, incomplete, or failed note; the summary and things to watch are a second comment with author "Summary". Each anchored step gets its own thread attached to `stepLine(start) = max(0, start − 2)` (0-based), the line before the step, so it shows just above its code (ADR-0029). Step threads are created `Collapsed`; a thread is `Expanded` when it is the session's `opened` step or `showAll` is on. Expansion is set only when that wanted state changes, so a thread the user opened or closed by hand stays that way. A Markdown fallback has no step threads.
+- Step thread: `label` "N · Title", one comment with author "LogicLens", `label` with its ranges ("L5–8"), body with the explanation and concept tags as inline code.
+- Overview `thread.label`: "Explaining <file>…" while streaming, the file name when done, "<file>: stopped", "<file>: incomplete" (truncated), or "<file>: failed"; " (file changed since)" is appended once the document is edited.
+- `thread.contextValue` drives `comments/commentThread/title` menus: overview `streaming` (Stop), `finished` (Explain again), `continuable` (Continue and Explain again); Show All Steps and Close on any overview thread; step threads are `step` and have no title actions yet. Thread commands receive the thread and resolve its document from `thread.uri` among the visible editors.
+- Streaming text arrives through `SessionStore.onDelta`; bodies are re-rendered at most about every 100 ms. Structural changes (new step, status, focus) re-render at once. Each thread keeps a signature of its label, context value, and comments and is left alone when nothing changed.
 - A new walkthrough for the same document disposes the old thread; closing the document or **Close Explanation** deletes the session entry, which disposes its thread.
 - Bodies pass through `ui/safeMarkdown.ts` and are set with `isTrusted`, `supportHtml`, and `supportThemeIcons` off (arch §8).
-- In test mode, `TestApi.threads.snapshot(uri)` returns label, context value, author, comment label, body, and expanded state.
+- In test mode, `TestApi.threads.snapshot(uri)` and `stepSnapshots(uri)` return each thread's line, label, context value, authors, comment label, body, and expanded state.
 
 ## CodeLens rows
 
 `ui/codeLens.ts` provides:
 
-- **Step title rows (S2):** above each step's first line, "N · Title  Lstart–end", "‹ Previous", and "Next ›". Clicking the title focuses the step.
+- **Step title rows (S2, `StepCodeLens`):** on each anchored step's first line, "N · Title  Lstart–end" (prefixed with `$(arrow-right)` when focused), "‹ Previous", and "Next ›". Each runs the internal `logiclens.focusStep(uriString, index)`, which checks both arguments against the session. Lenses refresh on structural session changes only.
 - **Trail breadcrumbs (S10):** above line 1 of the current file when the trail has more than one entry; one lens per crumb, middle crumbs collapsed into a `…` lens that opens a quick pick.
 - **Explain (opt-in):** "Explain" above top-level and class-member symbols from the document symbol provider, only when `logiclens.codeLens.enabled`. Hidden for excluded files.
 
 ## Editor decorations
 
-`ui/decorations.ts` owns three `TextEditorDecorationType`s, created once:
+`ui/decorations.ts` owns these `TextEditorDecorationType`s:
 
 - **focus:** `backgroundColor` from `editor.rangeHighlightBackground`, `isWholeLine`, left border via `borderWidth: 0 0 0 2px` with `focusBorder` color.
 - **dim:** `opacity: 0.7` over all lines outside the focused ranges (only when `logiclens.focusDimming`).
-- **gutter number:** per-step SVG icons generated at runtime as data URIs, using a theme-neutral rendering (outlined digit). High-contrast themes get a heavier stroke.
+- **gutter number:** one type per step number, created on first use: an SVG data URI of the number in an outlined box, light and dark variants. Shown on the focused step's first line only. (A heavier high-contrast stroke is not possible: decoration options have only light and dark variants.)
 
 Two more gutter decoration types: **withheld** (S1; an SVG data URI with light and dark variants, since gutter icons cannot use codicons or theme colors) (lock icon, lines withheld by the secret scan, while the walkthrough is open) and **bookmark** (codicon `bookmark`, S11). Gutter icons do not stack; precedence is step number, then withheld, then bookmark, with the hover message listing all.
 
-Decorations are reapplied on `onDidChangeVisibleTextEditors` and when ranges move (arch §7). Scrolling uses `revealRange(range, InCenterIfOutsideViewport)`.
+Decorations are reapplied on `onDidChangeVisibleTextEditors`, on every structural session change, when `logiclens.focusDimming` changes, and (S8) when ranges move. Focusing a step (`commands/steps.ts`) sets the selection to the start of its first line and calls `revealRange` from the step's thread line to its last line with `InCenterIfOutsideViewport`, then sets a 5-second status bar message announcing the step.
 
-Follow mode listens to `onDidChangeTextEditorSelection` (debounced 100 ms) and sets the focused step in state without moving the editor or expanding its thread.
+`ui/stepContext.ts` sets `logiclens.walkthroughActive` and `logiclens.stepFocused` for the active editor, marks a walkthrough stale on `onDidChangeTextDocument`, and runs follow mode: it listens to keyboard and mouse `onDidChangeTextEditorSelection` (debounced 100 ms) and, only while a step is focused and `logiclens.followCursor` is on, moves `focus` to the step under the cursor without changing `opened`, scrolling, or the selection.
+
+In test mode, `TestApi.decorations.appliedTo(uri)` returns the focus ranges, number of dimmed ranges, gutter number, and lock lines last applied.
 
 ## Question threads (ADR-0008, S4)
 

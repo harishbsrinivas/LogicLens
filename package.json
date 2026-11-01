@@ -31,6 +31,40 @@
         "icon": "$(debug-stop)"
       },
       {
+        "command": "logiclens.continue",
+        "title": "Continue Explanation",
+        "category": "LogicLens",
+        "icon": "$(debug-continue)"
+      },
+      {
+        "command": "logiclens.nextStep",
+        "title": "Next Step",
+        "category": "LogicLens",
+        "icon": "$(arrow-down)"
+      },
+      {
+        "command": "logiclens.previousStep",
+        "title": "Previous Step",
+        "category": "LogicLens",
+        "icon": "$(arrow-up)"
+      },
+      {
+        "command": "logiclens.clearFocus",
+        "title": "Clear Step Highlight",
+        "category": "LogicLens"
+      },
+      {
+        "command": "logiclens.showAllSteps",
+        "title": "Show All Steps",
+        "category": "LogicLens",
+        "icon": "$(unfold)"
+      },
+      {
+        "command": "logiclens.focusStep",
+        "title": "Show Step",
+        "category": "LogicLens"
+      },
+      {
         "command": "logiclens.closeExplanation",
         "title": "Close Explanation",
         "category": "LogicLens",
@@ -54,6 +88,30 @@
         {
           "command": "logiclens.stop",
           "when": "logiclens.busy"
+        },
+        {
+          "command": "logiclens.focusStep",
+          "when": "false"
+        },
+        {
+          "command": "logiclens.continue",
+          "when": "false"
+        },
+        {
+          "command": "logiclens.nextStep",
+          "when": "logiclens.walkthroughActive"
+        },
+        {
+          "command": "logiclens.previousStep",
+          "when": "logiclens.walkthroughActive"
+        },
+        {
+          "command": "logiclens.clearFocus",
+          "when": "logiclens.stepFocused"
+        },
+        {
+          "command": "logiclens.showAllSteps",
+          "when": "logiclens.walkthroughActive"
         }
       ],
       "comments/commentThread/title": [
@@ -63,14 +121,24 @@
           "group": "inline@1"
         },
         {
-          "command": "logiclens.explainFile",
-          "when": "commentController == logiclens && commentThread == finished",
+          "command": "logiclens.continue",
+          "when": "commentController == logiclens && commentThread == continuable",
           "group": "inline@1"
         },
         {
-          "command": "logiclens.closeExplanation",
-          "when": "commentController == logiclens",
+          "command": "logiclens.explainFile",
+          "when": "commentController == logiclens && commentThread =~ /^(finished|continuable)$/",
           "group": "inline@2"
+        },
+        {
+          "command": "logiclens.showAllSteps",
+          "when": "commentController == logiclens && commentThread != step",
+          "group": "inline@3"
+        },
+        {
+          "command": "logiclens.closeExplanation",
+          "when": "commentController == logiclens && commentThread != step",
+          "group": "inline@4"
         }
       ]
     },
@@ -119,9 +187,41 @@
           "default": false,
           "scope": "application",
           "description": "Log prompts and responses (with secrets redacted) to the LogicLens output channel. Off by default."
+        },
+        "logiclens.focusDimming": {
+          "type": "boolean",
+          "default": true,
+          "scope": "application",
+          "description": "Dim lines outside the focused step."
+        },
+        "logiclens.followCursor": {
+          "type": "boolean",
+          "default": true,
+          "scope": "application",
+          "description": "While a step is focused, move the highlight to the step under the cursor."
         }
       }
-    }
+    },
+    "keybindings": [
+      {
+        "command": "logiclens.nextStep",
+        "key": "alt+]",
+        "mac": "alt+]",
+        "when": "logiclens.walkthroughActive"
+      },
+      {
+        "command": "logiclens.previousStep",
+        "key": "alt+[",
+        "mac": "alt+[",
+        "when": "logiclens.walkthroughActive"
+      },
+      {
+        "command": "logiclens.clearFocus",
+        "key": "escape",
+        "mac": "escape",
+        "when": "logiclens.stepFocused && editorTextFocus && !suggestWidgetVisible && !findWidgetVisible && !inSnippetMode && !hasMultipleSelections"
+      }
+    ]
   },
   "scripts": {
     "build": "node esbuild.mjs",
@@ -134,6 +234,7 @@
     "test:unit": "vitest run",
     "pretest:integration": "pnpm build && tsc -p test/integration/tsconfig.json",
     "test:integration": "vscode-test",
+    "eval": "esbuild test/eval/run.ts --bundle --platform=node --format=cjs --outfile=out/eval/run.js --log-level=warning && node out/eval/run.js",
     "package": "pnpm build:release && vsce package --no-dependencies --no-rewrite-relative-links --allow-missing-repository --skip-license"
   },
   "devDependencies": {

@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { registerExplainCommands } from './commands/explain';
+import { registerStepCommands } from './commands/steps';
 import { registerTermsCommand } from './commands/terms';
 import { ExplainService } from './explain/walkthrough';
 import { RequestGate } from './guard/gate';
@@ -12,9 +13,11 @@ import { createVscodeLmProvider } from './providers/vscodeLm';
 import { vscodeLmApi } from './providers/vscodeLmApi';
 import { SessionStore } from './state/session';
 import { ActiveEditor } from './ui/activeEditor';
+import { StepCodeLens } from './ui/codeLens';
 import { trackFileExcluded } from './ui/contextKeys';
 import { Decorations } from './ui/decorations';
 import { InlineThreads } from './ui/inlineThreads';
+import { StepContext } from './ui/stepContext';
 import { StatusBar } from './ui/statusBar';
 import { createLogger } from './util/log';
 
@@ -25,6 +28,7 @@ export interface TestApi {
   setTrusted(trusted: boolean | undefined): void;
   globalState: vscode.Memento;
   threads: InlineThreads;
+  decorations: Decorations;
 }
 
 export function activate(context: vscode.ExtensionContext): TestApi | undefined {
@@ -54,6 +58,8 @@ export function activate(context: vscode.ExtensionContext): TestApi | undefined 
   const session = new SessionStore();
   const active = new ActiveEditor();
   const threads = new InlineThreads(session);
+  const decorations = new Decorations(session);
+  const codeLens = new StepCodeLens(session);
   const service = new ExplainService(gate, session, log, (message, action) =>
     prompter.confirm(message, action),
   );
@@ -64,10 +70,17 @@ export function activate(context: vscode.ExtensionContext): TestApi | undefined 
     active,
     threads,
     new StatusBar(session),
-    new Decorations(session),
+    decorations,
+    codeLens,
+    new StepContext(session, active),
+    vscode.languages.registerCodeLensProvider(
+      [{ scheme: 'file' }, { scheme: 'untitled' }],
+      codeLens,
+    ),
     trackFileExcluded(active),
     vscode.workspace.onDidCloseTextDocument((doc) => session.delete(SessionStore.key(doc.uri))),
     ...registerExplainCommands(service, session, active),
+    ...registerStepCommands(session, active),
     registerTermsCommand(context.extensionUri),
   );
 
@@ -80,6 +93,7 @@ export function activate(context: vscode.ExtensionContext): TestApi | undefined 
     setTrusted: (t) => (trustOverride = t),
     globalState: context.globalState,
     threads,
+    decorations,
   };
 }
 

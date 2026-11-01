@@ -12,7 +12,10 @@ Names here are the contract for `package.json`. Add new ones here first.
 | `logiclens.askAtLine` | LogicLens: Ask About This Line | Palette, editor context, keybinding |
 | `logiclens.nextStep` | LogicLens: Next Step | Palette, keybinding, step CodeLens |
 | `logiclens.previousStep` | LogicLens: Previous Step | Palette, keybinding, step CodeLens |
-| `logiclens.clearFocus` | LogicLens: Clear Step Highlight | Escape when a step is focused |
+| `logiclens.clearFocus` | LogicLens: Clear Step Highlight | Escape when a step is focused, palette |
+| `logiclens.showAllSteps` | LogicLens: Show All Steps | Explanation thread title, palette |
+| `logiclens.continue` | LogicLens: Continue Explanation | Explanation thread title when the walkthrough ended early |
+| `logiclens.focusStep` | LogicLens: Show Step | Step title CodeLens only (hidden from the palette) |
 | `logiclens.refresh` | LogicLens: Refresh Explanation | Explanation thread title, palette |
 | `logiclens.stop` | LogicLens: Stop | Explanation thread title and status bar while busy, palette |
 | `logiclens.closeExplanation` | LogicLens: Close Explanation | Explanation thread title, palette |
@@ -53,7 +56,7 @@ Chosen to avoid common defaults; all use a `Ctrl+Alt+E` / `Cmd+Alt+E` chord pref
 | `logiclens.addBookmark` | `Ctrl+Alt+E M` | `Cmd+Alt+E M` | `editorTextFocus` |
 | `logiclens.nextStep` | `Alt+]` | `Alt+]` | `logiclens.walkthroughActive` |
 | `logiclens.previousStep` | `Alt+[` | `Alt+[` | `logiclens.walkthroughActive` |
-| `logiclens.clearFocus` | `Escape` | `Escape` | `logiclens.stepFocused && editorTextFocus && !suggestWidgetVisible` |
+| `logiclens.clearFocus` | `Escape` | `Escape` | `logiclens.stepFocused && editorTextFocus && !suggestWidgetVisible && !findWidgetVisible && !inSnippetMode && !hasMultipleSelections` |
 
 Final keys are confirmed in S9 against VS Code defaults and popular keymaps. The MVP is Linux only (ADR-0026); the macOS column is kept for S13 and not verified before then.
 

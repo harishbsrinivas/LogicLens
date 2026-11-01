@@ -5,10 +5,11 @@
 Per open document URI:
 
 - **Walkthrough:** id, provider, model, settings used, created time, prompt version, target range, overview, steps (index, title, ranges, explanation, concepts, anchored flag, changed flag), summary, watch list, status (`streaming`, `done`, `stopped`, `failed`, `truncated`), usage.
-- **Focus:** focused step index or none.
+- **Focus:** `focus` (highlighted step, moved by follow mode), `opened` (step whose thread is expanded, changed only by an explicit focus), and `showAll`.
+- **Raw response:** the model's text so far, sent back on Continue; never shown or logged outside the debug channel.
 - **Threads:** id, range, turns (role, text, provider/model), status.
 
-A small event emitter notifies the inline threads, CodeLens, and decorations. State is plain data so it can be serialized to the cache.
+`SessionStore` has two events: `onDidChange` for structural changes (new walkthrough or step, status, focus, stale), which the inline threads, CodeLens, decorations, and context keys handle at once, and `onDelta` for streamed text, which the inline threads batch. State is plain data so it can be serialized to the cache.
 
 ## Range tracking (ADR-0019)
 

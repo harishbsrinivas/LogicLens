@@ -1,6 +1,6 @@
 # ADR-0028: Explanations inline in the editor; no side panel
 
-- **Status:** Accepted (implemented in S1)
+- **Status:** Accepted (implemented in S1; step placement amended by ADR-0029)
 - **Date:** 2026-11-01
 - **Deciders:** Project owner
 - **Source:** spec §4, §7; arch §6; plan S1, S2. Supersedes ADR-0009.

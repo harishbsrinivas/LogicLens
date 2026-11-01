@@ -23,7 +23,7 @@
 | `pnpm format:check` | Prettier check (Markdown excluded) |
 | `pnpm test:unit` | vitest |
 | `pnpm test:integration` | builds, compiles `test/integration` to `out/`, runs `@vscode/test-cli` against VS Code 1.90.0 (the minimum engine) |
-| `pnpm eval` | evaluation runner over `test/eval/` with a chosen provider (local only; uses real providers) |
+| `pnpm eval` | bundles `test/eval/run.ts` with esbuild and measures recorded responses in `test/eval/responses/<provider>/` against `test/eval/corpus/` with the extension's parser and anchoring; fails below the parse and anchor minimums (local only; responses come from real providers, recorded through the debug channel) |
 | `pnpm package` | release build + VSIX |
 
 ## Tests
