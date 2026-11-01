@@ -2,7 +2,7 @@
 
 Security rules for this project. Applies to humans and AI agents alike. `AGENTS.md` makes these rules mandatory for agents; [docs/architecture/08-security-controls.md](docs/architecture/08-security-controls.md) lists the controls that implement them. If this file and the architecture disagree, fix whichever is wrong in the same change.
 
-Scope: a VS Code extension written in TypeScript, bundled with esbuild, with inline editor UI and no webview (ADR-0028), that sends user-selected source code to AI providers the user already has (VS Code Language Model API, local provider CLIs, or HTTP APIs with a user-supplied key).
+Scope: a VS Code extension written in TypeScript, bundled with esbuild, with inline editor UI and one settings-only webview (ADR-0028, ADR-0031), that sends user-selected source code to AI providers the user already has (VS Code Language Model API, local provider CLIs, or HTTP APIs with a user-supplied key).
 
 ## Reporting a vulnerability
 
@@ -41,7 +41,7 @@ This is the main risk in this product. User code is sent to a third-party model.
 
 ## 4. Rendering model output
 
-- LogicLens has no webview (ADR-0028). Adding one needs a new ADR and brings back a strict CSP with a per-load nonce, no remote resources, and validated messages.
+- Explanations never use a webview (ADR-0028). The settings page is the one webview (ADR-0031): strict CSP with a per-load nonce, no inline scripts or styles, no remote resources, DOM built with `textContent`, and every message validated against `settings/schema.ts`. It never receives code, prompts, model output, or keys. Any other webview needs a new ADR.
 - Model output is shown only as a `vscode.MarkdownString` with `isTrusted`, `supportHtml`, and `supportThemeIcons` set to `false`. Never set `isTrusted: true` on a string that contains model output; if a later slice needs command links next to model text, use `isTrusted: { enabledCommands: [...] }` with commands that validate their arguments.
 - Before rendering, pass model output through `ui/safeMarkdown.ts`: images become links (nothing loads on render), and links, reference definitions, and autolinks that are not http(s) become plain text.
 - Commands run from thread actions resolve their target from the thread's document among open editors; they never take a file path or command from content.
@@ -71,6 +71,6 @@ This is the main risk in this product. User code is sent to a third-party model.
 - [ ] Exclusion rules and the secrets-file guard apply to the new path.
 - [ ] No API key outside `SecretStorage`; no key in logs.
 - [ ] CLI spawns use argument arrays, stdin for content, timeout, and cancel.
-- [ ] Model output still rendered only through `safeMarkdown` into an untrusted `MarkdownString`; no webview added without an ADR.
+- [ ] Model output still rendered only through `safeMarkdown` into an untrusted `MarkdownString`; no webview added without an ADR; the settings page still validates every message and its CSP is unchanged.
 - [ ] `pnpm audit --audit-level=high` clean or exceptions documented.
 - [ ] `gitleaks detect --no-banner` clean.

@@ -1,0 +1,152 @@
+/* LogicLens settings page (ADR-0031). Theme colors only, so light, dark, and high contrast work. */
+body {
+  color: var(--vscode-foreground);
+  background: var(--vscode-editor-background);
+  font-family: var(--vscode-font-family);
+  font-size: var(--vscode-font-size);
+  line-height: 1.5;
+}
+main {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 16px 24px 48px;
+}
+h1 {
+  font-size: 1.6em;
+  font-weight: 600;
+  margin: 8px 0 4px;
+}
+h2 {
+  font-size: 1.15em;
+  font-weight: 600;
+  margin: 28px 0 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--vscode-panel-border, var(--vscode-widget-border, transparent));
+}
+.toc ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
+}
+a {
+  color: var(--vscode-textLink-foreground);
+}
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 1px solid var(--vscode-focusBorder);
+  outline-offset: 2px;
+}
+.setting {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4px;
+  margin: 14px 0;
+}
+.setting.checkbox {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: 8px;
+}
+.setting.checkbox .help,
+.setting.checkbox .note,
+.setting.checkbox .error,
+.setting.checkbox .link {
+  grid-column: 2;
+}
+label {
+  font-weight: 600;
+}
+input[type='text'],
+input[type='number'],
+select,
+textarea {
+  max-width: 420px;
+  padding: 4px 6px;
+  color: var(--vscode-input-foreground);
+  background: var(--vscode-input-background);
+  border: 1px solid var(--vscode-input-border, var(--vscode-widget-border, transparent));
+  font-family: inherit;
+  font-size: inherit;
+}
+select {
+  color: var(--vscode-dropdown-foreground);
+  background: var(--vscode-dropdown-background);
+  border-color: var(--vscode-dropdown-border, transparent);
+}
+textarea {
+  font-family: var(--vscode-editor-font-family);
+}
+.help,
+.note {
+  margin: 0;
+  color: var(--vscode-descriptionForeground);
+}
+.note {
+  font-style: italic;
+}
+.error {
+  margin: 0;
+  color: var(--vscode-errorForeground);
+}
+button {
+  padding: 4px 12px;
+  color: var(--vscode-button-foreground);
+  background: var(--vscode-button-background);
+  border: 1px solid var(--vscode-button-border, transparent);
+  cursor: pointer;
+}
+button:hover {
+  background: var(--vscode-button-hoverBackground);
+}
+button.secondary {
+  color: var(--vscode-button-secondaryForeground);
+  background: var(--vscode-button-secondaryBackground);
+}
+button.secondary:hover {
+  background: var(--vscode-button-secondaryHoverBackground);
+}
+button.link {
+  justify-self: start;
+  padding: 0;
+  color: var(--vscode-textLink-foreground);
+  background: none;
+  border: none;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+.providers {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0;
+}
+.providers li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  align-items: baseline;
+  padding: 4px 0;
+}
+.provider-name {
+  font-weight: 600;
+}
+.badge {
+  padding: 0 6px;
+  border-radius: 8px;
+  color: var(--vscode-badge-foreground);
+  background: var(--vscode-badge-background);
+}
+.badge.ready {
+  color: var(--vscode-testing-iconPassed, var(--vscode-badge-foreground));
+  background: transparent;
+  border: 1px solid currentColor;
+}

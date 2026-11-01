@@ -41,4 +41,4 @@ app.ts › handleRequest  ›  auth.ts › verifyUser  ›  token.ts › decode
 
 ## Accessibility
 
-The breadcrumbs are CodeLens items (ADR-0028: no webview), reachable with the editor's CodeLens keyboard commands; the current crumb starts with "●" and its hover says "(you are here)". Moving along the trail announces "Back to auth.ts, verifyUser, step 3" in the status bar, as step announcements do (spec §4).
+The breadcrumbs are CodeLens items (ADR-0028: explanations use no webview), reachable with the editor's CodeLens keyboard commands; the current crumb starts with "●" and its hover says "(you are here)". Moving along the trail announces "Back to auth.ts, verifyUser, step 3" in the status bar, as step announcements do (spec §4).

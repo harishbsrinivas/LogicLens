@@ -69,6 +69,12 @@ export interface TestApi {
     restore(doc: vscode.TextDocument): Promise<boolean>;
   };
   dropState(uri: vscode.Uri): void;
+  settings: {
+    readonly html: string;
+    readonly sent: unknown[];
+    show(): void;
+    receive(message: unknown): Promise<void>;
+  };
   bookmarks: {
     list(): readonly {
       id: string;

@@ -42,4 +42,4 @@ The MVP uses only the VS Code Language Model API (tested with Copilot Free) and 
 | Ollama (S7) | HTTP to localhost (configurable) | User | No. |
 | VS Code Marketplace (Open VSX from S7, ADR-0026) | Publishing only, from CI | Microsoft, Eclipse Foundation | Publish tokens in CI secrets only. |
 
-LogicLens makes no other network calls. It has no webview, and inline explanations never load images (arch §8).
+LogicLens makes no other network calls. Its only webview, the settings page, loads nothing remote, and inline explanations never load images (arch §8).

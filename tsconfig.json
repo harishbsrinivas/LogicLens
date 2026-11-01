@@ -4,5 +4,6 @@
     "lib": ["ES2022"],
     "types": ["node", "vscode"]
   },
-  "include": ["src", "test/unit", "test/eval/run.ts"]
+  "include": ["src", "test/unit", "test/eval/run.ts"],
+  "exclude": ["src/webview"]
 }

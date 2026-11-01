@@ -127,10 +127,7 @@ export function registerStyleCommands(deps: StyleCommandDeps): vscode.Disposable
         'LogicLens: Adjust Explanation',
       );
       if (value === 'settings') {
-        return vscode.commands.executeCommand(
-          'workbench.action.openSettings',
-          '@ext:logiclens-dev.logiclens',
-        );
+        return vscode.commands.executeCommand('logiclens.openSettings');
       }
       return value ? vscode.commands.executeCommand(value, arg) : undefined;
     }),

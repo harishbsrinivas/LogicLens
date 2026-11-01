@@ -1,6 +1,6 @@
 # 6. UI Architecture
 
-There is no webview. Explanations render inline in the editor with stable APIs only (ADR-0028, superseding ADR-0009).
+Explanations render inline in the editor with stable APIs only (ADR-0028, superseding ADR-0009). The only webview is the settings page (ADR-0031), which never shows code or model output.
 
 ## Inline explanation threads
 
@@ -77,3 +77,12 @@ In test mode, `TestApi.decorations.appliedTo(uri)` returns the focus ranges, num
 ## Quick picks
 
 `ui/providerPicker.ts` (pure) builds the entries; `commands/provider.ts` shows them. Provider picker: **Auto** (naming the provider it would use), then a **Ready** group (model count), then **Not ready** (state as description, reason and setup action as detail; picking it runs the setup action instead of selecting). Model picker is a second step with **Default** first. Choices are saved to user settings. **Regenerate with…** is one flat list of every Ready provider's models. S7 adds "Set API key…".
+
+## Settings page (S14, ADR-0031)
+
+- `ui/settingsPanel.ts` (`SettingsPanel`) owns one `WebviewPanel` (`logiclens.settings`, "LogicLens Settings"), opened or revealed by `logiclens.openSettings`. Options: `enableScripts`, `enableCommandUris: false`, `localResourceRoots` = `dist/webview` and `media`.
+- HTML: CSP `default-src 'none'; style-src <cspSource>; script-src 'nonce-<nonce>'; img-src <cspSource>; font-src <cspSource>` with a fresh 16-byte nonce per load, `media/settings.css`, and one `<script nonce>` loading `dist/webview/settings.js`. No inline script or style.
+- `src/webview/settings.ts` (browser, bundled as an IIFE) posts `ready`, then renders the `state` message with DOM APIs and `textContent` only, one labelled control per setting with its help as `aria-describedby`, a section link list, and section buttons. It keeps keyboard focus across re-renders and shows `error` messages next to their control with `role="alert"`.
+- Page → extension: `ready`; `set { key, value }` (validated by `settings/schema.ts`, written to user settings); `reset { key }` (removes the user value); `action { name }` from a fixed map (`selectProvider`, `resetDataNotices`, `clearCache`, `viewTerms`, `showLog`, `openSettingsJson`). Everything else is ignored.
+- Extension → page: `state` (sections; per setting its spec, user or default value, whether it is the default, and for resource-scoped settings the workspace value; provider states and models from the registry) after `ready`, after each change, on `onDidChangeConfiguration` for `logiclens`, and on registry changes; `error { key, message }` for a rejected value.
+- In test mode, `TestApi.settings` exposes the HTML, the messages sent, and `receive(message)` to act as the page.

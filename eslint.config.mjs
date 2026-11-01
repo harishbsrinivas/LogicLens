@@ -11,14 +11,21 @@ export default tseslint.config(
     languageOptions: { globals: globals.node },
   },
   {
+    // The settings page script runs in the webview (ADR-0031).
+    files: ['src/webview/**/*.ts'],
+    languageOptions: { globals: globals.browser },
+  },
+  {
     files: ['src/**/*.ts'],
-    // ui/statusBar.ts, ui/providerPicker.ts, and commands/provider.ts list and select providers
+    // ui/statusBar.ts, ui/providerPicker.ts, ui/settingsPanel.ts, and commands/provider.ts list
+    // and select providers
     // through the registry (arch §3); they never send.
     ignores: [
       'src/providers/**',
       'src/extension.ts',
       'src/ui/statusBar.ts',
       'src/ui/providerPicker.ts',
+      'src/ui/settingsPanel.ts',
       'src/commands/provider.ts',
     ],
     rules: {
