@@ -1,6 +1,6 @@
 # S2. Step-by-Step Walkthrough
 
-**Status:** Not started
+**Status:** In progress (stacked on `s1-explain-file`; S1 exit check still needs the Copilot demo).
 **User value:** the explanation becomes a guided walkthrough: overview, numbered steps tied to line ranges, and a summary. Each step appears inline above its lines; clicking its title or pressing Alt+] opens its explanation and highlights its lines.
 **Spec:** §4 (all except depth/audience controls), §7 (inline layout, highlight, accessibility), §10 (output contract, failure handling)
 
