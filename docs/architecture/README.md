@@ -1,6 +1,6 @@
 # LogicLens: Architecture
 
-**Status:** Proposed; S0 skeleton implemented (build, tests, CI, placeholder command)
+**Status:** Proposed; S0 skeleton and S1 explain-file tracer implemented
 **Date:** 2026-11-01
 **Companion to:** [../spec/README.md](../spec/README.md)
 

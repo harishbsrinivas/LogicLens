@@ -2,7 +2,7 @@
 
 A VS Code extension that walks you through code step by step and answers questions about any line. It uses the AI assistant you already have instead of shipping its own model. The first release supports GitHub Copilot (the Free plan is enough) and Claude Code, in VS Code on Linux; Codex, Gemini CLI, Kiro, Ollama, your own API key, Windows and macOS, and VS Code forks come later.
 
-**Status:** S0 skeleton: builds, tests, and packages; one placeholder command. No user features yet.
+**Status:** S1 in progress: "LogicLens: Explain File" streams a Markdown explanation from Copilot models into the LogicLens panel. Not yet released.
 
 ## Terms of use
 

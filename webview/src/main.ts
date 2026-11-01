@@ -1,9 +1,8 @@
-import type { HostToWebviewMessage } from '../../shared/messages';
+import { mount } from 'svelte';
+import App from './App.svelte';
+import './styles.css';
 
-// Empty panel shell (plan S0). Replaced by the Svelte app later in S1 (ADR-0009).
-window.addEventListener('message', (event: MessageEvent<HostToWebviewMessage>) => {
-  const root = document.getElementById('root');
-  if (root && event.data.type === 'state') {
-    root.textContent = event.data.state.kind;
-  }
-});
+const target = document.getElementById('root');
+if (target) {
+  mount(App, { target });
+}

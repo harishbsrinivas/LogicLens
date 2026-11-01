@@ -2,12 +2,11 @@
 
 ## Interface
 
-Described in prose; signatures are fixed in `src/providers/types.ts` during S1.
+Signatures are in `src/providers/types.ts` (fixed in S1).
 
 - **`Provider`**
   - `id` (matches `logiclens.provider` enum), `label`, `kind` (`vscode-lm`, `cli`, `http`)
-  - `detect()`: returns `ProviderState` (`ready`, `needs-sign-in`, `not-installed`, `unavailable` with reason) and the list of models if cheap to get. Must not send user code.
-  - `listModels()`: model IDs and display names.
+  - `detect()`: returns `ProviderState` (`ready` with the model list, or `needs-sign-in`, `not-installed`, `unavailable` with a reason). Must not send user code. There is no separate model-list call; the gate uses the first model until the picker lands in S5.
   - `stream(request, token)`: async iterable of chunks: `{ type: 'text', text }`, then a final `{ type: 'done', usage? }`, or throws a `ProviderError` with a category (`auth`, `quota`, `rate-limit`, `timeout`, `not-found`, `cancelled`, `bad-response`, `unknown`) and a user-facing message.
   - `termsUrl`, `dataLeavesMachine` (false only for local Ollama).
 - **`ProviderRequest`**: `system` text, `messages` (user and assistant turns, text only), `model?`, `maxOutputTokens`.
@@ -23,11 +22,11 @@ Described in prose; signatures are fixed in `src/providers/types.ts` during S1.
 
 ### `vscode-lm` (S1)
 
-- `vscode.lm.selectChatModels()` (optionally filtered by vendor or family when the user picks one) lists models. Model display uses `model.name` and `model.vendor`.
+- `vscode.lm.selectChatModels()` (bound in `vscodeLmApi.ts`, injected into `vscodeLm.ts` so the adapter is unit tested with a fake; optionally filtered by vendor or family when the user picks one) lists models. Model display uses `model.name` and `model.vendor`.
 - `model.sendRequest(messages, {}, token)`; iterate `response.text`.
 - The system prompt is sent as the first user message, because the Language Model API has no system role in all versions (confirm in S0).
 - First use triggers VS Code's consent dialog; a refusal surfaces as a `LanguageModelError` with a no-permissions code, mapped to `auth` with a message explaining how to allow access.
-- Token counting via `model.countTokens` for context budgeting.
+- Token counting via `model.countTokens` for context budgeting (not used yet; S1 relies on the size limit).
 - Feature-detect `vscode.lm`; in editors without it the adapter reports `unavailable`.
 
 ### CLI adapters (S6: `claude-code`; S7 after release: the rest)

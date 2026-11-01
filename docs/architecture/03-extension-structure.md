@@ -11,8 +11,9 @@ logiclens/
 ├─ esbuild.mjs             # extension host bundle
 ├─ src/
 │  ├─ extension.ts         # activate/deactivate; wires modules; nothing else
-│  ├─ commands/            # one file per command group; thin, call services (S0: hello.ts placeholder)
-│  ├─ guard/               # RequestGate: trust, exclusions, notice, secret scan
+│  ├─ commands/            # one file per command group; thin, call services
+│  ├─ guard/               # RequestGate (gate.ts, pure) and its checks: terms, trust, exclude, size,
+│  │                       #   notice, secretScan; settings.ts and vscodePrompter.ts bind them to VS Code
 │  ├─ providers/
 │  │  ├─ types.ts          # Provider, ProviderState, ChatMessage, StreamChunk
 │  │  ├─ registry.ts       # detection, selection, status
@@ -33,6 +34,9 @@ logiclens/
 │  ├─ bookmarks/           # bookmark store and service (S11, ADR-0022)
 │  ├─ ui/
 │  │  ├─ panel.ts          # WebviewViewProvider, message bridge
+│  │  ├─ validate.ts       # pure validation of webview messages
+│  │  ├─ activeEditor.ts   # the editor commands act on (survives panel focus)
+│  │  ├─ contextKeys.ts    # menu context keys
 │  │  ├─ decorations.ts    # step highlight, dimming, gutter numbers
 │  │  ├─ comments.ts       # CommentController for threads
 │  │  ├─ codeLens.ts
@@ -56,7 +60,7 @@ One pnpm package, not a multi-package workspace: `webview/` and `shared/` are fo
 ## Module rules
 
 - `commands/` call services; they hold no logic beyond argument resolution.
-- Only `explain/` calls providers, and only through `guard/RequestGate.send()`. A lint rule (`no-restricted-imports`) blocks importing `providers/*` from anywhere else except `registry.ts` consumers in `ui/statusBar.ts` and `commands/provider.ts` for listing and selection.
+- Only `explain/` calls providers, and only through `guard/RequestGate.send()`. A lint rule (`no-restricted-imports` in `eslint.config.mjs`) blocks importing anything under `providers/` except `providers/types` from `src/`, other than `src/providers/` itself and `src/extension.ts`, which builds the adapters and hands them to the gate. S5 widens the exception to `registry.ts` consumers in `ui/statusBar.ts` and `commands/provider.ts` for listing and selection.
 - `providers/` knows nothing about walkthroughs, steps, or UI. Input is messages; output is a stream of text chunks plus usage.
 - `ui/` renders state from `state/` and sends user intents to `commands/` or services. It never calls providers.
 - `shared/` contains types only, so the webview bundle never pulls in Node code.
