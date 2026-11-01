@@ -209,6 +209,45 @@
         "command": "logiclens.clearCache",
         "title": "Clear Cache",
         "category": "LogicLens"
+      },
+      {
+        "command": "logiclens.followDefinition",
+        "title": "Follow to Definition",
+        "category": "LogicLens",
+        "icon": "$(go-to-file)"
+      },
+      {
+        "command": "logiclens.followFromStep",
+        "title": "Follow…",
+        "category": "LogicLens",
+        "icon": "$(go-to-file)"
+      },
+      {
+        "command": "logiclens.trailBack",
+        "title": "Trail Back",
+        "category": "LogicLens",
+        "icon": "$(arrow-left)"
+      },
+      {
+        "command": "logiclens.trailForward",
+        "title": "Trail Forward",
+        "category": "LogicLens",
+        "icon": "$(arrow-right)"
+      },
+      {
+        "command": "logiclens.trailGo",
+        "title": "Go to Trail Entry",
+        "category": "LogicLens"
+      },
+      {
+        "command": "logiclens.trailPick",
+        "title": "Show Trail",
+        "category": "LogicLens"
+      },
+      {
+        "command": "logiclens.clearTrail",
+        "title": "Clear Trail",
+        "category": "LogicLens"
       }
     ],
     "menus": {
@@ -295,6 +334,22 @@
         {
           "command": "logiclens.refreshChanged",
           "when": "false"
+        },
+        {
+          "command": "logiclens.followFromStep",
+          "when": "false"
+        },
+        {
+          "command": "logiclens.trailGo",
+          "when": "false"
+        },
+        {
+          "command": "logiclens.trailBack",
+          "when": "logiclens.trailCanGoBack"
+        },
+        {
+          "command": "logiclens.trailForward",
+          "when": "logiclens.trailCanGoForward"
         }
       ],
       "comments/commentThread/title": [
@@ -352,6 +407,11 @@
           "command": "logiclens.refreshChanged",
           "when": "commentController == logiclens && commentThread == stale-steps",
           "group": "inline@1"
+        },
+        {
+          "command": "logiclens.followFromStep",
+          "when": "commentController == logiclens && commentThread == step",
+          "group": "inline@2"
         }
       ],
       "editor/context": [
@@ -369,6 +429,11 @@
           "command": "logiclens.askAtLine",
           "when": "(resourceScheme == file || resourceScheme == untitled) && !logiclens.fileExcluded",
           "group": "logiclens@2"
+        },
+        {
+          "command": "logiclens.followDefinition",
+          "when": "editorTextFocus",
+          "group": "logiclens@3"
         }
       ],
       "comments/commentThread/context": [
@@ -604,6 +669,24 @@
         "key": "ctrl+alt+e q",
         "mac": "cmd+alt+e q",
         "when": "editorTextFocus"
+      },
+      {
+        "command": "logiclens.followDefinition",
+        "key": "ctrl+alt+e g",
+        "mac": "cmd+alt+e g",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "logiclens.trailBack",
+        "key": "ctrl+alt+e [",
+        "mac": "cmd+alt+e [",
+        "when": "logiclens.trailCanGoBack"
+      },
+      {
+        "command": "logiclens.trailForward",
+        "key": "ctrl+alt+e ]",
+        "mac": "cmd+alt+e ]",
+        "when": "logiclens.trailCanGoForward"
       }
     ]
   },

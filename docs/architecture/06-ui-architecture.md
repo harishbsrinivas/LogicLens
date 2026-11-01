@@ -61,7 +61,9 @@ In test mode, `TestApi.decorations.appliedTo(uri)` returns the focus ranges, num
 
 ## Trail breadcrumbs (S10, ADR-0021)
 
-`nav/trail.ts` owns the trail; `ui/codeLens.ts` renders it as CodeLens crumbs whose commands carry only the entry index. The trail service validates the index and does the navigation (open document, `revealRange`, set selection, set focused step). Context keys `logiclens.trailCanGoBack` and `logiclens.trailCanGoForward` are updated on every change.
+`nav/trail.ts` is the pure trail model (follow, update, goTo, remove, serialize, restore, cap 30) plus `identifiersIn` for the step **Follow…** list. `nav/follow.ts` (`FollowService`) runs `vscode.executeDefinitionProvider` (Locations and LocationLinks), asks with a quick pick when there are several, opens the result, and records both ends; it persists the trail in `workspaceState` (`trail`) and sets `logiclens.trailCanGoBack` and `logiclens.trailCanGoForward`. Going to an entry first saves the current entry's cursor, scroll, and focused step, then opens the file (offering to remove a missing one), restores selection and scroll (`revealRange` at top), restores the walkthrough from the cache if needed (S8), and refocuses the saved step.
+
+`ui/trailLens.ts` (`TrailCodeLens`) renders the crumbs above line 1 of the file the trail is currently on, when the trail has more than one entry: `file › symbol`, "● " on the current one, `$(lock)` for excluded files, "(missing)" for files that no longer exist, and `…` lenses for hidden ranges (`logiclens.trailPick`). Crumb commands carry only the entry index (`logiclens.trailGo`), which the service checks. When that file has no walkthrough, it also offers **Explain <symbol>** above the innermost symbol around the followed position (`logiclens.explainSymbol`, S3). `nav/` never imports `providers/` or `guard/`.
 
 ## Bookmarks view (S11, ADR-0022)
 

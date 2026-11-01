@@ -1,6 +1,6 @@
 # ADR-0021: Navigation trail built from an explicit Follow command
 
-- **Status:** Proposed (S10)
+- **Status:** Accepted (implemented in S10)
 - **Date:** 2026-11-01
 - **Deciders:** Project owner
 - **Source:** spec §13; arch §3, §6, §7

@@ -1,6 +1,6 @@
 # S10. Follow Across Files
 
-**Status:** Not started
+**Status:** In progress: implemented on `s10-follow-across-files` (stacked on `s8-cache-and-staleness`); unit and integration tests pass with test definition and symbol providers. Exit check open: the demo script needs a person and real language servers.
 **User value:** follow a call into another file, and another, then get back to the exact step they started from with one click on a breadcrumb.
 **Spec:** §13, §2 J7, §7 (CodeLens rows), §9
 
@@ -18,13 +18,13 @@ Out: recording native Go to Definition (ADR-0021), sending definition source as 
 
 ## Tasks
 
-- [ ] `nav/trail.ts` pure model with unit tests: push, back, forward, branch truncation, cap, serialize and restore, missing-file handling.
-- [ ] Follow command with a fake definition provider in integration tests (single, multiple, none).
-- [ ] Step "Follow…" menu: symbols referenced in the step's range from `executeDocumentSymbolProvider` and word ranges; unit tests.
-- [ ] Trail CodeLens provider (arch §6): crumb commands carry only the entry index; the trail service validates it.
-- [ ] Crumb overflow quick pick, current-crumb marker, keyboard navigation, announcements.
-- [ ] Integration test: follow does not create a provider request (extend `noImplicitSend`).
-- [ ] Update arch §3, §6, §7 with anything that changed.
+- [x] `nav/trail.ts` pure model with unit tests: push, back, forward, branch truncation, cap, serialize and restore, missing-file handling.
+- [x] Follow command with a fake definition provider in integration tests (single, multiple, none).
+- [x] Step "Follow…" menu: identifiers on the step's lines (unit tested), kept when the definition provider finds a definition elsewhere.
+- [x] Trail CodeLens provider (arch §6): crumb commands carry only the entry index; the trail service validates it.
+- [x] Crumb overflow quick pick, current-crumb marker, keyboard navigation (Trail Back and Forward keys), status bar announcements.
+- [x] Integration test: follow and trail navigation create no provider request.
+- [x] Update arch §3, §6, §7 with anything that changed.
 
 ## Demo script
 
@@ -36,8 +36,13 @@ Out: recording native Go to Definition (ADR-0021), sending definition source as 
 6. Go back to `auth.ts`, follow something else: the `token.ts` crumb disappears.
 7. Reload the window: the trail is still there.
 
+## Progress notes
+
+- 2026-11-01: the spec's accessibility wording assumed a webview breadcrumb bar; with CodeLens crumbs (ADR-0028) the current crumb is marked with "●" and moves are announced in the status bar (spec §13 updated).
+- Step **Follow…** checks each identifier with the definition provider and drops those whose only definition is where they stand.
+
 ## Exit check
 
 - [ ] Demo script passes.
-- [ ] No provider request during any follow or trail navigation (integration test).
-- [ ] All tests green.
+- [x] No provider request during any follow or trail navigation (integration test).
+- [x] All tests green (local: unit and integration, VS Code 1.90.0, Linux).

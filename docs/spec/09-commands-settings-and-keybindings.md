@@ -36,6 +36,9 @@ Names here are the contract for `package.json`. Add new ones here first.
 | `logiclens.setAudience` | LogicLens: Set Audience | Explanation thread title, palette |
 | `logiclens.setJargon` | LogicLens: Set Jargon Level | Explanation thread title, palette |
 | `logiclens.followDefinition` | LogicLens: Follow to Definition | Palette, editor context, step menu, keybinding |
+| `logiclens.followFromStep` | LogicLens: Follow… | Step thread title (hidden from the palette) |
+| `logiclens.trailGo` | LogicLens: Go to Trail Entry | Trail crumb CodeLens only (hidden from the palette) |
+| `logiclens.trailPick` | LogicLens: Show Trail | `…` crumb, palette |
 | `logiclens.trailBack` | LogicLens: Trail Back | Palette, trail CodeLens, keybinding |
 | `logiclens.trailForward` | LogicLens: Trail Forward | Palette, trail CodeLens, keybinding |
 | `logiclens.clearTrail` | LogicLens: Clear Trail | Palette, trail list |

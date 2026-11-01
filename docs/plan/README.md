@@ -21,7 +21,7 @@ Each slice is a small, demoable increment: a user can do something new, end to e
 | S7 | [07-more-providers.md](07-more-providers.md) | use Codex CLI, Gemini CLI, Kiro, an Anthropic or OpenAI key, or local Ollama; run in VS Code forks (after release) | S6, S12 | Not started |
 | S8 | [08-cache-and-staleness.md](08-cache-and-staleness.md) | reopen a file and see the saved walkthrough, with changed steps marked | S2, S4 | In progress |
 | S9 | [09-polish-and-publish.md](09-polish-and-publish.md) | install LogicLens on Linux from the VS Code Marketplace | S1–S6, S8, S10, S11 | Not started |
-| S10 | [10-follow-across-files.md](10-follow-across-files.md) | follow definitions across files and return via breadcrumbs | S3 | Not started |
+| S10 | [10-follow-across-files.md](10-follow-across-files.md) | follow definitions across files and return via breadcrumbs | S3 | In progress |
 | S11 | [11-bookmarks.md](11-bookmarks.md) | bookmark steps, answers, and code and come back to them later | S4, S8 | Not started |
 | S12 | [12-personality-packs.md](12-personality-packs.md) | pick one of five explainer voices (after first release) | S9 | Not started |
 | S13 | [13-windows-and-macos.md](13-windows-and-macos.md) | install and use LogicLens on Windows and macOS (after release) | S9 | Not started |
