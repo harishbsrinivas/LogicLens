@@ -1,6 +1,6 @@
 # S1. Explain File (Tracer Bullet)
 
-**Status:** In progress. All tasks done; unit (116) and integration (9, VS Code 1.90.0, Linux) tests pass locally. Exit check open: the demo script needs a real Copilot Free sign-in on Linux, and CI has not yet run on a pull request.
+**Status:** In progress. All tasks done; unit (116) and integration (9, VS Code 1.90.0, Linux) tests pass locally. CI green on PR #5. Exit check open: the demo script needs a real Copilot Free sign-in on Linux.
 **User value:** with GitHub Copilot (the Free plan is enough; ADR-0025) installed, a user runs "LogicLens: Explain File" and reads a streamed explanation of the active file in a side panel.
 **Spec:** §3 (file target only), §6 (`vscode-lm` only), §7 (panel basics), §8 (terms of use, notice, trust, exclusions, secret scan)
 
@@ -56,5 +56,5 @@ Out: steps, highlighting, selection, Explorer menu, questions, provider picker, 
 ## Exit check
 
 - [ ] Demo script passes in VS Code stable on Linux (ADR-0026).
-- [ ] All tests green in CI.
+- [x] All tests green in CI (PR #5).
 - [x] No code path calls the provider outside `RequestGate` (lint rule active).
